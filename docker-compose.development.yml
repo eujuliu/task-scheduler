@@ -1,0 +1,21 @@
+services:
+  be:
+    build:
+      context: .
+      dockerfile: Dockerfile.development
+    container_name: be
+    env_file: ./.env.development
+    ports:
+      - ${PORT}:${PORT}
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: /app/
+          ignore:
+            - .gitignore
+            - .github
+            - test/
+            - tmp/
+            - bin/
+            - docker*
