@@ -3,6 +3,7 @@ package errors
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/google/uuid"
 )
@@ -20,7 +21,7 @@ func (e *Error) Error() string {
 func INTERNAL_SERVER_ERROR() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
-		Code: 500,
+		Code: http.StatusInternalServerError,
 		Err:  errors.New("internal server error"),
 	}
 }
@@ -28,7 +29,7 @@ func INTERNAL_SERVER_ERROR() *Error {
 func PASSWORD_HASHING() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
-		Code: 500,
+		Code: http.StatusInternalServerError,
 		Err:  errors.New("not possible to hash password"),
 	}
 }
@@ -36,7 +37,7 @@ func PASSWORD_HASHING() *Error {
 func USERNAME_INVALID() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
-		Code: 400,
+		Code: http.StatusBadRequest,
 		Err:  errors.New("username is invalid. please check the requirements"),
 	}
 }
@@ -44,7 +45,7 @@ func USERNAME_INVALID() *Error {
 func EMAIL_INVALID() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
-		Code: 400,
+		Code: http.StatusBadRequest,
 		Err:  errors.New("email is invalid. please check the requirements"),
 	}
 }
@@ -52,7 +53,7 @@ func EMAIL_INVALID() *Error {
 func PASSWORD_INVALID() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
-		Code: 400,
+		Code: http.StatusBadRequest,
 		Err:  errors.New("password is invalid. please check the requirements"),
 	}
 }
@@ -60,7 +61,7 @@ func PASSWORD_INVALID() *Error {
 func USER_NOT_FOUND_ERROR() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
-		Code: 404,
+		Code: http.StatusNotFound,
 		Err:  errors.New("user not found"),
 	}
 }
@@ -68,7 +69,15 @@ func USER_NOT_FOUND_ERROR() *Error {
 func USER_ALREADY_EXISTS_ERROR() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
-		Code: 409,
+		Code: http.StatusConflict,
 		Err:  errors.New("already exists an user with this email"),
+	}
+}
+
+func WRONG_LOGIN_DATA_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusUnauthorized,
+		Err:  errors.New("invalid email or password"),
 	}
 }

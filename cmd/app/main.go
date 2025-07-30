@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"log/slog"
+	"os"
+)
 
 func main() {
-	fmt.Println("Hello World!")
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+
+	slog.SetDefault(logger)
 }

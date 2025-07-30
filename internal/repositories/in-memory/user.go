@@ -40,22 +40,22 @@ func (r *InMemoryUserRepository) GetByEmail(email string) (*entities.User, error
 	return nil, errors.USER_NOT_FOUND_ERROR()
 }
 
-func (r *InMemoryUserRepository) Create(user *entities.User) bool {
+func (r *InMemoryUserRepository) Create(user *entities.User) (bool, error) {
 	r.users = append(r.users, *user)
 
-	return true
+	return true, nil
 }
 
-func (r *InMemoryUserRepository) Update(user *entities.User) bool {
+func (r *InMemoryUserRepository) Update(user *entities.User) (bool, error) {
 	for _, u := range r.users {
 		if user.Id == u.Id {
 			u = *user
 
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 func (r *InMemoryUserRepository) Delete(id string) (bool, error) {
