@@ -30,6 +30,6 @@ func TestUserAlreadyExist(t *testing.T) {
 	_, err = service.CreateUser("testuser", "test@email.com", "Password@123")
 
 	if err == nil {
-		t.Errorf("expect to be user already exists error, got user creation")
+		t.Errorf("expected to be user already exists error, got user creation")
 	}
 }
