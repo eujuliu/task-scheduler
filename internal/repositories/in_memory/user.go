@@ -10,7 +10,7 @@ type InMemoryUserRepository struct {
 	users []entities.User
 }
 
-func NewUserRepository() *InMemoryUserRepository {
+func NewInMemoryUserRepository() *InMemoryUserRepository {
 	return &InMemoryUserRepository{
 		users: []entities.User{},
 	}
@@ -40,30 +40,30 @@ func (r *InMemoryUserRepository) GetByEmail(email string) (*entities.User, error
 	return nil, errors.USER_NOT_FOUND_ERROR()
 }
 
-func (r *InMemoryUserRepository) Create(user *entities.User) (bool, error) {
+func (r *InMemoryUserRepository) Create(user *entities.User) error {
 	r.users = append(r.users, *user)
 
-	return true, nil
+	return nil
 }
 
-func (r *InMemoryUserRepository) Update(user *entities.User) (bool, error) {
-	for _, u := range r.users {
+func (r *InMemoryUserRepository) Update(user *entities.User) error {
+	for i, u := range r.users {
 		if user.Id == u.Id {
-			u = *user
+			r.users[i] = *user
 
-			return true, nil
+			return nil
 		}
 	}
 
-	return false, nil
+	return nil
 }
 
-func (r *InMemoryUserRepository) Delete(id string) (bool, error) {
+func (r *InMemoryUserRepository) Delete(id string) error {
 	index := slices.IndexFunc(r.users, func(u entities.User) bool {
 		return u.Id == id
 	})
 
 	r.users = slices.Delete(r.users, index, index+1)
 
-	return true, nil
+	return nil
 }

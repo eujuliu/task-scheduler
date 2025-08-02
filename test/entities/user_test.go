@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestNew(t *testing.T) {
+func TestNewUser(t *testing.T) {
 	user, err := entities.NewUser("julio1234", "foo@gmail.com", "Password@123")
 
 	if err != nil {
@@ -15,7 +15,7 @@ func TestNew(t *testing.T) {
 	}
 
 	if err := uuid.Validate(user.Id); err != nil {
-		t.Errorf("got %v want valid uuid!", err)
+		t.Errorf("got %v want valid uuid", err)
 	}
 
 	if !user.CheckPasswordHash("Password@123") {
@@ -23,7 +23,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestInvalidUsername(t *testing.T) {
+func TestUserInvalidUsername(t *testing.T) {
 	_, err := entities.NewUser("test", "foo@gmail.com", "Password@123")
 
 	if err == nil {
@@ -31,7 +31,7 @@ func TestInvalidUsername(t *testing.T) {
 	}
 }
 
-func TestInvalidEmail(t *testing.T) {
+func TestUserInvalidEmail(t *testing.T) {
 	_, err := entities.NewUser("julio1234", "foo@.com", "Password@123")
 
 	if err == nil {
@@ -39,7 +39,7 @@ func TestInvalidEmail(t *testing.T) {
 	}
 }
 
-func TestInvalidPassword(t *testing.T) {
+func TestUserInvalidPassword(t *testing.T) {
 	_, err := entities.NewUser("julio1234", "foo@gmail.com", "123456")
 
 	if err == nil {

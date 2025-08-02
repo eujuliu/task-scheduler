@@ -15,7 +15,7 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-	return fmt.Sprintf("status %d: err %v", e.Code, e.Err)
+	return fmt.Sprintf("status %d: %v", e.Code, e.Err)
 }
 
 func INTERNAL_SERVER_ERROR() *Error {
@@ -79,5 +79,29 @@ func WRONG_LOGIN_DATA_ERROR() *Error {
 		Id:   uuid.NewString(),
 		Code: http.StatusUnauthorized,
 		Err:  errors.New("invalid email or password"),
+	}
+}
+
+func EXPIRATION_TIME_INVALID() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusBadRequest,
+		Err:  errors.New("this expiration time is not valid"),
+	}
+}
+
+func RECOVERY_TOKEN_NOT_FOUND() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusNotFound,
+		Err:  errors.New("recovery token not found"),
+	}
+}
+
+func RECOVERY_TOKEN_EXPIRED() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusUnauthorized,
+		Err:  errors.New("this recovery token was expired"),
 	}
 }

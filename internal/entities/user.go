@@ -18,8 +18,8 @@ type User struct {
 	Email     string
 	password  string
 	Credits   int
-	CreatedAt string
-	UpdatedAt string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 	hashed    bool
 }
 
@@ -36,12 +36,13 @@ func NewUser(username string, email string, password string) (*User, error) {
 		return nil, errors.EMAIL_INVALID()
 	}
 
-	now := time.Now().Format(time.RFC3339)
 	hashed, err := hashPassword(password)
 
 	if err != nil {
 		return nil, errors.PASSWORD_HASHING()
 	}
+
+	now := time.Now()
 
 	return &User{
 		Id:        uuid.NewString(),
@@ -70,6 +71,23 @@ func (u *User) GetPassword() (string, error) {
 	u.hashed = true
 
 	return u.password, nil
+}
+
+func (u *User) SetPassword(password string) error {
+	if !validPassword(password) {
+		return errors.PASSWORD_INVALID()
+	}
+
+	hash, err := hashPassword(password)
+
+	if err != nil {
+		return errors.PASSWORD_HASHING()
+	}
+
+	u.password = hash
+	u.hashed = true
+
+	return nil
 }
 
 func (u *User) CheckPasswordHash(password string) bool {
