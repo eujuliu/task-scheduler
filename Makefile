@@ -1,8 +1,9 @@
-.PHONY: build run watch test clean fmt lint pre-commit
+.PHONY: build run watch test coverage clean fmt lint pre-commit
 
 BINARY_NAME=scheduler
 OUTPUT_DIR=bin
 MAIN_FILE=./cmd/app/main.go
+COVERAGE_DIR=coverage
 
 build:
 	go build -o $(OUTPUT_DIR)/$(BINARY_NAME) $(MAIN_FILE)
@@ -20,6 +21,12 @@ run:
 test:
 	go test ./...
 
+coverage:
+	make clean
+	mkdir $(COVERAGE_DIR)
+	go test -coverprofile=coverage/cover.out ./...
+	go tool cover -html=coverage/cover.out -o coverage/cover.html
+
 fmt:
 	go fmt ./...
 
@@ -28,6 +35,7 @@ lint:
 
 clean:
 	rm -rf $(OUTPUT_DIR)
+	rm -rf $(COVERAGE_DIR)
 
 pre-commit:
 	pre-commit install --hook-type commit-msg
