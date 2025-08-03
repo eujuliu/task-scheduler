@@ -16,7 +16,21 @@ var GetUserService *services.GetUserService
 var ForgotUserPasswordService *services.ForgotUserPasswordService
 var ResetUserPasswordService *services.ResetUserPasswordService
 
-func SetupTest(tb testing.TB) func(tb testing.TB) {
+func teardown(tb testing.TB) {
+	users := UserRepository.Get()
+
+	for _, u := range users {
+		_ = UserRepository.Delete(u.Id)
+	}
+
+	tokens := PasswordRepository.Get()
+
+	for _, t := range tokens {
+		_ = PasswordRepository.Delete(t.Id)
+	}
+}
+
+func Setup(tb testing.TB) func(tb testing.TB) {
 	UserRepository = in_memory_repos.NewInMemoryUserRepository()
 	PasswordRepository = in_memory_repos.NewInMemoryPasswordRepository()
 
@@ -26,18 +40,5 @@ func SetupTest(tb testing.TB) func(tb testing.TB) {
 	ForgotUserPasswordService = services.NewForgotUserPasswordService(UserRepository, PasswordRepository)
 	ResetUserPasswordService = services.NewResetUserPasswordService(UserRepository, PasswordRepository)
 
-	// test teardown
-	return func(tb testing.TB) {
-		users := UserRepository.Get()
-
-		for _, u := range users {
-			_ = UserRepository.Delete(u.Id)
-		}
-
-		tokens := PasswordRepository.Get()
-
-		for _, t := range tokens {
-			_ = PasswordRepository.Delete(t.Id)
-		}
-	}
+	return teardown
 }
