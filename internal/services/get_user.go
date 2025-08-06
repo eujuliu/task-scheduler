@@ -29,7 +29,7 @@ func (s *GetUserService) Execute(email string, password string) (*entities.User,
 	ok := user.CheckPasswordHash(password)
 
 	if !ok {
-		slog.Debug(fmt.Sprintf("wrong password %s, for user %s", password, user.Id))
+		slog.Debug(fmt.Sprintf("wrong password %s, for user %s", password, user.GetId()))
 		return nil, errors.WRONG_LOGIN_DATA_ERROR()
 	}
 

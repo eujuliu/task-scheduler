@@ -34,7 +34,7 @@ func (s *ResetUserPasswordService) Execute(tokenId string, newPassword string) e
 		return errors.RECOVERY_TOKEN_EXPIRED()
 	}
 
-	user, err := s.userRepository.GetById(recovery.UserId)
+	user, err := s.userRepository.GetById(recovery.GetUserId())
 
 	if err != nil {
 		slog.Debug(fmt.Sprintf("user not found error %v", err))
@@ -55,7 +55,7 @@ func (s *ResetUserPasswordService) Execute(tokenId string, newPassword string) e
 		return err
 	}
 
-	err = s.passwordRepository.Delete(recovery.Id)
+	err = s.passwordRepository.Delete(recovery.GetId())
 
 	if err != nil {
 		slog.Debug(fmt.Sprintf("delete recovery error %v", err))

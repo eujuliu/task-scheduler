@@ -22,7 +22,7 @@ func (r *InMemoryUserRepository) Get() []entities.User {
 
 func (r *InMemoryUserRepository) GetById(id string) (*entities.User, error) {
 	for _, v := range r.users {
-		if v.Id == id {
+		if v.GetId() == id {
 			return &v, nil
 		}
 	}
@@ -32,7 +32,7 @@ func (r *InMemoryUserRepository) GetById(id string) (*entities.User, error) {
 
 func (r *InMemoryUserRepository) GetByEmail(email string) (*entities.User, error) {
 	for _, v := range r.users {
-		if v.Email == email {
+		if v.GetEmail() == email {
 			return &v, nil
 		}
 	}
@@ -48,7 +48,7 @@ func (r *InMemoryUserRepository) Create(user *entities.User) error {
 
 func (r *InMemoryUserRepository) Update(user *entities.User) error {
 	for i, u := range r.users {
-		if user.Id == u.Id {
+		if user.GetId() == u.GetId() {
 			r.users[i] = *user
 
 			return nil
@@ -60,7 +60,7 @@ func (r *InMemoryUserRepository) Update(user *entities.User) error {
 
 func (r *InMemoryUserRepository) Delete(id string) error {
 	index := slices.IndexFunc(r.users, func(u entities.User) bool {
-		return u.Id == id
+		return u.GetId() == id
 	})
 
 	r.users = slices.Delete(r.users, index, index+1)

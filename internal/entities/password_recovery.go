@@ -3,36 +3,49 @@ package entities
 import (
 	"scheduler/internal/errors"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type PasswordRecovery struct {
-	Id             string
-	UserId         string
-	CreatedAt      time.Time
-	ExpirationTime time.Duration
+	BaseEntity
+	userId     string
+	expiration time.Duration
 }
 
-func NewPasswordRecovery(userId string, expirationTime time.Duration) (*PasswordRecovery, error) {
-	if !validExpirationTime(expirationTime) {
-		return nil, errors.EXPIRATION_TIME_INVALID()
+func NewPasswordRecovery(userId string, expiration time.Duration) (*PasswordRecovery, error) {
+	recovery := &PasswordRecovery{
+		BaseEntity: *NewBaseEntity(),
+		userId:     userId,
 	}
 
-	return &PasswordRecovery{
-		Id:             uuid.NewString(),
-		UserId:         userId,
-		CreatedAt:      time.Now(),
-		ExpirationTime: expirationTime,
-	}, nil
+	err := recovery.SetExpiration(expiration)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return recovery, nil
 }
 
-func validExpirationTime(expiration time.Duration) bool {
-	return expiration >= 5*time.Minute && expiration <= 10*time.Minute
+func (pr *PasswordRecovery) GetUserId() string {
+	return pr.userId
 }
 
-func (r *PasswordRecovery) InTime(now time.Time) bool {
-	expirationTime := r.CreatedAt.Add(r.ExpirationTime)
+func (pr *PasswordRecovery) SetExpiration(expiration time.Duration) error {
+	if expiration < 5*time.Minute || expiration > 10*time.Minute {
+		return errors.EXPIRATION_TIME_INVALID()
+	}
+
+	pr.expiration = expiration
+
+	return nil
+}
+
+func (pr *PasswordRecovery) GetExpiration() time.Duration {
+	return pr.expiration
+}
+
+func (pr *PasswordRecovery) InTime(now time.Time) bool {
+	expirationTime := pr.createdAt.Add(pr.expiration)
 
 	return expirationTime.After(now)
 }

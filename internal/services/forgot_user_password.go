@@ -30,14 +30,14 @@ func (s *ForgotUserPasswordService) Execute(email string) (*entities.PasswordRec
 
 	var recovery *entities.PasswordRecovery
 
-	recovery, _ = s.passwordRecoveryRepository.GetByUserId(user.Id)
+	recovery, _ = s.passwordRecoveryRepository.GetByUserId(user.GetId())
 
-	if recovery != nil && recovery.ExpirationTime >= 2*time.Minute {
+	if recovery != nil && recovery.GetExpiration() >= 2*time.Minute {
 		slog.Debug(fmt.Sprintf("user already have an recovery token %v", recovery))
 		return recovery, nil
 	}
 
-	recovery, err = entities.NewPasswordRecovery(user.Id, 5*time.Minute)
+	recovery, err = entities.NewPasswordRecovery(user.GetId(), 5*time.Minute)
 
 	if err != nil {
 		slog.Debug(fmt.Sprintf("recovery creation error %v", err))

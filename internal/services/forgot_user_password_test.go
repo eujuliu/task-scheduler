@@ -14,7 +14,7 @@ func TestForgotPassword(t *testing.T) {
 
 	Ok(t, err)
 
-	recovery, err := ForgotUserPasswordService.Execute(user.Email)
+	recovery, err := ForgotUserPasswordService.Execute(user.GetEmail())
 
 	Ok(t, err)
 
@@ -29,7 +29,7 @@ func TestExpiredToken(t *testing.T) {
 
 	Ok(t, err)
 
-	recovery, err := ForgotUserPasswordService.Execute(user.Email)
+	recovery, err := ForgotUserPasswordService.Execute(user.GetEmail())
 
 	Ok(t, err)
 
