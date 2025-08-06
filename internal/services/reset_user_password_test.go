@@ -17,7 +17,7 @@ func TestResetPassword(t *testing.T) {
 
 	Ok(t, err)
 
-	err = ResetUserPasswordService.Execute(recovery.Id, "TestPassword@123")
+	err = ResetUserPasswordService.Execute(recovery.GetId(), "TestPassword@123")
 
 	Ok(t, err)
 

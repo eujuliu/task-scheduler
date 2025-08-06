@@ -105,3 +105,19 @@ func RECOVERY_TOKEN_EXPIRED() *Error {
 		Err:  errors.New("this recovery token was expired"),
 	}
 }
+
+func INVALID_TASK_TYPE_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusBadRequest,
+		Err:  errors.New("this task type is not valid"),
+	}
+}
+
+func INVALID_TASK_SCHEDULE_TIME_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusBadRequest,
+		Err:  errors.New("this task type is not valid"),
+	}
+}

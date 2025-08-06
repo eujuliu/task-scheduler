@@ -20,13 +20,13 @@ func teardown(tb testing.TB) {
 	users := UserRepository.Get()
 
 	for _, u := range users {
-		_ = UserRepository.Delete(u.Id)
+		_ = UserRepository.Delete(u.GetId())
 	}
 
 	tokens := PasswordRepository.Get()
 
 	for _, t := range tokens {
-		_ = PasswordRepository.Delete(t.Id)
+		_ = PasswordRepository.Delete(t.GetId())
 	}
 }
 

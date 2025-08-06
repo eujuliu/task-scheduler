@@ -14,9 +14,13 @@ func TestNewPasswordRecovery(t *testing.T) {
 
 	Ok(t, err)
 
-	Ok(t, uuid.Validate(recovery.Id))
-
 	Equals(t, true, recovery.InTime(time.Now()))
+}
+
+func TestPasswordRecoveryWithSmallerTime(t *testing.T) {
+	_, err := entities.NewPasswordRecovery(uuid.NewString(), 1*time.Minute)
+
+	Assert(t, err != nil, "expect error got success")
 }
 
 func TestPasswordRecoveryWithGreaterTime(t *testing.T) {

@@ -22,7 +22,7 @@ func (p *InMemoryPasswordRecoveryRepository) Get() []entities.PasswordRecovery {
 
 func (p *InMemoryPasswordRecoveryRepository) GetById(id string) (*entities.PasswordRecovery, error) {
 	for _, token := range p.tokens {
-		if token.Id == id {
+		if token.GetId() == id {
 			return &token, nil
 		}
 	}
@@ -32,7 +32,7 @@ func (p *InMemoryPasswordRecoveryRepository) GetById(id string) (*entities.Passw
 
 func (p *InMemoryPasswordRecoveryRepository) GetByUserId(userId string) (*entities.PasswordRecovery, error) {
 	for _, token := range p.tokens {
-		if token.UserId == userId {
+		if token.GetUserId() == userId {
 			return &token, nil
 		}
 	}
@@ -48,7 +48,7 @@ func (p *InMemoryPasswordRecoveryRepository) Create(token *entities.PasswordReco
 
 func (p *InMemoryPasswordRecoveryRepository) Delete(id string) error {
 	index := slices.IndexFunc(p.tokens, func(u entities.PasswordRecovery) bool {
-		return u.Id == id
+		return u.GetId() == id
 	})
 
 	p.tokens = slices.Delete(p.tokens, index, index+1)
