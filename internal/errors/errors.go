@@ -106,7 +106,7 @@ func RECOVERY_TOKEN_EXPIRED() *Error {
 	}
 }
 
-func INVALID_TASK_TYPE_ERROR() *Error {
+func INVALID_TASK_TYPE() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
 		Code: http.StatusBadRequest,
@@ -119,5 +119,29 @@ func INVALID_TASK_SCHEDULE_TIME_ERROR() *Error {
 		Id:   uuid.NewString(),
 		Code: http.StatusBadRequest,
 		Err:  errors.New("this task type is not valid"),
+	}
+}
+
+func INVALID_TASK_STATUS() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusBadRequest,
+		Err:  errors.New("this task status is not valid"),
+	}
+}
+
+func BLOCKED_TASK_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusUnauthorized,
+		Err:  errors.New("this task was finished, you can't change it"),
+	}
+}
+
+func INVALID_UUID() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusConflict,
+		Err:  errors.New("this uuid is invalid"),
 	}
 }

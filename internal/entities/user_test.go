@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestNewUser(t *testing.T) {
+func TestUser_New(t *testing.T) {
 	user, err := NewUser("testuser", "foo@gmail.com", "Password@123")
 
 	Ok(t, err)
@@ -14,19 +14,19 @@ func TestNewUser(t *testing.T) {
 	Equals(t, true, user.CheckPasswordHash("Password@123"))
 }
 
-func TestSetInvalidUsername(t *testing.T) {
+func TestUser_InvalidUsername(t *testing.T) {
 	_, err := NewUser("test", "test@email.com", "Password@123")
 
 	Assert(t, err != nil, "want invalid username got valid")
 }
 
-func TestSetInvalidEmail(t *testing.T) {
+func TestUser_InvalidEmail(t *testing.T) {
 	_, err := NewUser("testuser", "test@.com", "Password@123")
 
 	Assert(t, err != nil, "want invalid email got valid")
 }
 
-func TestSetInvalidPassword(t *testing.T) {
+func TestUser_InvalidPassword(t *testing.T) {
 	_, err := NewUser("testuser", "test@email.com", "123456")
 
 	Assert(t, err != nil, "want invalid password got valid")
