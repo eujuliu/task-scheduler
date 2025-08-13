@@ -2,6 +2,7 @@ package entities_test
 
 import (
 	"scheduler/internal/entities"
+	"scheduler/internal/errors"
 	. "scheduler/test"
 	"testing"
 	"time"
@@ -21,10 +22,12 @@ func TestPasswordRecovery_SmallerTime(t *testing.T) {
 	_, err := entities.NewPasswordRecovery(uuid.NewString(), 1*time.Minute)
 
 	Assert(t, err != nil, "expect error got success")
+	Equals(t, errors.INVALID_FIELD_VALUE("expiration time").Error(), err.Error())
 }
 
 func TestPasswordRecovery_GreaterTime(t *testing.T) {
 	_, err := entities.NewPasswordRecovery(uuid.NewString(), 11*time.Minute)
 
 	Assert(t, err != nil, "expect error got success")
+	Equals(t, errors.INVALID_FIELD_VALUE("expiration time").Error(), err.Error())
 }

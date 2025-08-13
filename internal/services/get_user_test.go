@@ -1,11 +1,12 @@
 package services_test
 
 import (
+	"scheduler/internal/errors"
 	. "scheduler/test"
 	"testing"
 )
 
-func TestGetUser(t *testing.T) {
+func TestGetUserService(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
@@ -18,7 +19,7 @@ func TestGetUser(t *testing.T) {
 	Ok(t, err)
 }
 
-func TestGetUserWithWrongPassword(t *testing.T) {
+func TestGetUserService_WrongPassword(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
@@ -28,5 +29,5 @@ func TestGetUserWithWrongPassword(t *testing.T) {
 
 	_, err = GetUserService.Execute("test@email.com", "Password@12")
 
-	Assert(t, err != nil, "expect error got user")
+	Equals(t, errors.WRONG_LOGIN_DATA_ERROR().Error(), err.Error())
 }

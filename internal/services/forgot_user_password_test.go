@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestForgotPassword(t *testing.T) {
+func TestForgotPasswordService(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
@@ -21,7 +21,7 @@ func TestForgotPassword(t *testing.T) {
 	Equals(t, true, recovery.InTime(time.Now()))
 }
 
-func TestExpiredToken(t *testing.T) {
+func TestForgotPasswordService_ExpiredToken(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 

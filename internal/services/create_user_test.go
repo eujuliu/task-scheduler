@@ -1,11 +1,12 @@
 package services_test
 
 import (
+	"scheduler/internal/errors"
 	. "scheduler/test"
 	"testing"
 )
 
-func TestCreateUser(t *testing.T) {
+func TestCreateUserService(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
@@ -14,7 +15,7 @@ func TestCreateUser(t *testing.T) {
 	Ok(t, err)
 }
 
-func TestDuplicity(t *testing.T) {
+func TestCreateUserService_Duplicity(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
@@ -24,5 +25,5 @@ func TestDuplicity(t *testing.T) {
 
 	_, err = CreateUserService.Execute("testuser", "test@email.com", "Password@123")
 
-	Assert(t, err != nil, "want error and got success")
+	Equals(t, errors.USER_ALREADY_EXISTS_ERROR().Error(), err.Error())
 }

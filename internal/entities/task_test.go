@@ -10,7 +10,7 @@ import (
 )
 
 func TestTask_New(t *testing.T) {
-	task, err := entities.NewTask("email_send", uuid.NewString(), time.Now().Add(1*time.Hour))
+	task, err := entities.NewTask("email_send", uuid.NewString(), uuid.NewString(), time.Now().Add(1*time.Hour))
 
 	Ok(t, err)
 	Equals(t, entities.TaskCost["email_send"], task.GetCost())
@@ -18,13 +18,13 @@ func TestTask_New(t *testing.T) {
 }
 
 func TestTask_WrongTaskType(t *testing.T) {
-	_, err := entities.NewTask("email_sent", uuid.NewString(), time.Now().Add(1*time.Hour))
+	_, err := entities.NewTask("email_sent", uuid.NewString(), uuid.NewString(), time.Now().Add(1*time.Hour))
 
 	Assert(t, err != nil, "expect error for invalid type got success")
 }
 
 func TestTask_SetStatus(t *testing.T) {
-	task, err := entities.NewTask("email_send", uuid.NewString(), time.Now().Add(1*time.Hour))
+	task, err := entities.NewTask("email_send", uuid.NewString(), uuid.NewString(), time.Now().Add(1*time.Hour))
 
 	Ok(t, err)
 	Equals(t, "pending", task.GetStatus())
@@ -35,7 +35,7 @@ func TestTask_SetStatus(t *testing.T) {
 }
 
 func TestTask_SetStatusAfterCompleted(t *testing.T) {
-	task, err := entities.NewTask("email_send", uuid.NewString(), time.Now().Add(1*time.Hour))
+	task, err := entities.NewTask("email_send", uuid.NewString(), uuid.NewString(), time.Now().Add(1*time.Hour))
 
 	Ok(t, err)
 	Equals(t, "pending", task.GetStatus())
@@ -50,7 +50,7 @@ func TestTask_SetStatusAfterCompleted(t *testing.T) {
 }
 
 func TestTask_SetStatusAfterFailed(t *testing.T) {
-	task, err := entities.NewTask("email_send", uuid.NewString(), time.Now().Add(1*time.Hour))
+	task, err := entities.NewTask("email_send", uuid.NewString(), uuid.NewString(), time.Now().Add(1*time.Hour))
 
 	Ok(t, err)
 	Equals(t, "pending", task.GetStatus())
@@ -65,7 +65,7 @@ func TestTask_SetStatusAfterFailed(t *testing.T) {
 }
 
 func TestTask_InvalidUserId(t *testing.T) {
-	task, err := entities.NewTask("email_send", uuid.NewString(), time.Now().Add(1*time.Hour))
+	task, err := entities.NewTask("email_send", uuid.NewString(), uuid.NewString(), time.Now().Add(1*time.Hour))
 
 	Ok(t, err)
 
@@ -75,7 +75,7 @@ func TestTask_InvalidUserId(t *testing.T) {
 }
 
 func TestTask_TimeAfterOneYear(t *testing.T) {
-	task, err := entities.NewTask("email_send", uuid.NewString(), time.Now().Add(1*time.Hour))
+	task, err := entities.NewTask("email_send", uuid.NewString(), uuid.NewString(), time.Now().Add(1*time.Hour))
 
 	Ok(t, err)
 
@@ -85,7 +85,7 @@ func TestTask_TimeAfterOneYear(t *testing.T) {
 }
 
 func TestTask_TimeBeforeNow(t *testing.T) {
-	task, err := entities.NewTask("email_send", uuid.NewString(), time.Now().Add(1*time.Hour))
+	task, err := entities.NewTask("email_send", uuid.NewString(), uuid.NewString(), time.Now().Add(1*time.Hour))
 
 	Ok(t, err)
 

@@ -48,7 +48,7 @@ func (u *User) SetUsername(username string) error {
 	cleanedStr := strings.Join(strings.Fields(username), " ")
 
 	if len(cleanedStr) < 5 || len(cleanedStr) > 20 {
-		return errors.USERNAME_INVALID()
+		return errors.INVALID_FIELD_VALUE("username")
 	}
 
 	for _, c := range cleanedStr {
@@ -57,7 +57,7 @@ func (u *User) SetUsername(username string) error {
 		}
 
 		if !utils.IsAlphanumeric(byte(c)) {
-			return errors.USERNAME_INVALID()
+			return errors.INVALID_FIELD_VALUE("username")
 		}
 	}
 
@@ -106,7 +106,7 @@ func (u *User) SetPassword(password string) error {
 	}
 
 	if count < 8 || !number || !upper || !lower || !symbol {
-		return errors.PASSWORD_INVALID()
+		return errors.INVALID_FIELD_VALUE("password")
 	}
 
 	hash, err := hashPassword(password)

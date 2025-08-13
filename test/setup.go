@@ -16,6 +16,8 @@ var GetUserService *services.GetUserService
 var ForgotUserPasswordService *services.ForgotUserPasswordService
 var ResetUserPasswordService *services.ResetUserPasswordService
 
+// var CreateTaskService *services.CreateTaskService
+
 func teardown(tb testing.TB) {
 	users := UserRepository.Get()
 
@@ -33,12 +35,15 @@ func teardown(tb testing.TB) {
 func Setup(tb testing.TB) func(tb testing.TB) {
 	UserRepository = in_memory_repos.NewInMemoryUserRepository()
 	PasswordRepository = in_memory_repos.NewInMemoryPasswordRepository()
+	// TransactionRepository = in_memory_repos.NewInMemoryTransactionRepository()
 
 	CreateUserService = services.NewCreateUserService(UserRepository)
 	GetUserService = services.NewGetUserService(UserRepository)
 
 	ForgotUserPasswordService = services.NewForgotUserPasswordService(UserRepository, PasswordRepository)
 	ResetUserPasswordService = services.NewResetUserPasswordService(UserRepository, PasswordRepository)
+
+	// CreateTaskService = services.NewCreateTaskService(UserRepository, TransactionRepository)
 
 	return teardown
 }
