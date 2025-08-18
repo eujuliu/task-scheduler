@@ -42,7 +42,7 @@ func NewTransaction(userId string, credits int, amount int, currency string, kin
 		amount:        amount,
 		currency:      currency,
 		credits:       credits,
-		status:        "frozen",
+		status:        "pending",
 		referenceId:   referenceId,
 		idempotentKey: idempotencyKey,
 	}
@@ -73,7 +73,7 @@ func (t *Transaction) SetStatus(status string) error {
 
 	formatted := strings.TrimSpace(strings.ToLower(status))
 
-	var AvailableStatus = []string{"completed", "failed"}
+	var AvailableStatus = []string{"frozen", "completed", "failed"}
 
 	if !slices.Contains(AvailableStatus, formatted) {
 		return errors.INVALID_FIELD_VALUE("status")
@@ -92,7 +92,7 @@ func (t *Transaction) GetType() string {
 	return t.kind
 }
 
-func (t *Transaction) GetReference() string {
+func (t *Transaction) GetReferenceId() string {
 	return t.referenceId
 }
 

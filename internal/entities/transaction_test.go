@@ -13,7 +13,7 @@ func TestTransaction_New(t *testing.T) {
 	transaction, err := entities.NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
 
 	Ok(t, err)
-	Equals(t, "frozen", transaction.GetStatus())
+	Equals(t, "pending", transaction.GetStatus())
 }
 
 func TestTransaction_WrongType(t *testing.T) {
@@ -38,7 +38,7 @@ func TestTransaction_SetStatus(t *testing.T) {
 	transaction, err := entities.NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
 
 	Ok(t, err)
-	Equals(t, "frozen", transaction.GetStatus())
+	Equals(t, "pending", transaction.GetStatus())
 
 	err = transaction.SetStatus("completed")
 
@@ -50,14 +50,14 @@ func TestTransaction_SetStatusAfterCompleted(t *testing.T) {
 	transaction, err := entities.NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
 
 	Ok(t, err)
-	Equals(t, "frozen", transaction.GetStatus())
+	Equals(t, "pending", transaction.GetStatus())
 
 	err = transaction.SetStatus("completed")
 
 	Ok(t, err)
 	Equals(t, "completed", transaction.GetStatus())
 
-	err = transaction.SetStatus("frozen")
+	err = transaction.SetStatus("pending")
 
 	Equals(t, errors.FINISHED_OPERATION_ERROR().Error(), err.Error())
 }
@@ -66,7 +66,7 @@ func TestTransaction_SetStatusAfterFailed(t *testing.T) {
 	transaction, err := entities.NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
 
 	Ok(t, err)
-	Equals(t, "frozen", transaction.GetStatus())
+	Equals(t, "pending", transaction.GetStatus())
 
 	err = transaction.SetStatus("failed")
 

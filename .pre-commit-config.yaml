@@ -1,3 +1,5 @@
+# https://goangle.medium.com/golang-improving-your-go-project-with-pre-commit-hooks-a265fad0e02f
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0

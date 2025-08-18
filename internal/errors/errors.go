@@ -89,3 +89,19 @@ func INVALID_FIELD_VALUE(field string) *Error {
 		Err:  fmt.Errorf("this %s is not valid, please check the requirements", field),
 	}
 }
+
+func TRANSACTION_NOT_FOUND() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusNotFound,
+		Err:  errors.New("transaction not found"),
+	}
+}
+
+func TRANSACTION_ALREADY_EXISTS_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusNotFound,
+		Err:  errors.New("transaction not found"),
+	}
+}
