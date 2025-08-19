@@ -105,3 +105,11 @@ func TRANSACTION_ALREADY_EXISTS_ERROR() *Error {
 		Err:  errors.New("transaction not found"),
 	}
 }
+
+func NOT_ENOUGH_CREDITS_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusPaymentRequired,
+		Err:  errors.New("not enough credits"),
+	}
+}

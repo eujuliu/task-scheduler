@@ -12,15 +12,18 @@ import (
 
 type User struct {
 	BaseEntity
-	username string
-	email    string
-	password string
-	credits  int
+	username       string
+	email          string
+	password       string
+	credits        int
+	frozen_credits int
 }
 
 func NewUser(username string, email string, password string) (*User, error) {
 	user := &User{
-		BaseEntity: *NewBaseEntity(),
+		BaseEntity:     *NewBaseEntity(),
+		credits:        0,
+		frozen_credits: 0,
 	}
 
 	err := user.SetUsername(username)
@@ -72,7 +75,7 @@ func (u *User) SetEmail(email string) error {
 	mail, err := mail.ParseAddress(email)
 
 	if err != nil {
-		return err
+		return errors.INVALID_FIELD_VALUE("email")
 	}
 
 	u.email = mail.Address
@@ -121,7 +124,7 @@ func (u *User) SetPassword(password string) error {
 }
 
 func (u *User) GetPassword() (string, error) {
-	_, err := bcrypt.Cost([]byte(u.password))
+	var _, err = bcrypt.Cost([]byte(u.password))
 
 	if err != nil {
 		return u.password, nil
@@ -138,22 +141,60 @@ func (u *User) GetPassword() (string, error) {
 	return u.password, nil
 }
 
-func (u *User) SetCredits(amount int) {
-	total := u.credits + (amount)
+func (u *User) AddCredits(amount int) {
+	u.credits += amount
+}
+
+func (u *User) RemoveCredits(amount int) error {
+	var total = u.credits - amount
 
 	if total < 0 {
-		total = 0
+		return errors.NOT_ENOUGH_CREDITS_ERROR()
 	}
 
 	u.credits = total
+
+	return nil
 }
 
 func (u *User) GetCredits() int {
 	return u.credits
 }
 
+func (u *User) AddFrozenCredits(amount int) error {
+	var err = u.RemoveCredits(amount)
+
+	if err != nil {
+		return err
+	}
+
+	u.frozen_credits += amount
+
+	return nil
+}
+
+func (u *User) RemoveFrozenCredits(amount int, refund bool) error {
+	var total = u.frozen_credits - amount
+
+	if total < 0 {
+		return errors.NOT_ENOUGH_CREDITS_ERROR()
+	}
+
+	u.frozen_credits = total
+
+	if refund {
+		u.credits += amount
+	}
+
+	return nil
+}
+
+func (u *User) GetFrozenCredits() int {
+	return u.frozen_credits
+}
+
 func (u *User) CheckPasswordHash(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(u.password), []byte(password))
+	var err = bcrypt.CompareHashAndPassword([]byte(u.password), []byte(password))
 
 	return err == nil
 }
