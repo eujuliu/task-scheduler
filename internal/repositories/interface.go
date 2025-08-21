@@ -29,3 +29,11 @@ type ITransactionRepository interface {
 	Update(*entities.Transaction) error
 	Delete(id string) error
 }
+
+type IErrorRepository interface {
+	Get() []entities.Error
+	GetByUserId(userId string) []entities.Error
+	GetFirstByUserId(userId string) (*entities.Error, error)
+	GetFirstByReferenceId(referenceId string) (*entities.Error, error)
+	Create(*entities.Error) error
+}

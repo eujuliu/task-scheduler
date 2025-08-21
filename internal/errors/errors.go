@@ -113,3 +113,19 @@ func NOT_ENOUGH_CREDITS_ERROR() *Error {
 		Err:  errors.New("not enough credits"),
 	}
 }
+
+func INVALID_TYPE() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusBadRequest,
+		Err:  errors.New("invalid type"),
+	}
+}
+
+func MISSING_PARAM_ERROR(param string) *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusBadRequest,
+		Err:  fmt.Errorf("the param %s is required for this operation", param),
+	}
+}

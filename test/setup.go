@@ -10,6 +10,7 @@ import (
 var UserRepository repos.IUserRepository
 var PasswordRepository repos.IPasswordRecoveryRepository
 var TransactionRepository repos.ITransactionRepository
+var ErrorRepository repos.IErrorRepository
 
 var CreateUserService *services.CreateUserService
 var GetUserService *services.GetUserService
@@ -18,31 +19,22 @@ var ForgotUserPasswordService *services.ForgotUserPasswordService
 var ResetUserPasswordService *services.ResetUserPasswordService
 
 var CreateTransactionService *services.CreateTransactionService
+var UpdateTransactionService *services.UpdateTransactionService
 
 // var CreateTaskService *services.CreateTaskService
 
 func teardown(tb testing.TB) {
-	users := UserRepository.Get()
-	tokens := PasswordRepository.Get()
-	// transactions := TransactionRepository.Get()
-
-	for _, u := range users {
-		_ = UserRepository.Delete(u.GetId())
-	}
-
-	for _, t := range tokens {
-		_ = PasswordRepository.Delete(t.GetId())
-	}
-
-	// for _, t := range transactions {
-	// 	_ = TransactionRepository.Delete(t.GetId())
-	// }
+	UserRepository = in_memory_repos.NewInMemoryUserRepository()
+	PasswordRepository = in_memory_repos.NewInMemoryPasswordRepository()
+	TransactionRepository = in_memory_repos.NewInMemoryTransactionRepository()
+	ErrorRepository = in_memory_repos.NewInMemoryErrorRepository()
 }
 
 func Setup(tb testing.TB) func(tb testing.TB) {
 	UserRepository = in_memory_repos.NewInMemoryUserRepository()
 	PasswordRepository = in_memory_repos.NewInMemoryPasswordRepository()
 	TransactionRepository = in_memory_repos.NewInMemoryTransactionRepository()
+	ErrorRepository = in_memory_repos.NewInMemoryErrorRepository()
 
 	CreateUserService = services.NewCreateUserService(UserRepository)
 	GetUserService = services.NewGetUserService(UserRepository)
@@ -51,6 +43,7 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 	ResetUserPasswordService = services.NewResetUserPasswordService(UserRepository, PasswordRepository)
 
 	CreateTransactionService = services.NewCreateTransactionService(UserRepository, TransactionRepository)
+	UpdateTransactionService = services.NewUpdateTransactionService(UserRepository, TransactionRepository, ErrorRepository)
 
 	// CreateTaskService = services.NewCreateTaskService(UserRepository, TransactionRepository)
 

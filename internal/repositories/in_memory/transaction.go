@@ -16,14 +16,14 @@ func NewInMemoryTransactionRepository() *InMemoryTransactionRepository {
 	}
 }
 
-func (repo *InMemoryTransactionRepository) Get() []entities.Transaction {
-	return repo.transactions
+func (r *InMemoryTransactionRepository) Get() []entities.Transaction {
+	return r.transactions
 }
 
-func (repo *InMemoryTransactionRepository) GetByUserId(userId string) []entities.Transaction {
+func (r *InMemoryTransactionRepository) GetByUserId(userId string) []entities.Transaction {
 	var result = []entities.Transaction{}
 
-	for _, transaction := range repo.transactions {
+	for _, transaction := range r.transactions {
 		if transaction.GetUserId() == userId {
 			result = append(result, transaction)
 		}
@@ -32,8 +32,8 @@ func (repo *InMemoryTransactionRepository) GetByUserId(userId string) []entities
 	return result
 }
 
-func (repo *InMemoryTransactionRepository) GetFirstById(id string) (*entities.Transaction, error) {
-	for _, transaction := range repo.transactions {
+func (r *InMemoryTransactionRepository) GetFirstById(id string) (*entities.Transaction, error) {
+	for _, transaction := range r.transactions {
 		if transaction.GetId() == id {
 			return &transaction, nil
 		}
@@ -42,8 +42,8 @@ func (repo *InMemoryTransactionRepository) GetFirstById(id string) (*entities.Tr
 	return nil, errors.TRANSACTION_NOT_FOUND()
 }
 
-func (repo *InMemoryTransactionRepository) GetFirstByReferenceId(id string) (*entities.Transaction, error) {
-	for _, transaction := range repo.transactions {
+func (r *InMemoryTransactionRepository) GetFirstByReferenceId(id string) (*entities.Transaction, error) {
+	for _, transaction := range r.transactions {
 		if transaction.GetReferenceId() == id {
 			return &transaction, nil
 		}
@@ -52,8 +52,8 @@ func (repo *InMemoryTransactionRepository) GetFirstByReferenceId(id string) (*en
 	return nil, errors.TRANSACTION_NOT_FOUND()
 }
 
-func (repo *InMemoryTransactionRepository) GetFirstByIdempotencyKey(key string) (*entities.Transaction, error) {
-	for _, transaction := range repo.transactions {
+func (r *InMemoryTransactionRepository) GetFirstByIdempotencyKey(key string) (*entities.Transaction, error) {
+	for _, transaction := range r.transactions {
 		if transaction.GetIdempotencyKey() == key {
 			return &transaction, nil
 		}
@@ -62,16 +62,16 @@ func (repo *InMemoryTransactionRepository) GetFirstByIdempotencyKey(key string) 
 	return nil, errors.TRANSACTION_NOT_FOUND()
 }
 
-func (repo *InMemoryTransactionRepository) Create(transaction *entities.Transaction) error {
-	repo.transactions = append(repo.transactions, *transaction)
+func (r *InMemoryTransactionRepository) Create(transaction *entities.Transaction) error {
+	r.transactions = append(r.transactions, *transaction)
 
 	return nil
 }
 
-func (repo *InMemoryTransactionRepository) Update(transaction *entities.Transaction) error {
-	for i, t := range repo.transactions {
+func (r *InMemoryTransactionRepository) Update(transaction *entities.Transaction) error {
+	for i, t := range r.transactions {
 		if transaction.GetId() == t.GetId() {
-			repo.transactions[i] = *transaction
+			r.transactions[i] = *transaction
 
 			return nil
 		}
@@ -80,12 +80,12 @@ func (repo *InMemoryTransactionRepository) Update(transaction *entities.Transact
 	return nil
 }
 
-func (repo *InMemoryTransactionRepository) Delete(id string) error {
-	index := slices.IndexFunc(repo.transactions, func(t entities.Transaction) bool {
+func (r *InMemoryTransactionRepository) Delete(id string) error {
+	index := slices.IndexFunc(r.transactions, func(t entities.Transaction) bool {
 		return t.GetId() == id
 	})
 
-	repo.transactions = slices.Delete(repo.transactions, index, index+1)
+	r.transactions = slices.Delete(r.transactions, index, index+1)
 
 	return nil
 }

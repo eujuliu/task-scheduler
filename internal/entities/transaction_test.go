@@ -1,7 +1,7 @@
 package entities_test
 
 import (
-	"scheduler/internal/entities"
+	. "scheduler/internal/entities"
 	"scheduler/internal/errors"
 	. "scheduler/test"
 	"testing"
@@ -10,32 +10,32 @@ import (
 )
 
 func TestTransaction_New(t *testing.T) {
-	transaction, err := entities.NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
+	transaction, err := NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
 
 	Ok(t, err)
 	Equals(t, "pending", transaction.GetStatus())
 }
 
 func TestTransaction_WrongType(t *testing.T) {
-	_, err := entities.NewTransaction(uuid.NewString(), 40, 20, "", "send_email", uuid.NewString(), "123")
+	_, err := NewTransaction(uuid.NewString(), 40, 20, "", "send_email", uuid.NewString(), "123")
 
 	Equals(t, errors.INVALID_FIELD_VALUE("type").Error(), err.Error())
 }
 
 func TestTransaction_PurchaseWithoutAmount(t *testing.T) {
-	_, err := entities.NewTransaction(uuid.NewString(), 40, 0, "BRL", "purchase", uuid.NewString(), "123")
+	_, err := NewTransaction(uuid.NewString(), 40, 0, "BRL", "purchase", uuid.NewString(), "123")
 
 	Equals(t, errors.INVALID_FIELD_VALUE("type").Error(), err.Error())
 }
 
 func TestTransaction_PurchaseWithoutCurrency(t *testing.T) {
-	_, err := entities.NewTransaction(uuid.NewString(), 40, 20, "", "purchase", uuid.NewString(), "123")
+	_, err := NewTransaction(uuid.NewString(), 40, 20, "", "purchase", uuid.NewString(), "123")
 
 	Equals(t, errors.INVALID_FIELD_VALUE("type").Error(), err.Error())
 }
 
 func TestTransaction_SetStatus(t *testing.T) {
-	transaction, err := entities.NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
+	transaction, err := NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
 
 	Ok(t, err)
 	Equals(t, "pending", transaction.GetStatus())
@@ -47,7 +47,7 @@ func TestTransaction_SetStatus(t *testing.T) {
 }
 
 func TestTransaction_SetStatusAfterCompleted(t *testing.T) {
-	transaction, err := entities.NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
+	transaction, err := NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
 
 	Ok(t, err)
 	Equals(t, "pending", transaction.GetStatus())
@@ -63,7 +63,7 @@ func TestTransaction_SetStatusAfterCompleted(t *testing.T) {
 }
 
 func TestTransaction_SetStatusAfterFailed(t *testing.T) {
-	transaction, err := entities.NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
+	transaction, err := NewTransaction(uuid.NewString(), 40, 20, "BRL", "purchase", uuid.NewString(), "123")
 
 	Ok(t, err)
 	Equals(t, "pending", transaction.GetStatus())

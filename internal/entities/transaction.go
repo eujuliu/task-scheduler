@@ -20,6 +20,11 @@ type Transaction struct {
 	idempotentKey string
 }
 
+var AvailableStatusPerType = map[string][]string{
+	"purchase":  {"completed", "failed"},
+	"task_send": {"frozen", "completed", "failed"},
+}
+
 func NewTransaction(userId string, credits int, amount int, currency string, kind string, referenceId string, idempotencyKey string) (*Transaction, error) {
 	if uuid.Validate(userId) != nil {
 		return nil, errors.INVALID_FIELD_VALUE("user id")
@@ -73,9 +78,13 @@ func (t *Transaction) SetStatus(status string) error {
 
 	formatted := strings.TrimSpace(strings.ToLower(status))
 
-	var AvailableStatus = []string{"frozen", "completed", "failed"}
+	_, ok := AvailableStatusPerType[t.kind]
 
-	if !slices.Contains(AvailableStatus, formatted) {
+	if !ok {
+		return errors.INVALID_FIELD_VALUE("type")
+	}
+
+	if !slices.Contains(AvailableStatusPerType[t.kind], formatted) {
 		return errors.INVALID_FIELD_VALUE("status")
 	}
 
@@ -101,7 +110,5 @@ func (t *Transaction) GetIdempotencyKey() string {
 }
 
 func (t *Transaction) readonly() bool {
-	var finishedStatus = []string{"completed", "failed"}
-
-	return slices.Contains(finishedStatus, t.status)
+	return slices.Contains([]string{"completed", "failed"}, t.status)
 }
