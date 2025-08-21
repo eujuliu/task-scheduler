@@ -19,7 +19,7 @@ func NewGetUserService(userRepo repos.IUserRepository) *GetUserService {
 }
 
 func (s *GetUserService) Execute(email string, password string) (*entities.User, error) {
-	user, err := s.userRepository.GetByEmail(email)
+	user, err := s.userRepository.GetFirstByEmail(email)
 
 	if err != nil {
 		slog.Debug(fmt.Sprintf("user find error: %v", err))

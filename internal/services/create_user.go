@@ -19,7 +19,7 @@ func NewCreateUserService(userRepo repos.IUserRepository) *CreateUserService {
 }
 
 func (s *CreateUserService) Execute(username string, email string, password string) (*entities.User, error) {
-	exists, _ := s.userRepository.GetByEmail(email)
+	exists, _ := s.userRepository.GetFirstByEmail(email)
 
 	if exists != nil {
 		return nil, errors.USER_ALREADY_EXISTS_ERROR()

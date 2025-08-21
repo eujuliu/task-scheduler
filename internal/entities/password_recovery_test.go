@@ -1,7 +1,8 @@
 package entities_test
 
 import (
-	"scheduler/internal/entities"
+	. "scheduler/internal/entities"
+	"scheduler/internal/errors"
 	. "scheduler/test"
 	"testing"
 	"time"
@@ -9,22 +10,24 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestNewPasswordRecovery(t *testing.T) {
-	recovery, err := entities.NewPasswordRecovery(uuid.NewString(), 5*time.Minute)
+func TestPasswordRecovery_New(t *testing.T) {
+	recovery, err := NewPasswordRecovery(uuid.NewString(), 5*time.Minute)
 
 	Ok(t, err)
 
 	Equals(t, true, recovery.InTime(time.Now()))
 }
 
-func TestPasswordRecoveryWithSmallerTime(t *testing.T) {
-	_, err := entities.NewPasswordRecovery(uuid.NewString(), 1*time.Minute)
+func TestPasswordRecovery_SmallerTime(t *testing.T) {
+	_, err := NewPasswordRecovery(uuid.NewString(), 1*time.Minute)
 
 	Assert(t, err != nil, "expect error got success")
+	Equals(t, errors.INVALID_FIELD_VALUE("expiration time").Error(), err.Error())
 }
 
-func TestPasswordRecoveryWithGreaterTime(t *testing.T) {
-	_, err := entities.NewPasswordRecovery(uuid.NewString(), 11*time.Minute)
+func TestPasswordRecovery_GreaterTime(t *testing.T) {
+	_, err := NewPasswordRecovery(uuid.NewString(), 11*time.Minute)
 
 	Assert(t, err != nil, "expect error got success")
+	Equals(t, errors.INVALID_FIELD_VALUE("expiration time").Error(), err.Error())
 }

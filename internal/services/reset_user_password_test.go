@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestResetPassword(t *testing.T) {
+func TestResetUserPasswordService(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 

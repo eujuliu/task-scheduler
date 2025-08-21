@@ -32,7 +32,7 @@ func (pr *PasswordRecovery) GetUserId() string {
 
 func (pr *PasswordRecovery) SetExpiration(expiration time.Duration) error {
 	if expiration < 5*time.Minute || expiration > 10*time.Minute {
-		return errors.EXPIRATION_TIME_INVALID()
+		return errors.INVALID_FIELD_VALUE("expiration time")
 	}
 
 	pr.expiration = expiration

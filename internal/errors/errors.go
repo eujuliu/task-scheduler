@@ -34,30 +34,6 @@ func PASSWORD_HASHING() *Error {
 	}
 }
 
-func USERNAME_INVALID() *Error {
-	return &Error{
-		Id:   uuid.NewString(),
-		Code: http.StatusBadRequest,
-		Err:  errors.New("username is invalid. please check the requirements"),
-	}
-}
-
-func EMAIL_INVALID() *Error {
-	return &Error{
-		Id:   uuid.NewString(),
-		Code: http.StatusBadRequest,
-		Err:  errors.New("email is invalid. please check the requirements"),
-	}
-}
-
-func PASSWORD_INVALID() *Error {
-	return &Error{
-		Id:   uuid.NewString(),
-		Code: http.StatusBadRequest,
-		Err:  errors.New("password is invalid. please check the requirements"),
-	}
-}
-
 func USER_NOT_FOUND_ERROR() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
@@ -82,14 +58,6 @@ func WRONG_LOGIN_DATA_ERROR() *Error {
 	}
 }
 
-func EXPIRATION_TIME_INVALID() *Error {
-	return &Error{
-		Id:   uuid.NewString(),
-		Code: http.StatusBadRequest,
-		Err:  errors.New("this expiration time is not valid"),
-	}
-}
-
 func RECOVERY_TOKEN_NOT_FOUND() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
@@ -106,18 +74,58 @@ func RECOVERY_TOKEN_EXPIRED() *Error {
 	}
 }
 
-func INVALID_TASK_TYPE_ERROR() *Error {
+func FINISHED_OPERATION_ERROR() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
-		Code: http.StatusBadRequest,
-		Err:  errors.New("this task type is not valid"),
+		Code: http.StatusUnauthorized,
+		Err:  errors.New("this operation was finished, you can't change it"),
 	}
 }
 
-func INVALID_TASK_SCHEDULE_TIME_ERROR() *Error {
+func INVALID_FIELD_VALUE(field string) *Error {
 	return &Error{
 		Id:   uuid.NewString(),
 		Code: http.StatusBadRequest,
-		Err:  errors.New("this task type is not valid"),
+		Err:  fmt.Errorf("this %s is not valid, please check the requirements", field),
+	}
+}
+
+func TRANSACTION_NOT_FOUND() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusNotFound,
+		Err:  errors.New("transaction not found"),
+	}
+}
+
+func TRANSACTION_ALREADY_EXISTS_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusNotFound,
+		Err:  errors.New("transaction not found"),
+	}
+}
+
+func NOT_ENOUGH_CREDITS_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusPaymentRequired,
+		Err:  errors.New("not enough credits"),
+	}
+}
+
+func INVALID_TYPE() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusBadRequest,
+		Err:  errors.New("invalid type"),
+	}
+}
+
+func MISSING_PARAM_ERROR(param string) *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusBadRequest,
+		Err:  fmt.Errorf("the param %s is required for this operation", param),
 	}
 }
