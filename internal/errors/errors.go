@@ -129,3 +129,11 @@ func MISSING_PARAM_ERROR(param string) *Error {
 		Err:  fmt.Errorf("the param %s is required for this operation", param),
 	}
 }
+
+func MAX_VALUE_REACHED_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusConflict,
+		Err:  errors.New("max value reached"),
+	}
+}
