@@ -13,7 +13,7 @@ type BaseEntity struct {
 }
 
 func NewBaseEntity() *BaseEntity {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	return &BaseEntity{
 		id:        uuid.NewString(),
