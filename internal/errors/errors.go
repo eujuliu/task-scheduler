@@ -102,7 +102,7 @@ func TRANSACTION_ALREADY_EXISTS_ERROR() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
 		Code: http.StatusConflict,
-		Err:  errors.New("transaction not found"),
+		Err:  errors.New("transaction already exists"),
 	}
 }
 
@@ -143,5 +143,21 @@ func TASK_ALREADY_EXISTS_ERROR() *Error {
 		Id:   uuid.NewString(),
 		Code: http.StatusConflict,
 		Err:  errors.New("task already exists"),
+	}
+}
+
+func TASK_NOT_FOUND_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusNotFound,
+		Err:  errors.New("task not found"),
+	}
+}
+
+func TASK_RUNNING_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusConflict,
+		Err:  errors.New("task is running can't cancel now"),
 	}
 }

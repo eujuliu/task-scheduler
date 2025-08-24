@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
 	repos "scheduler/internal/repositories"
@@ -56,36 +55,6 @@ func (s *CreateTaskService) Execute(kind string, runAt time.Time, timezone strin
 	}
 
 	err = s.taskRepository.Create(task)
-
-	if err != nil {
-		return nil, err
-	}
-
-	transaction, _ := s.transactionRepository.GetFirstByReferenceId(referenceId)
-
-	if transaction != nil {
-		return nil, errors.TRANSACTION_ALREADY_EXISTS_ERROR()
-	}
-
-	transaction, _ = s.transactionRepository.GetFirstByIdempotencyKey(idempotencyKey)
-
-	if transaction != nil {
-		return nil, errors.TRANSACTION_ALREADY_EXISTS_ERROR()
-	}
-
-	transaction, err = entities.NewTransaction(user.GetId(), 10, 0, "", entities.TypeTransactionTaskSend, fmt.Sprintf("task_%s", referenceId), idempotencyKey)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = transaction.SetStatus(entities.StatusFrozen)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.transactionRepository.Create(transaction)
 
 	if err != nil {
 		return nil, err

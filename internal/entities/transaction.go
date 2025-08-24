@@ -35,8 +35,8 @@ const (
 )
 
 var AvailableStatusPerType = map[string][]string{
-	TypeTransactionPurchase: {StatusCompleted, StatusFailed},
-	TypeTransactionTaskSend: {StatusFrozen, StatusCompleted, StatusFailed},
+	TypeTransactionPurchase: {StatusCompleted, StatusFailed, StatusCanceled},
+	TypeTransactionTaskSend: {StatusFrozen, StatusCompleted, StatusFailed, StatusCanceled},
 }
 
 func NewTransaction(userId string, credits int, amount int, currency string, kind string, referenceId string, idempotencyKey string) (*Transaction, error) {
@@ -124,5 +124,5 @@ func (t *Transaction) GetIdempotencyKey() string {
 }
 
 func (t *Transaction) readonly() bool {
-	return slices.Contains([]string{StatusCompleted, StatusFailed}, t.status)
+	return slices.Contains([]string{StatusCompleted, StatusFailed, StatusCanceled}, t.status)
 }
