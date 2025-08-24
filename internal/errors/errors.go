@@ -101,7 +101,7 @@ func TRANSACTION_NOT_FOUND() *Error {
 func TRANSACTION_ALREADY_EXISTS_ERROR() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
-		Code: http.StatusNotFound,
+		Code: http.StatusConflict,
 		Err:  errors.New("transaction not found"),
 	}
 }
@@ -135,5 +135,13 @@ func MAX_VALUE_REACHED_ERROR() *Error {
 		Id:   uuid.NewString(),
 		Code: http.StatusConflict,
 		Err:  errors.New("max value reached"),
+	}
+}
+
+func TASK_ALREADY_EXISTS_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusConflict,
+		Err:  errors.New("task already exists"),
 	}
 }

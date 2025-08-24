@@ -3,7 +3,6 @@ package in_memory_repos
 import (
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
-	"slices"
 )
 
 type InMemoryTransactionRepository struct {
@@ -76,16 +75,6 @@ func (r *InMemoryTransactionRepository) Update(transaction *entities.Transaction
 			return nil
 		}
 	}
-
-	return nil
-}
-
-func (r *InMemoryTransactionRepository) Delete(id string) error {
-	index := slices.IndexFunc(r.transactions, func(t entities.Transaction) bool {
-		return t.GetId() == id
-	})
-
-	r.transactions = slices.Delete(r.transactions, index, index+1)
 
 	return nil
 }

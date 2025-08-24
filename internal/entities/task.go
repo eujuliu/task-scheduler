@@ -7,43 +7,42 @@ import (
 )
 
 const (
-	StatusPending   string = "PENDING"
-	StatusRunning   string = "RUNNING"
-	StatusCompleted string = "COMPLETED"
-	StatusFailed    string = "FAILED"
-	StatusCanceled  string = "CANCELED"
-)
-
-const (
 	PriorityHigh = iota + 1
 	PriorityMedium
 	PriorityLow
 	PriorityExtraLow
 )
 
-type Task struct {
-	BaseEntity
-	kind        string
-	userId      string
-	cost        int
-	status      string
-	runAt       time.Time
-	timezone    string
-	retries     int
-	priority    int
-	referenceId string
+var TaskTypes = []string{
+	"email",
+	"sms",
 }
 
-func NewTask(kind string, userId string, cost int, runAt time.Time, timezone string, referenceId string) (*Task, error) {
+type Task struct {
+	BaseEntity
+	kind           string
+	userId         string
+	cost           int
+	status         string
+	runAt          time.Time
+	timezone       string
+	retries        int
+	priority       int
+	referenceId    string
+	idempotencyKey string
+}
+
+func NewTask(kind string, userId string, cost int, runAt time.Time, timezone string, referenceId string, idempotencyKey string) (*Task, error) {
 	task := &Task{
-		BaseEntity:  *NewBaseEntity(),
-		kind:        kind,
-		userId:      userId,
-		cost:        cost,
-		status:      StatusPending,
-		retries:     0,
-		priority:    PriorityLow,
-		referenceId: referenceId,
+		BaseEntity:     *NewBaseEntity(),
+		kind:           kind,
+		userId:         userId,
+		cost:           cost,
+		status:         StatusPending,
+		retries:        0,
+		priority:       PriorityLow,
+		referenceId:    referenceId,
+		idempotencyKey: idempotencyKey,
 	}
 
 	err := task.SetRunAt(runAt)
@@ -63,6 +62,10 @@ func NewTask(kind string, userId string, cost int, runAt time.Time, timezone str
 
 func (t *Task) GetType() string {
 	return t.kind
+}
+
+func (t *Task) GetUserId() string {
+	return t.userId
 }
 
 func (t *Task) GetCost() int {
@@ -179,6 +182,10 @@ func (t *Task) GetPriority() int {
 
 func (t *Task) GetReferenceId() string {
 	return t.referenceId
+}
+
+func (t *Task) GetIdempotencyKey() string {
+	return t.idempotencyKey
 }
 
 func (t *Task) readonly() bool {

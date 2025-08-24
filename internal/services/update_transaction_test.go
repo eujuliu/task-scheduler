@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"scheduler/internal/entities"
 	"scheduler/internal/errors"
 	. "scheduler/test"
 	"testing"
@@ -16,11 +17,11 @@ func TestUpdateTransactionService_Purchase(t *testing.T) {
 
 	Ok(t, err)
 
-	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 10, "USD", "purchase", uuid.NewString(), uuid.NewString())
+	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 10, "USD", entities.TypeTransactionPurchase, uuid.NewString(), uuid.NewString())
 
 	Ok(t, err)
 
-	_, err = UpdateTransactionService.Execute(transaction.GetId(), "completed", make(map[string]any))
+	_, err = UpdateTransactionService.Execute(transaction.GetId(), entities.StatusCompleted, make(map[string]any))
 
 	Ok(t, err)
 
@@ -50,11 +51,11 @@ func TestUpdateTransactionService_Task(t *testing.T) {
 
 	Ok(t, err)
 
-	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 0, "", "task_send", uuid.NewString(), uuid.NewString())
+	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 0, "", entities.TypeTransactionTaskSend, uuid.NewString(), uuid.NewString())
 
 	Ok(t, err)
 
-	_, err = UpdateTransactionService.Execute(transaction.GetId(), "completed", make(map[string]any))
+	_, err = UpdateTransactionService.Execute(transaction.GetId(), entities.StatusCompleted, make(map[string]any))
 
 	Ok(t, err)
 
@@ -75,7 +76,7 @@ func TestUpdateTransactionService_PurchaseFailed(t *testing.T) {
 	Ok(t, err)
 	Equals(t, 0, user.GetCredits())
 
-	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 10, "USD", "purchase", uuid.NewString(), uuid.NewString())
+	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 10, "USD", entities.TypeTransactionPurchase, uuid.NewString(), uuid.NewString())
 
 	Ok(t, err)
 
@@ -83,7 +84,7 @@ func TestUpdateTransactionService_PurchaseFailed(t *testing.T) {
 		"reason": "The payment getaway don't finish the operation correctly",
 	}
 
-	_, err = UpdateTransactionService.Execute(transaction.GetId(), "failed", options)
+	_, err = UpdateTransactionService.Execute(transaction.GetId(), entities.StatusFailed, options)
 
 	Ok(t, err)
 
@@ -107,11 +108,11 @@ func TestUpdateTransactionService_TaskFailedRefund(t *testing.T) {
 
 	Ok(t, err)
 
-	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 0, "", "task_send", uuid.NewString(), uuid.NewString())
+	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 0, "", entities.TypeTransactionTaskSend, uuid.NewString(), uuid.NewString())
 
 	Ok(t, err)
 
-	transaction, err = UpdateTransactionService.Execute(transaction.GetId(), "frozen", make(map[string]any))
+	transaction, err = UpdateTransactionService.Execute(transaction.GetId(), entities.StatusFrozen, make(map[string]any))
 
 	Ok(t, err)
 
@@ -127,7 +128,7 @@ func TestUpdateTransactionService_TaskFailedRefund(t *testing.T) {
 		"reason": "Email provider not working!",
 	}
 
-	_, err = UpdateTransactionService.Execute(transaction.GetId(), "failed", options)
+	_, err = UpdateTransactionService.Execute(transaction.GetId(), entities.StatusFailed, options)
 
 	Ok(t, err)
 
@@ -143,7 +144,7 @@ func TestUpdateTransactionService_TransactionNotFound(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
-	_, err := UpdateTransactionService.Execute(uuid.NewString(), "completed", make(map[string]any))
+	_, err := UpdateTransactionService.Execute(uuid.NewString(), entities.StatusCompleted, make(map[string]any))
 
 	Assert(t, err != nil, "expected error got success")
 	Equals(t, errors.TRANSACTION_NOT_FOUND().Error(), err.Error())
@@ -157,7 +158,7 @@ func TestUpdateTransactionService_UserNotExist(t *testing.T) {
 
 	Ok(t, err)
 
-	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 10, "USD", "purchase", uuid.NewString(), uuid.NewString())
+	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 10, "USD", entities.TypeTransactionPurchase, uuid.NewString(), uuid.NewString())
 
 	Ok(t, err)
 
@@ -165,7 +166,7 @@ func TestUpdateTransactionService_UserNotExist(t *testing.T) {
 
 	Ok(t, err)
 
-	_, err = UpdateTransactionService.Execute(transaction.GetId(), "completed", make(map[string]any))
+	_, err = UpdateTransactionService.Execute(transaction.GetId(), entities.StatusCompleted, make(map[string]any))
 
 	Assert(t, err != nil, "expected error got success")
 	Equals(t, errors.USER_NOT_FOUND_ERROR().Error(), err.Error())

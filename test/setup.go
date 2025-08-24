@@ -11,6 +11,7 @@ var UserRepository repos.IUserRepository
 var PasswordRepository repos.IPasswordRecoveryRepository
 var TransactionRepository repos.ITransactionRepository
 var ErrorRepository repos.IErrorRepository
+var TaskRepository repos.ITaskRepository
 
 var CreateUserService *services.CreateUserService
 var GetUserService *services.GetUserService
@@ -21,13 +22,14 @@ var ResetUserPasswordService *services.ResetUserPasswordService
 var CreateTransactionService *services.CreateTransactionService
 var UpdateTransactionService *services.UpdateTransactionService
 
-// var CreateTaskService *services.CreateTaskService
+var CreateTaskService *services.CreateTaskService
 
 func teardown(tb testing.TB) {
 	UserRepository = in_memory_repos.NewInMemoryUserRepository()
 	PasswordRepository = in_memory_repos.NewInMemoryPasswordRepository()
 	TransactionRepository = in_memory_repos.NewInMemoryTransactionRepository()
 	ErrorRepository = in_memory_repos.NewInMemoryErrorRepository()
+	TaskRepository = in_memory_repos.NewInMemoryTaskRepository()
 }
 
 func Setup(tb testing.TB) func(tb testing.TB) {
@@ -35,6 +37,7 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 	PasswordRepository = in_memory_repos.NewInMemoryPasswordRepository()
 	TransactionRepository = in_memory_repos.NewInMemoryTransactionRepository()
 	ErrorRepository = in_memory_repos.NewInMemoryErrorRepository()
+	TaskRepository = in_memory_repos.NewInMemoryTaskRepository()
 
 	CreateUserService = services.NewCreateUserService(UserRepository)
 	GetUserService = services.NewGetUserService(UserRepository)
@@ -45,7 +48,7 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 	CreateTransactionService = services.NewCreateTransactionService(UserRepository, TransactionRepository)
 	UpdateTransactionService = services.NewUpdateTransactionService(UserRepository, TransactionRepository, ErrorRepository)
 
-	// CreateTaskService = services.NewCreateTaskService(UserRepository, TransactionRepository)
+	CreateTaskService = services.NewCreateTaskService(UserRepository, TransactionRepository, TaskRepository)
 
 	return teardown
 }

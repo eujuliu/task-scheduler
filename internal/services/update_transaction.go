@@ -34,18 +34,18 @@ func (s *UpdateTransactionService) Execute(transactionId string, newStatus strin
 		return nil, err
 	}
 
-	if _, ok := options["reason"]; !ok && newStatus == "failed" {
+	if _, ok := options["reason"]; !ok && newStatus == entities.StatusFailed {
 		return nil, errors.MISSING_PARAM_ERROR("option.reason")
 	}
 
-	if _, ok := options["refund"]; !ok && newStatus == "failed" && transaction.GetType() != "purchase" {
+	if _, ok := options["refund"]; !ok && newStatus == entities.StatusFailed && transaction.GetType() != entities.TypeTransactionPurchase {
 		return nil, errors.MISSING_PARAM_ERROR("option.refund")
 	}
 
 	switch transaction.GetType() {
-	case "purchase":
+	case entities.TypeTransactionPurchase:
 		return s.updatePurchase(newStatus, transaction, user, options)
-	case "task_send":
+	case entities.TypeTransactionTaskSend:
 		return s.updateTaskSend(newStatus, transaction, user, options)
 	default:
 		return nil, errors.INVALID_FIELD_VALUE("transaction type")
@@ -53,7 +53,7 @@ func (s *UpdateTransactionService) Execute(transactionId string, newStatus strin
 }
 
 func (s *UpdateTransactionService) updatePurchase(newStatus string, transaction *entities.Transaction, user *entities.User, options map[string]any) (*entities.Transaction, error) {
-	if newStatus == "completed" {
+	if newStatus == entities.StatusCompleted {
 		err := transaction.SetStatus(newStatus)
 
 		if err != nil {
@@ -77,7 +77,7 @@ func (s *UpdateTransactionService) updatePurchase(newStatus string, transaction 
 		return transaction, nil
 	}
 
-	if newStatus == "failed" {
+	if newStatus == entities.StatusFailed {
 		err := transaction.SetStatus(newStatus)
 
 		if err != nil {
@@ -96,7 +96,7 @@ func (s *UpdateTransactionService) updatePurchase(newStatus string, transaction 
 			formattedMap[k] = fmt.Sprint(v)
 		}
 
-		error := entities.NewError(transaction.GetId(), "transaction_purchase", formattedMap["reason"], user.GetId(), formattedMap)
+		error := entities.NewError(transaction.GetId(), entities.TypeErrorTransaction, formattedMap["reason"], user.GetId(), formattedMap)
 
 		err = s.errorRepository.Create(error)
 
@@ -111,7 +111,7 @@ func (s *UpdateTransactionService) updatePurchase(newStatus string, transaction 
 }
 
 func (s *UpdateTransactionService) updateTaskSend(newStatus string, transaction *entities.Transaction, user *entities.User, options map[string]any) (*entities.Transaction, error) {
-	if newStatus == "frozen" {
+	if newStatus == entities.StatusFrozen {
 		err := transaction.SetStatus(newStatus)
 
 		if err != nil {
@@ -139,7 +139,7 @@ func (s *UpdateTransactionService) updateTaskSend(newStatus string, transaction 
 		return transaction, nil
 	}
 
-	if newStatus == "completed" {
+	if newStatus == entities.StatusCompleted {
 		err := transaction.SetStatus(newStatus)
 
 		if err != nil {
@@ -167,7 +167,7 @@ func (s *UpdateTransactionService) updateTaskSend(newStatus string, transaction 
 		return transaction, nil
 	}
 
-	if newStatus == "failed" {
+	if newStatus == entities.StatusFailed {
 		refund, ok := options["refund"].(bool)
 
 		if !ok {
@@ -204,7 +204,7 @@ func (s *UpdateTransactionService) updateTaskSend(newStatus string, transaction 
 			formattedMap[k] = fmt.Sprint(v)
 		}
 
-		error := entities.NewError(transaction.GetId(), "transaction_task_send", formattedMap["reason"], user.GetId(), formattedMap)
+		error := entities.NewError(transaction.GetId(), entities.TypeErrorTask, formattedMap["reason"], user.GetId(), formattedMap)
 
 		err = s.errorRepository.Create(error)
 

@@ -1,5 +1,10 @@
 package entities
 
+const (
+	TypeErrorTransaction string = "TRANSACTION"
+	TypeErrorTask        string = "TASK"
+)
+
 type Error struct {
 	BaseEntity
 	referenceId string
