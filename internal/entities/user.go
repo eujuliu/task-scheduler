@@ -27,19 +27,16 @@ func NewUser(username string, email string, password string) (*User, error) {
 	}
 
 	err := user.SetUsername(username)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = user.SetEmail(email)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = user.SetPassword(password)
-
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +70,6 @@ func (u *User) GetUsername() string {
 
 func (u *User) SetEmail(email string) error {
 	mail, err := mail.ParseAddress(email)
-
 	if err != nil {
 		return errors.INVALID_FIELD_VALUE("email")
 	}
@@ -113,7 +109,6 @@ func (u *User) SetPassword(password string) error {
 	}
 
 	hash, err := hashPassword(password)
-
 	if err != nil {
 		return errors.PASSWORD_HASHING()
 	}
@@ -124,14 +119,12 @@ func (u *User) SetPassword(password string) error {
 }
 
 func (u *User) GetPassword() (string, error) {
-	var _, err = bcrypt.Cost([]byte(u.password))
-
+	_, err := bcrypt.Cost([]byte(u.password))
 	if err != nil {
 		return u.password, nil
 	}
 
 	hashed, err := hashPassword(u.password)
-
 	if err != nil {
 		return "", errors.PASSWORD_HASHING()
 	}
@@ -146,7 +139,7 @@ func (u *User) AddCredits(amount int) {
 }
 
 func (u *User) RemoveCredits(amount int) error {
-	var total = u.credits - amount
+	total := u.credits - amount
 
 	if total < 0 {
 		return errors.NOT_ENOUGH_CREDITS_ERROR()
@@ -162,8 +155,7 @@ func (u *User) GetCredits() int {
 }
 
 func (u *User) AddFrozenCredits(amount int) error {
-	var err = u.RemoveCredits(amount)
-
+	err := u.RemoveCredits(amount)
 	if err != nil {
 		return err
 	}
@@ -174,7 +166,7 @@ func (u *User) AddFrozenCredits(amount int) error {
 }
 
 func (u *User) RemoveFrozenCredits(amount int, refund bool) error {
-	var total = u.frozen_credits - amount
+	total := u.frozen_credits - amount
 
 	if total < 0 {
 		return errors.NOT_ENOUGH_CREDITS_ERROR()
@@ -194,7 +186,7 @@ func (u *User) GetFrozenCredits() int {
 }
 
 func (u *User) CheckPasswordHash(password string) bool {
-	var err = bcrypt.CompareHashAndPassword([]byte(u.password), []byte(password))
+	err := bcrypt.CompareHashAndPassword([]byte(u.password), []byte(password))
 
 	return err == nil
 }

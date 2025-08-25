@@ -14,7 +14,13 @@ type Error struct {
 	options     map[string]string
 }
 
-func NewError(referenceId string, kind string, reason string, userId string, options map[string]string) *Error {
+func NewError(
+	referenceId string,
+	kind string,
+	reason string,
+	userId string,
+	options map[string]string,
+) *Error {
 	return &Error{
 		BaseEntity:  *NewBaseEntity(),
 		referenceId: referenceId,

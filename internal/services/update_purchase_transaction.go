@@ -12,7 +12,11 @@ type UpdatePurchaseTransactionService struct {
 	errorRepository       repos.IErrorRepository
 }
 
-func NewUpdatePurchaseTransactionService(userRepository repos.IUserRepository, transactionRepository repos.ITransactionRepository, errorRepository repos.IErrorRepository) *UpdatePurchaseTransactionService {
+func NewUpdatePurchaseTransactionService(
+	userRepository repos.IUserRepository,
+	transactionRepository repos.ITransactionRepository,
+	errorRepository repos.IErrorRepository,
+) *UpdatePurchaseTransactionService {
 	return &UpdatePurchaseTransactionService{
 		userRepository:        userRepository,
 		transactionRepository: transactionRepository,
@@ -20,7 +24,9 @@ func NewUpdatePurchaseTransactionService(userRepository repos.IUserRepository, t
 	}
 }
 
-func (s *UpdatePurchaseTransactionService) Complete(transactionId string) (*entities.Transaction, error) {
+func (s *UpdatePurchaseTransactionService) Complete(
+	transactionId string,
+) (*entities.Transaction, error) {
 	transaction, _ := s.transactionRepository.GetFirstById(transactionId)
 
 	if transaction == nil {
@@ -36,19 +42,16 @@ func (s *UpdatePurchaseTransactionService) Complete(transactionId string) (*enti
 	user.AddCredits(transaction.GetCredits())
 
 	err := transaction.SetStatus(entities.StatusCompleted)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.transactionRepository.Update(transaction)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.userRepository.Update(user)
-
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +59,10 @@ func (s *UpdatePurchaseTransactionService) Complete(transactionId string) (*enti
 	return transaction, nil
 }
 
-func (s *UpdatePurchaseTransactionService) Fail(transactionId string, reason string) (*entities.Transaction, error) {
+func (s *UpdatePurchaseTransactionService) Fail(
+	transactionId string,
+	reason string,
+) (*entities.Transaction, error) {
 	transaction, _ := s.transactionRepository.GetFirstById(transactionId)
 
 	if transaction == nil {
@@ -70,21 +76,24 @@ func (s *UpdatePurchaseTransactionService) Fail(transactionId string, reason str
 	}
 
 	err := transaction.SetStatus(entities.StatusFailed)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.transactionRepository.Update(transaction)
-
 	if err != nil {
 		return nil, err
 	}
 
-	error := entities.NewError(transaction.GetId(), entities.TypeErrorTransaction, reason, user.GetId(), make(map[string]string))
+	error := entities.NewError(
+		transaction.GetId(),
+		entities.TypeErrorTransaction,
+		reason,
+		user.GetId(),
+		make(map[string]string),
+	)
 
 	err = s.errorRepository.Create(error)
-
 	if err != nil {
 		return nil, err
 	}

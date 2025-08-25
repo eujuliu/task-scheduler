@@ -20,7 +20,9 @@ func (r *InMemoryUserRepository) Get() []entities.User {
 	return r.users
 }
 
-func (r *InMemoryUserRepository) GetFirstById(id string) (*entities.User, error) {
+func (r *InMemoryUserRepository) GetFirstById(
+	id string,
+) (*entities.User, error) {
 	for _, v := range r.users {
 		if v.GetId() == id {
 			return &v, nil
@@ -30,7 +32,9 @@ func (r *InMemoryUserRepository) GetFirstById(id string) (*entities.User, error)
 	return nil, errors.USER_NOT_FOUND_ERROR()
 }
 
-func (r *InMemoryUserRepository) GetFirstByEmail(email string) (*entities.User, error) {
+func (r *InMemoryUserRepository) GetFirstByEmail(
+	email string,
+) (*entities.User, error) {
 	for _, v := range r.users {
 		if v.GetEmail() == email {
 			return &v, nil

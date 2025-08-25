@@ -32,7 +32,15 @@ type Task struct {
 	idempotencyKey string
 }
 
-func NewTask(kind string, userId string, cost int, runAt time.Time, timezone string, referenceId string, idempotencyKey string) (*Task, error) {
+func NewTask(
+	kind string,
+	userId string,
+	cost int,
+	runAt time.Time,
+	timezone string,
+	referenceId string,
+	idempotencyKey string,
+) (*Task, error) {
 	task := &Task{
 		BaseEntity:     *NewBaseEntity(),
 		kind:           kind,
@@ -46,13 +54,11 @@ func NewTask(kind string, userId string, cost int, runAt time.Time, timezone str
 	}
 
 	err := task.SetRunAt(runAt)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = task.SetTimezone(timezone)
-
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +129,6 @@ func (t *Task) SetTimezone(timezone string) error {
 	}
 
 	_, err := time.LoadLocation(timezone)
-
 	if err != nil {
 		return errors.INVALID_FIELD_VALUE("timezone")
 	}
@@ -189,5 +194,8 @@ func (t *Task) GetIdempotencyKey() string {
 }
 
 func (t *Task) readonly() bool {
-	return slices.Contains([]string{StatusCompleted, StatusFailed, StatusCanceled}, t.status)
+	return slices.Contains(
+		[]string{StatusCompleted, StatusFailed, StatusCanceled},
+		t.status,
+	)
 }

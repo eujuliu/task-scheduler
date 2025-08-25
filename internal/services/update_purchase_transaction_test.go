@@ -2,21 +2,34 @@ package services_test
 
 import (
 	"scheduler/internal/entities"
-	. "scheduler/test"
 	"testing"
 
 	"github.com/google/uuid"
+
+	. "scheduler/test"
 )
 
 func TestUpdatePurchaseTransactionService_Complete(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
-	user, err := CreateUserService.Execute("testuser", "test@email.com", "Password@123")
+	user, err := CreateUserService.Execute(
+		"testuser",
+		"test@email.com",
+		"Password@123",
+	)
 
 	Ok(t, err)
 
-	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 10, "USD", entities.TypeTransactionPurchase, uuid.NewString(), uuid.NewString())
+	transaction, err := CreateTransactionService.Execute(
+		user.GetId(),
+		20,
+		10,
+		"USD",
+		entities.TypeTransactionPurchase,
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 
@@ -35,15 +48,30 @@ func TestUpdatePurchaseTransactionService_Fail(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
-	user, err := CreateUserService.Execute("testuser", "test@email.com", "Password@123")
+	user, err := CreateUserService.Execute(
+		"testuser",
+		"test@email.com",
+		"Password@123",
+	)
 
 	Ok(t, err)
 
-	transaction, err := CreateTransactionService.Execute(user.GetId(), 20, 10, "USD", entities.TypeTransactionPurchase, uuid.NewString(), uuid.NewString())
+	transaction, err := CreateTransactionService.Execute(
+		user.GetId(),
+		20,
+		10,
+		"USD",
+		entities.TypeTransactionPurchase,
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 
-	transaction, err = UpdatePurchaseTransactionService.Fail(transaction.GetId(), "Credit card invalid")
+	transaction, err = UpdatePurchaseTransactionService.Fail(
+		transaction.GetId(),
+		"Credit card invalid",
+	)
 
 	Ok(t, err)
 	Equals(t, entities.StatusFailed, transaction.GetStatus())

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
+
 	repos "scheduler/internal/repositories"
 )
 
@@ -13,7 +14,11 @@ type UpdateTaskTransactionService struct {
 	errorRepository       repos.IErrorRepository
 }
 
-func NewUpdateTaskTransactionService(userRepository repos.IUserRepository, transactionRepository repos.ITransactionRepository, errorRepository repos.IErrorRepository) *UpdateTaskTransactionService {
+func NewUpdateTaskTransactionService(
+	userRepository repos.IUserRepository,
+	transactionRepository repos.ITransactionRepository,
+	errorRepository repos.IErrorRepository,
+) *UpdateTaskTransactionService {
 	return &UpdateTaskTransactionService{
 		userRepository:        userRepository,
 		transactionRepository: transactionRepository,
@@ -21,7 +26,9 @@ func NewUpdateTaskTransactionService(userRepository repos.IUserRepository, trans
 	}
 }
 
-func (s *UpdateTaskTransactionService) Complete(transactionId string) (*entities.Transaction, error) {
+func (s *UpdateTaskTransactionService) Complete(
+	transactionId string,
+) (*entities.Transaction, error) {
 	transaction, _ := s.transactionRepository.GetFirstById(transactionId)
 
 	if transaction == nil {
@@ -35,25 +42,21 @@ func (s *UpdateTaskTransactionService) Complete(transactionId string) (*entities
 	}
 
 	err := transaction.SetStatus(entities.StatusCanceled)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.transactionRepository.Update(transaction)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = user.RemoveFrozenCredits(transaction.GetCredits(), false)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.userRepository.Update(user)
-
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +64,11 @@ func (s *UpdateTaskTransactionService) Complete(transactionId string) (*entities
 	return transaction, nil
 }
 
-func (s *UpdateTaskTransactionService) Fail(transactionId string, refund bool, reason string) (*entities.Transaction, error) {
+func (s *UpdateTaskTransactionService) Fail(
+	transactionId string,
+	refund bool,
+	reason string,
+) (*entities.Transaction, error) {
 	transaction, _ := s.transactionRepository.GetFirstById(transactionId)
 
 	if transaction == nil {
@@ -75,33 +82,34 @@ func (s *UpdateTaskTransactionService) Fail(transactionId string, refund bool, r
 	}
 
 	err := transaction.SetStatus(entities.StatusFailed)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.transactionRepository.Update(transaction)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = user.RemoveFrozenCredits(transaction.GetCredits(), refund)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.userRepository.Update(user)
-
 	if err != nil {
 		return nil, err
 	}
 
-	error := entities.NewError(transaction.GetId(), entities.TypeErrorTask, reason, user.GetId(), map[string]string{"refund": fmt.Sprint(refund)})
+	error := entities.NewError(
+		transaction.GetId(),
+		entities.TypeErrorTask,
+		reason,
+		user.GetId(),
+		map[string]string{"refund": fmt.Sprint(refund)},
+	)
 
 	err = s.errorRepository.Create(error)
-
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +117,9 @@ func (s *UpdateTaskTransactionService) Fail(transactionId string, refund bool, r
 	return transaction, nil
 }
 
-func (s *UpdateTaskTransactionService) Frozen(transactionId string) (*entities.Transaction, error) {
+func (s *UpdateTaskTransactionService) Frozen(
+	transactionId string,
+) (*entities.Transaction, error) {
 	transaction, _ := s.transactionRepository.GetFirstById(transactionId)
 
 	if transaction == nil {
@@ -123,25 +133,21 @@ func (s *UpdateTaskTransactionService) Frozen(transactionId string) (*entities.T
 	}
 
 	err := transaction.SetStatus(entities.StatusFrozen)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.transactionRepository.Update(transaction)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = user.AddFrozenCredits(transaction.GetCredits())
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.userRepository.Update(user)
-
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +155,9 @@ func (s *UpdateTaskTransactionService) Frozen(transactionId string) (*entities.T
 	return transaction, nil
 }
 
-func (s *UpdateTaskTransactionService) Cancel(transactionId string) (*entities.Transaction, error) {
+func (s *UpdateTaskTransactionService) Cancel(
+	transactionId string,
+) (*entities.Transaction, error) {
 	transaction, _ := s.transactionRepository.GetFirstById(transactionId)
 
 	if transaction == nil {
@@ -163,25 +171,21 @@ func (s *UpdateTaskTransactionService) Cancel(transactionId string) (*entities.T
 	}
 
 	err := transaction.SetStatus(entities.StatusCanceled)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.transactionRepository.Update(transaction)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = user.RemoveFrozenCredits(transaction.GetCredits(), true)
-
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.userRepository.Update(user)
-
 	if err != nil {
 		return nil, err
 	}

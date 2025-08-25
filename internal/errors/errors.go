@@ -86,7 +86,10 @@ func INVALID_FIELD_VALUE(field string) *Error {
 	return &Error{
 		Id:   uuid.NewString(),
 		Code: http.StatusBadRequest,
-		Err:  fmt.Errorf("this %s is not valid, please check the requirements", field),
+		Err: fmt.Errorf(
+			"this %s is not valid, please check the requirements",
+			field,
+		),
 	}
 }
 

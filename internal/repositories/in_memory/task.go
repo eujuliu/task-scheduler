@@ -20,7 +20,7 @@ func (r *InMemoryTaskRepository) Get() []entities.Task {
 }
 
 func (r *InMemoryTaskRepository) GetByUserId(userId string) []entities.Task {
-	var tasks = []entities.Task{}
+	tasks := []entities.Task{}
 
 	for _, task := range r.tasks {
 		if task.GetUserId() == userId {
@@ -31,7 +31,9 @@ func (r *InMemoryTaskRepository) GetByUserId(userId string) []entities.Task {
 	return tasks
 }
 
-func (r *InMemoryTaskRepository) GetFirstById(id string) (*entities.Task, error) {
+func (r *InMemoryTaskRepository) GetFirstById(
+	id string,
+) (*entities.Task, error) {
 	for _, task := range r.tasks {
 		if task.GetId() == id {
 			return &task, nil
@@ -41,7 +43,9 @@ func (r *InMemoryTaskRepository) GetFirstById(id string) (*entities.Task, error)
 	return nil, nil
 }
 
-func (r *InMemoryTaskRepository) GetFirstByReferenceId(id string) (*entities.Task, error) {
+func (r *InMemoryTaskRepository) GetFirstByReferenceId(
+	id string,
+) (*entities.Task, error) {
 	for _, task := range r.tasks {
 		if task.GetReferenceId() == id {
 			return &task, nil
@@ -51,7 +55,9 @@ func (r *InMemoryTaskRepository) GetFirstByReferenceId(id string) (*entities.Tas
 	return nil, nil
 }
 
-func (r *InMemoryTaskRepository) GetFirstByIdempotencyKey(key string) (*entities.Task, error) {
+func (r *InMemoryTaskRepository) GetFirstByIdempotencyKey(
+	key string,
+) (*entities.Task, error) {
 	for _, task := range r.tasks {
 		if task.GetIdempotencyKey() == key {
 			return &task, nil

@@ -36,15 +36,31 @@ const (
 
 var AvailableStatusPerType = map[string][]string{
 	TypeTransactionPurchase: {StatusCompleted, StatusFailed, StatusCanceled},
-	TypeTransactionTaskSend: {StatusFrozen, StatusCompleted, StatusFailed, StatusCanceled},
+	TypeTransactionTaskSend: {
+		StatusFrozen,
+		StatusCompleted,
+		StatusFailed,
+		StatusCanceled,
+	},
 }
 
-func NewTransaction(userId string, credits int, amount int, currency string, kind string, referenceId string, idempotencyKey string) (*Transaction, error) {
+func NewTransaction(
+	userId string,
+	credits int,
+	amount int,
+	currency string,
+	kind string,
+	referenceId string,
+	idempotencyKey string,
+) (*Transaction, error) {
 	if uuid.Validate(userId) != nil {
 		return nil, errors.INVALID_FIELD_VALUE("user id")
 	}
 
-	var transactionTypes = []string{TypeTransactionPurchase, TypeTransactionTaskSend}
+	transactionTypes := []string{
+		TypeTransactionPurchase,
+		TypeTransactionTaskSend,
+	}
 
 	if !slices.Contains(transactionTypes, kind) {
 		return nil, errors.INVALID_FIELD_VALUE("type")
@@ -124,5 +140,8 @@ func (t *Transaction) GetIdempotencyKey() string {
 }
 
 func (t *Transaction) readonly() bool {
-	return slices.Contains([]string{StatusCompleted, StatusFailed, StatusCanceled}, t.status)
+	return slices.Contains(
+		[]string{StatusCompleted, StatusFailed, StatusCanceled},
+		t.status,
+	)
 }

@@ -1,17 +1,27 @@
 package entities_test
 
 import (
-	. "scheduler/internal/entities"
 	"scheduler/internal/errors"
-	. "scheduler/test"
 	"testing"
 	"time"
 
+	. "scheduler/internal/entities"
+
 	"github.com/google/uuid"
+
+	. "scheduler/test"
 )
 
 func TestTask(t *testing.T) {
-	task, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, 2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	task, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, 2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 	Equals(t, 3, task.GetPriority())
@@ -20,7 +30,15 @@ func TestTask(t *testing.T) {
 }
 
 func TestTask_SetStatus(t *testing.T) {
-	task, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, 2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	task, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, 2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 
@@ -30,7 +48,15 @@ func TestTask_SetStatus(t *testing.T) {
 }
 
 func TestTask_SetStatusAfterCompleted(t *testing.T) {
-	task, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, 2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	task, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, 2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 
@@ -45,7 +71,15 @@ func TestTask_SetStatusAfterCompleted(t *testing.T) {
 }
 
 func TestTask_SetRunAt(t *testing.T) {
-	task, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, 2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	task, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, 2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 
@@ -55,7 +89,15 @@ func TestTask_SetRunAt(t *testing.T) {
 }
 
 func TestTask_SetRunAtInCompletedTask(t *testing.T) {
-	task, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, 2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	task, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, 2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 
@@ -70,21 +112,45 @@ func TestTask_SetRunAtInCompletedTask(t *testing.T) {
 }
 
 func TestTask_SetRunAtBeforeToday(t *testing.T) {
-	_, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, -2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	_, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, -2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Assert(t, err != nil, "expected err got success")
 	Equals(t, errors.INVALID_FIELD_VALUE("run at").Error(), err.Error())
 }
 
 func TestTask_SetRunAtAfterSixMonthsForward(t *testing.T) {
-	_, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 7, 0), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	_, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 7, 0),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Assert(t, err != nil, "expected err got success")
 	Equals(t, errors.INVALID_FIELD_VALUE("run at").Error(), err.Error())
 }
 
 func TestTask_SetTimezone(t *testing.T) {
-	task, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, 2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	task, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, 2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 
@@ -94,7 +160,15 @@ func TestTask_SetTimezone(t *testing.T) {
 }
 
 func TestTask_SetTimezoneInvalidTimezone(t *testing.T) {
-	task, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, 2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	task, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, 2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 
@@ -105,7 +179,15 @@ func TestTask_SetTimezoneInvalidTimezone(t *testing.T) {
 }
 
 func TestTask_AddRetry(t *testing.T) {
-	task, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, 2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	task, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, 2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 	Equals(t, 0, task.GetRetries())
@@ -122,7 +204,15 @@ func TestTask_AddRetry(t *testing.T) {
 }
 
 func TestTask_AddRetryReachMax(t *testing.T) {
-	task, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, 2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	task, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, 2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 	Equals(t, 0, task.GetRetries())
@@ -149,7 +239,15 @@ func TestTask_AddRetryReachMax(t *testing.T) {
 }
 
 func TestTask_SetPriority(t *testing.T) {
-	task, err := NewTask("email", uuid.NewString(), 20, time.Now().UTC().AddDate(0, 0, 2), "America/Sao_Paulo", uuid.NewString(), uuid.NewString())
+	task, err := NewTask(
+		"email",
+		uuid.NewString(),
+		20,
+		time.Now().UTC().AddDate(0, 0, 2),
+		"America/Sao_Paulo",
+		uuid.NewString(),
+		uuid.NewString(),
+	)
 
 	Ok(t, err)
 	Equals(t, PriorityLow, task.GetPriority())

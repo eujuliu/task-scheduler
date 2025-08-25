@@ -20,7 +20,9 @@ func (r *InMemoryPasswordRecoveryRepository) Get() []entities.PasswordRecovery {
 	return r.tokens
 }
 
-func (r *InMemoryPasswordRecoveryRepository) GetFirstById(id string) (*entities.PasswordRecovery, error) {
+func (r *InMemoryPasswordRecoveryRepository) GetFirstById(
+	id string,
+) (*entities.PasswordRecovery, error) {
 	for _, token := range r.tokens {
 		if token.GetId() == id {
 			return &token, nil
@@ -30,7 +32,9 @@ func (r *InMemoryPasswordRecoveryRepository) GetFirstById(id string) (*entities.
 	return nil, errors.RECOVERY_TOKEN_NOT_FOUND()
 }
 
-func (r *InMemoryPasswordRecoveryRepository) GetFirstByUserId(userId string) (*entities.PasswordRecovery, error) {
+func (r *InMemoryPasswordRecoveryRepository) GetFirstByUserId(
+	userId string,
+) (*entities.PasswordRecovery, error) {
 	for _, token := range r.tokens {
 		if token.GetUserId() == userId {
 			return &token, nil
@@ -40,7 +44,9 @@ func (r *InMemoryPasswordRecoveryRepository) GetFirstByUserId(userId string) (*e
 	return nil, errors.RECOVERY_TOKEN_NOT_FOUND()
 }
 
-func (r *InMemoryPasswordRecoveryRepository) Create(token *entities.PasswordRecovery) error {
+func (r *InMemoryPasswordRecoveryRepository) Create(
+	token *entities.PasswordRecovery,
+) error {
 	r.tokens = append(r.tokens, *token)
 
 	return nil

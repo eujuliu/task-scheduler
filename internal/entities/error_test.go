@@ -1,15 +1,22 @@
 package entities_test
 
 import (
+	"testing"
+
 	. "scheduler/internal/entities"
 	. "scheduler/test"
-	"testing"
 
 	"github.com/google/uuid"
 )
 
 func TestError_SetOption(t *testing.T) {
-	error := NewError(uuid.NewString(), "task", "Invalid email ID", uuid.NewString(), make(map[string]string))
+	error := NewError(
+		uuid.NewString(),
+		"task",
+		"Invalid email ID",
+		uuid.NewString(),
+		make(map[string]string),
+	)
 
 	Equals(t, 0, len(error.GetOptions()))
 
@@ -19,7 +26,13 @@ func TestError_SetOption(t *testing.T) {
 }
 
 func TestError_RemoveOption(t *testing.T) {
-	error := NewError(uuid.NewString(), "task", "Invalid email ID", uuid.NewString(), make(map[string]string))
+	error := NewError(
+		uuid.NewString(),
+		"task",
+		"Invalid email ID",
+		uuid.NewString(),
+		make(map[string]string),
+	)
 
 	Equals(t, 0, len(error.GetOptions()))
 
