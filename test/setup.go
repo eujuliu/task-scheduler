@@ -20,9 +20,11 @@ var ForgotUserPasswordService *services.ForgotUserPasswordService
 var ResetUserPasswordService *services.ResetUserPasswordService
 
 var CreateTransactionService *services.CreateTransactionService
-var UpdateTransactionService *services.UpdateTransactionService
+var UpdatePurchaseTransactionService *services.UpdatePurchaseTransactionService
+var UpdateTaskTransactionService *services.UpdateTaskTransactionService
 
 var CreateTaskService *services.CreateTaskService
+var CancelTaskService *services.CancelTaskService
 
 func teardown(tb testing.TB) {
 	UserRepository = in_memory_repos.NewInMemoryUserRepository()
@@ -46,9 +48,11 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 	ResetUserPasswordService = services.NewResetUserPasswordService(UserRepository, PasswordRepository)
 
 	CreateTransactionService = services.NewCreateTransactionService(UserRepository, TransactionRepository)
-	UpdateTransactionService = services.NewUpdateTransactionService(UserRepository, TransactionRepository, ErrorRepository)
+	UpdatePurchaseTransactionService = services.NewUpdatePurchaseTransactionService(UserRepository, TransactionRepository, ErrorRepository)
+	UpdateTaskTransactionService = services.NewUpdateTaskTransactionService(UserRepository, TransactionRepository, ErrorRepository)
 
 	CreateTaskService = services.NewCreateTaskService(UserRepository, TransactionRepository, TaskRepository)
+	CancelTaskService = services.NewCancelTaskService(UserRepository, TransactionRepository, TaskRepository)
 
 	return teardown
 }
