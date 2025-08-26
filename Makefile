@@ -1,4 +1,4 @@
-.PHONY: build run watch test coverage clean fmt lint pre-commit
+.PHONY: build run watch test coverage clean fmt lint check pre-commit
 
 BINARY_NAME=scheduler
 OUTPUT_DIR=bin
@@ -19,7 +19,7 @@ run:
 	./$(OUTPUT_DIR)/scheduler
 
 test:
-	go test ./...
+	go test ./... -count=1
 
 coverage:
 	make clean
@@ -32,6 +32,10 @@ fmt:
 
 lint:
 	golangci-lint run ./...
+
+check:
+	make fmt
+	make lint
 
 clean:
 	rm -rf $(OUTPUT_DIR)
