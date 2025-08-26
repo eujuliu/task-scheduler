@@ -13,11 +13,6 @@ const (
 	PriorityExtraLow
 )
 
-var TaskTypes = []string{
-	"email",
-	"sms",
-}
-
 type Task struct {
 	BaseEntity
 	kind           string
@@ -104,7 +99,7 @@ func (t *Task) GetStatus() string {
 }
 
 func (t *Task) SetRunAt(when time.Time) error {
-	if t.readonly() {
+	if t.readonly() || t.running() {
 		return errors.FINISHED_OPERATION_ERROR()
 	}
 
@@ -124,7 +119,7 @@ func (t *Task) GetRunAt() time.Time {
 }
 
 func (t *Task) SetTimezone(timezone string) error {
-	if t.readonly() {
+	if t.readonly() || t.running() {
 		return errors.FINISHED_OPERATION_ERROR()
 	}
 
@@ -161,7 +156,7 @@ func (t *Task) GetRetries() int {
 }
 
 func (t *Task) SetPriority(priority int) error {
-	if t.readonly() {
+	if t.readonly() || t.running() {
 		return errors.FINISHED_OPERATION_ERROR()
 	}
 
@@ -191,6 +186,10 @@ func (t *Task) GetReferenceId() string {
 
 func (t *Task) GetIdempotencyKey() string {
 	return t.idempotencyKey
+}
+
+func (t *Task) running() bool {
+	return t.status == StatusRunning
 }
 
 func (t *Task) readonly() bool {

@@ -23,7 +23,7 @@ func TestCreateTaskService(t *testing.T) {
 
 	Ok(t, err)
 
-	user.AddCredits(20)
+	user.AddCredits(10)
 
 	err = UserRepository.Update(user)
 
@@ -45,10 +45,16 @@ func TestCreateTaskService(t *testing.T) {
 
 	Ok(t, err)
 
+	user, err = UserRepository.GetFirstById(user.GetId())
+
+	Ok(t, err)
+
 	Equals(t, "America/Sao_Paulo", task.GetTimezone())
 	Equals(t, entities.PriorityMedium, task.GetPriority())
 	Equals(t, task.GetCost(), transaction.GetCredits())
 	Equals(t, task.GetIdempotencyKey(), transaction.GetIdempotencyKey())
+	Equals(t, 0, user.GetCredits())
+	Equals(t, 10, user.GetFrozenCredits())
 }
 
 func TestCreateTaskService_UserNotFound(t *testing.T) {

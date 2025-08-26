@@ -42,4 +42,4 @@ clean:
 	rm -rf $(COVERAGE_DIR)
 
 pre-commit:
-	pre-commit install --hook-type commit-msg
+	pre-commit install
