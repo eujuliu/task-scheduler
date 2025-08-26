@@ -35,6 +35,8 @@ var (
 var (
 	CreateTaskService *services.CreateTaskService
 	UpdateTaskService *services.UpdateTaskService
+	GetTasksService   *services.GetTasksService
+	GetTaskService    *services.GetTaskService
 )
 
 func teardown(tb testing.TB) {
@@ -90,6 +92,14 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 		TaskRepository,
 		TransactionRepository,
 		UpdateTaskTransactionService,
+	)
+	GetTasksService = services.NewGetTasksService(
+		UserRepository,
+		TaskRepository,
+	)
+	GetTaskService = services.NewGetTaskService(
+		UserRepository,
+		TaskRepository,
 	)
 
 	return teardown
