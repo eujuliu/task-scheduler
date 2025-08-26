@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log/slog"
 	"scheduler/internal/entities"
-	repos "scheduler/internal/repositories"
 	"time"
+
+	repos "scheduler/internal/repositories"
 )
 
 type ForgotUserPasswordService struct {
@@ -13,16 +14,20 @@ type ForgotUserPasswordService struct {
 	passwordRecoveryRepository repos.IPasswordRecoveryRepository
 }
 
-func NewForgotUserPasswordService(userRepo repos.IUserRepository, passwordRepo repos.IPasswordRecoveryRepository) *ForgotUserPasswordService {
+func NewForgotUserPasswordService(
+	userRepo repos.IUserRepository,
+	passwordRepo repos.IPasswordRecoveryRepository,
+) *ForgotUserPasswordService {
 	return &ForgotUserPasswordService{
 		userRepository:             userRepo,
 		passwordRecoveryRepository: passwordRepo,
 	}
 }
 
-func (s *ForgotUserPasswordService) Execute(email string) (*entities.PasswordRecovery, error) {
+func (s *ForgotUserPasswordService) Execute(
+	email string,
+) (*entities.PasswordRecovery, error) {
 	user, err := s.userRepository.GetFirstByEmail(email)
-
 	if err != nil {
 		slog.Debug(fmt.Sprintf("user not found error %v", err))
 		return nil, err
@@ -33,19 +38,19 @@ func (s *ForgotUserPasswordService) Execute(email string) (*entities.PasswordRec
 	recovery, _ = s.passwordRecoveryRepository.GetFirstByUserId(user.GetId())
 
 	if recovery != nil && recovery.GetExpiration() >= 2*time.Minute {
-		slog.Debug(fmt.Sprintf("user already have an recovery token %v", recovery))
+		slog.Debug(
+			fmt.Sprintf("user already have an recovery token %v", recovery),
+		)
 		return recovery, nil
 	}
 
 	recovery, err = entities.NewPasswordRecovery(user.GetId(), 5*time.Minute)
-
 	if err != nil {
 		slog.Debug(fmt.Sprintf("recovery creation error %v", err))
 		return nil, err
 	}
 
 	err = s.passwordRecoveryRepository.Create(recovery)
-
 	if err != nil {
 		slog.Debug(fmt.Sprintf("recovery repository create error %v", err))
 		return nil, err

@@ -1,10 +1,12 @@
 package entities_test
 
 import (
-	. "scheduler/internal/entities"
 	"scheduler/internal/errors"
-	. "scheduler/test"
 	"testing"
+
+	. "scheduler/internal/entities"
+
+	. "scheduler/test"
 )
 
 func TestUser_New(t *testing.T) {

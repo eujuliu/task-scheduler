@@ -20,23 +20,53 @@ type Transaction struct {
 	idempotentKey string
 }
 
+const (
+	StatusPending   string = "PENDING"
+	StatusRunning   string = "RUNNING"
+	StatusCompleted string = "COMPLETED"
+	StatusFailed    string = "FAILED"
+	StatusCanceled  string = "CANCELED"
+	StatusFrozen    string = "FROZEN"
+)
+
+const (
+	TypeTransactionPurchase string = "PURCHASE"
+	TypeTransactionTaskSend string = "TASK_SEND"
+)
+
 var AvailableStatusPerType = map[string][]string{
-	"purchase":  {"completed", "failed"},
-	"task_send": {"frozen", "completed", "failed"},
+	TypeTransactionPurchase: {StatusCompleted, StatusFailed, StatusCanceled},
+	TypeTransactionTaskSend: {
+		StatusFrozen,
+		StatusCompleted,
+		StatusFailed,
+		StatusCanceled,
+	},
 }
 
-func NewTransaction(userId string, credits int, amount int, currency string, kind string, referenceId string, idempotencyKey string) (*Transaction, error) {
+func NewTransaction(
+	userId string,
+	credits int,
+	amount int,
+	currency string,
+	kind string,
+	referenceId string,
+	idempotencyKey string,
+) (*Transaction, error) {
 	if uuid.Validate(userId) != nil {
 		return nil, errors.INVALID_FIELD_VALUE("user id")
 	}
 
-	var transactionTypes = []string{"purchase", "task_send"}
+	transactionTypes := []string{
+		TypeTransactionPurchase,
+		TypeTransactionTaskSend,
+	}
 
 	if !slices.Contains(transactionTypes, kind) {
 		return nil, errors.INVALID_FIELD_VALUE("type")
 	}
 
-	if kind == "purchase" && (amount <= 0 || len(currency) == 0) {
+	if kind == TypeTransactionPurchase && (amount <= 0 || len(currency) == 0) {
 		return nil, errors.INVALID_FIELD_VALUE("type")
 	}
 
@@ -47,7 +77,7 @@ func NewTransaction(userId string, credits int, amount int, currency string, kin
 		amount:        amount,
 		currency:      currency,
 		credits:       credits,
-		status:        "pending",
+		status:        StatusPending,
 		referenceId:   referenceId,
 		idempotentKey: idempotencyKey,
 	}
@@ -76,7 +106,7 @@ func (t *Transaction) SetStatus(status string) error {
 		return errors.FINISHED_OPERATION_ERROR()
 	}
 
-	formatted := strings.TrimSpace(strings.ToLower(status))
+	formatted := strings.TrimSpace(strings.ToUpper(status))
 
 	_, ok := AvailableStatusPerType[t.kind]
 
@@ -110,5 +140,8 @@ func (t *Transaction) GetIdempotencyKey() string {
 }
 
 func (t *Transaction) readonly() bool {
-	return slices.Contains([]string{"completed", "failed"}, t.status)
+	return slices.Contains(
+		[]string{StatusCompleted, StatusFailed, StatusCanceled},
+		t.status,
+	)
 }

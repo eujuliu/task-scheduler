@@ -11,14 +11,16 @@ type PasswordRecovery struct {
 	expiration time.Duration
 }
 
-func NewPasswordRecovery(userId string, expiration time.Duration) (*PasswordRecovery, error) {
+func NewPasswordRecovery(
+	userId string,
+	expiration time.Duration,
+) (*PasswordRecovery, error) {
 	recovery := &PasswordRecovery{
 		BaseEntity: *NewBaseEntity(),
 		userId:     userId,
 	}
 
 	err := recovery.SetExpiration(expiration)
-
 	if err != nil {
 		return nil, err
 	}

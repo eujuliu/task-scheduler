@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
+
 	repos "scheduler/internal/repositories"
 )
 
@@ -18,9 +19,11 @@ func NewGetUserService(userRepo repos.IUserRepository) *GetUserService {
 	}
 }
 
-func (s *GetUserService) Execute(email string, password string) (*entities.User, error) {
+func (s *GetUserService) Execute(
+	email string,
+	password string,
+) (*entities.User, error) {
 	user, err := s.userRepository.GetFirstByEmail(email)
-
 	if err != nil {
 		slog.Debug(fmt.Sprintf("user find error: %v", err))
 		return nil, err
@@ -29,7 +32,13 @@ func (s *GetUserService) Execute(email string, password string) (*entities.User,
 	ok := user.CheckPasswordHash(password)
 
 	if !ok {
-		slog.Debug(fmt.Sprintf("wrong password %s, for user %s", password, user.GetId()))
+		slog.Debug(
+			fmt.Sprintf(
+				"wrong password %s, for user %s",
+				password,
+				user.GetId(),
+			),
+		)
 		return nil, errors.WRONG_LOGIN_DATA_ERROR()
 	}
 

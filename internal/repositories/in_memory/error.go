@@ -31,7 +31,9 @@ func (r *InMemoryErrorRepository) GetByUserId(userId string) []entities.Error {
 	return result
 }
 
-func (r *InMemoryErrorRepository) GetFirstByUserId(userId string) (*entities.Error, error) {
+func (r *InMemoryErrorRepository) GetFirstByUserId(
+	userId string,
+) (*entities.Error, error) {
 	for _, error := range r.errors {
 		if error.GetUserId() == userId {
 			return &error, nil
@@ -41,7 +43,9 @@ func (r *InMemoryErrorRepository) GetFirstByUserId(userId string) (*entities.Err
 	return nil, nil
 }
 
-func (r *InMemoryErrorRepository) GetFirstByReferenceId(referenceId string) (*entities.Error, error) {
+func (r *InMemoryErrorRepository) GetFirstByReferenceId(
+	referenceId string,
+) (*entities.Error, error) {
 	for _, error := range r.errors {
 		if error.GetReferenceId() == referenceId {
 			return &error, nil

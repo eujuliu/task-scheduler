@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
+
 	repos "scheduler/internal/repositories"
 )
 
@@ -18,7 +19,11 @@ func NewCreateUserService(userRepo repos.IUserRepository) *CreateUserService {
 	}
 }
 
-func (s *CreateUserService) Execute(username string, email string, password string) (*entities.User, error) {
+func (s *CreateUserService) Execute(
+	username string,
+	email string,
+	password string,
+) (*entities.User, error) {
 	exists, _ := s.userRepository.GetFirstByEmail(email)
 
 	if exists != nil {
@@ -26,14 +31,12 @@ func (s *CreateUserService) Execute(username string, email string, password stri
 	}
 
 	user, err := entities.NewUser(username, email, password)
-
 	if err != nil {
 		slog.Debug(fmt.Sprintf("user entity creation error: %v", err))
 		return nil, err
 	}
 
 	err = s.userRepository.Create(user)
-
 	if err != nil {
 		slog.Debug(fmt.Sprintf("user repo creation error: %v", err))
 		return nil, errors.INTERNAL_SERVER_ERROR()

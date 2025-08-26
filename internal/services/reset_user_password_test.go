@@ -1,15 +1,20 @@
 package services_test
 
 import (
-	. "scheduler/test"
 	"testing"
+
+	. "scheduler/test"
 )
 
 func TestResetUserPasswordService(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
-	_, err := CreateUserService.Execute("testuser", "test@email.com", "Password@123")
+	_, err := CreateUserService.Execute(
+		"testuser",
+		"test@email.com",
+		"Password@123",
+	)
 
 	Ok(t, err)
 

@@ -3,7 +3,6 @@ package in_memory_repos
 import (
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
-	"slices"
 )
 
 type InMemoryTransactionRepository struct {
@@ -20,8 +19,10 @@ func (r *InMemoryTransactionRepository) Get() []entities.Transaction {
 	return r.transactions
 }
 
-func (r *InMemoryTransactionRepository) GetByUserId(userId string) []entities.Transaction {
-	var result = []entities.Transaction{}
+func (r *InMemoryTransactionRepository) GetByUserId(
+	userId string,
+) []entities.Transaction {
+	result := []entities.Transaction{}
 
 	for _, transaction := range r.transactions {
 		if transaction.GetUserId() == userId {
@@ -32,7 +33,9 @@ func (r *InMemoryTransactionRepository) GetByUserId(userId string) []entities.Tr
 	return result
 }
 
-func (r *InMemoryTransactionRepository) GetFirstById(id string) (*entities.Transaction, error) {
+func (r *InMemoryTransactionRepository) GetFirstById(
+	id string,
+) (*entities.Transaction, error) {
 	for _, transaction := range r.transactions {
 		if transaction.GetId() == id {
 			return &transaction, nil
@@ -42,7 +45,9 @@ func (r *InMemoryTransactionRepository) GetFirstById(id string) (*entities.Trans
 	return nil, errors.TRANSACTION_NOT_FOUND()
 }
 
-func (r *InMemoryTransactionRepository) GetFirstByReferenceId(id string) (*entities.Transaction, error) {
+func (r *InMemoryTransactionRepository) GetFirstByReferenceId(
+	id string,
+) (*entities.Transaction, error) {
 	for _, transaction := range r.transactions {
 		if transaction.GetReferenceId() == id {
 			return &transaction, nil
@@ -52,7 +57,9 @@ func (r *InMemoryTransactionRepository) GetFirstByReferenceId(id string) (*entit
 	return nil, errors.TRANSACTION_NOT_FOUND()
 }
 
-func (r *InMemoryTransactionRepository) GetFirstByIdempotencyKey(key string) (*entities.Transaction, error) {
+func (r *InMemoryTransactionRepository) GetFirstByIdempotencyKey(
+	key string,
+) (*entities.Transaction, error) {
 	for _, transaction := range r.transactions {
 		if transaction.GetIdempotencyKey() == key {
 			return &transaction, nil
@@ -62,13 +69,17 @@ func (r *InMemoryTransactionRepository) GetFirstByIdempotencyKey(key string) (*e
 	return nil, errors.TRANSACTION_NOT_FOUND()
 }
 
-func (r *InMemoryTransactionRepository) Create(transaction *entities.Transaction) error {
+func (r *InMemoryTransactionRepository) Create(
+	transaction *entities.Transaction,
+) error {
 	r.transactions = append(r.transactions, *transaction)
 
 	return nil
 }
 
-func (r *InMemoryTransactionRepository) Update(transaction *entities.Transaction) error {
+func (r *InMemoryTransactionRepository) Update(
+	transaction *entities.Transaction,
+) error {
 	for i, t := range r.transactions {
 		if transaction.GetId() == t.GetId() {
 			r.transactions[i] = *transaction
@@ -76,16 +87,6 @@ func (r *InMemoryTransactionRepository) Update(transaction *entities.Transaction
 			return nil
 		}
 	}
-
-	return nil
-}
-
-func (r *InMemoryTransactionRepository) Delete(id string) error {
-	index := slices.IndexFunc(r.transactions, func(t entities.Transaction) bool {
-		return t.GetId() == id
-	})
-
-	r.transactions = slices.Delete(r.transactions, index, index+1)
 
 	return nil
 }

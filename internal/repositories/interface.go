@@ -27,7 +27,6 @@ type ITransactionRepository interface {
 	GetFirstByIdempotencyKey(key string) (*entities.Transaction, error)
 	Create(*entities.Transaction) error
 	Update(*entities.Transaction) error
-	Delete(id string) error
 }
 
 type IErrorRepository interface {
@@ -36,4 +35,15 @@ type IErrorRepository interface {
 	GetFirstByUserId(userId string) (*entities.Error, error)
 	GetFirstByReferenceId(referenceId string) (*entities.Error, error)
 	Create(*entities.Error) error
+}
+
+type ITaskRepository interface {
+	Get() []entities.Task
+	GetByUserId(userId string) []entities.Task
+	GetFirstById(id string) (*entities.Task, error)
+	GetFirstByReferenceId(id string) (*entities.Task, error)
+	GetFirstByIdempotencyKey(key string) (*entities.Task, error)
+	Create(*entities.Task) error
+	Update(*entities.Task) error
+	Delete(id string) error
 }

@@ -86,7 +86,10 @@ func INVALID_FIELD_VALUE(field string) *Error {
 	return &Error{
 		Id:   uuid.NewString(),
 		Code: http.StatusBadRequest,
-		Err:  fmt.Errorf("this %s is not valid, please check the requirements", field),
+		Err: fmt.Errorf(
+			"this %s is not valid, please check the requirements",
+			field,
+		),
 	}
 }
 
@@ -101,8 +104,8 @@ func TRANSACTION_NOT_FOUND() *Error {
 func TRANSACTION_ALREADY_EXISTS_ERROR() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
-		Code: http.StatusNotFound,
-		Err:  errors.New("transaction not found"),
+		Code: http.StatusConflict,
+		Err:  errors.New("transaction already exists"),
 	}
 }
 
@@ -127,5 +130,37 @@ func MISSING_PARAM_ERROR(param string) *Error {
 		Id:   uuid.NewString(),
 		Code: http.StatusBadRequest,
 		Err:  fmt.Errorf("the param %s is required for this operation", param),
+	}
+}
+
+func MAX_VALUE_REACHED_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusConflict,
+		Err:  errors.New("max value reached"),
+	}
+}
+
+func TASK_ALREADY_EXISTS_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusConflict,
+		Err:  errors.New("task already exists"),
+	}
+}
+
+func TASK_NOT_FOUND_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusNotFound,
+		Err:  errors.New("task not found"),
+	}
+}
+
+func TASK_RUNNING_ERROR() *Error {
+	return &Error{
+		Id:   uuid.NewString(),
+		Code: http.StatusConflict,
+		Err:  errors.New("task is running can't cancel now"),
 	}
 }

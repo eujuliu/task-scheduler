@@ -11,16 +11,26 @@ type CreateTransactionService struct {
 	transactionRepository repos.ITransactionRepository
 }
 
-func NewCreateTransactionService(userRepository repos.IUserRepository, transactionRepository repos.ITransactionRepository) *CreateTransactionService {
+func NewCreateTransactionService(
+	userRepository repos.IUserRepository,
+	transactionRepository repos.ITransactionRepository,
+) *CreateTransactionService {
 	return &CreateTransactionService{
 		userRepository:        userRepository,
 		transactionRepository: transactionRepository,
 	}
 }
 
-func (s *CreateTransactionService) Execute(userId string, credits int, amount int, currency string, kind string, referenceId string, idempotencyKey string) (*entities.Transaction, error) {
+func (s *CreateTransactionService) Execute(
+	userId string,
+	credits int,
+	amount int,
+	currency string,
+	kind string,
+	referenceId string,
+	idempotencyKey string,
+) (*entities.Transaction, error) {
 	user, err := s.userRepository.GetFirstById(userId)
-
 	if err != nil {
 		return nil, err
 	}
@@ -37,14 +47,20 @@ func (s *CreateTransactionService) Execute(userId string, credits int, amount in
 		return nil, errors.TRANSACTION_ALREADY_EXISTS_ERROR()
 	}
 
-	transaction, err := entities.NewTransaction(user.GetId(), credits, amount, currency, kind, referenceId, idempotencyKey)
-
+	transaction, err := entities.NewTransaction(
+		user.GetId(),
+		credits,
+		amount,
+		currency,
+		kind,
+		referenceId,
+		idempotencyKey,
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.transactionRepository.Create(transaction)
-
 	if err != nil {
 		return nil, err
 	}

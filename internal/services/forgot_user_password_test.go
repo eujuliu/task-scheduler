@@ -1,16 +1,21 @@
 package services_test
 
 import (
-	. "scheduler/test"
 	"testing"
 	"time"
+
+	. "scheduler/test"
 )
 
 func TestForgotPasswordService(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
-	user, err := CreateUserService.Execute("testuser", "user@email.com", "Password@123")
+	user, err := CreateUserService.Execute(
+		"testuser",
+		"user@email.com",
+		"Password@123",
+	)
 
 	Ok(t, err)
 
@@ -25,7 +30,11 @@ func TestForgotPasswordService_ExpiredToken(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
-	user, err := CreateUserService.Execute("testuser", "user@email.com", "Password@123")
+	user, err := CreateUserService.Execute(
+		"testuser",
+		"user@email.com",
+		"Password@123",
+	)
 
 	Ok(t, err)
 
