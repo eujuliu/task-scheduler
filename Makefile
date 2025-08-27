@@ -19,7 +19,7 @@ run:
 	./$(OUTPUT_DIR)/scheduler
 
 test:
-	go test ./... -count=1
+	go test -tags=unit -count=1 -short -v ./...
 
 coverage:
 	make clean
