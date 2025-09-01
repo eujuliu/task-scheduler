@@ -81,8 +81,8 @@ func (s *Server) setupRoutes() {
 	{
 		routes.POST("/auth/register", http_handlers.Register)
 		routes.POST("/auth/login", http_handlers.Login)
-		routes.POST("/auth/forgot-password", func(c *gin.Context) {})
-		routes.POST("/auth/reset-password", func(c *gin.Context) {})
+		routes.POST("/auth/forgot-password", http_handlers.ForgotPassword)
+		routes.POST("/auth/reset-password", http_handlers.ResetUserPassword)
 		routes.GET("/ping", func(c *gin.Context) {
 			c.String(200, "pong")
 		})

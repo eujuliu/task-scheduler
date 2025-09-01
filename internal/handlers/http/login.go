@@ -31,17 +31,18 @@ func Login(c *gin.Context) {
 
 	user, err := getUserService.Execute(json.Email, json.Password)
 	if err != nil {
-		err, ok := err.(*errors.Error)
-
-		if ok {
-			c.JSON(err.Code, gin.H{
-				"code":    err.Code,
-				"message": err.Error(),
+		if e := errors.GetError(err); e != nil {
+			c.JSON(e.Code, gin.H{
+				"code":    e.Code,
+				"message": e.Msg(),
 			})
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{"error": "Internal Server Error", "message": "contact the admin"},
+		)
 		return
 	}
 

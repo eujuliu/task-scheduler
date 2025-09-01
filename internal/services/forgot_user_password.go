@@ -27,9 +27,11 @@ func NewForgotUserPasswordService(
 func (s *ForgotUserPasswordService) Execute(
 	email string,
 ) (*entities.PasswordRecovery, error) {
+	slog.Info("forgot password service started...")
+
 	user, err := s.userRepository.GetFirstByEmail(email)
 	if err != nil {
-		slog.Debug(fmt.Sprintf("user not found error %v", err))
+		slog.Error(fmt.Sprintf("user not found error %v", err))
 		return nil, err
 	}
 
@@ -38,7 +40,7 @@ func (s *ForgotUserPasswordService) Execute(
 	recovery, _ = s.passwordRecoveryRepository.GetFirstByUserId(user.GetId())
 
 	if recovery != nil && recovery.GetExpiration() >= 2*time.Minute {
-		slog.Debug(
+		slog.Error(
 			fmt.Sprintf("user already have an recovery token %v", recovery),
 		)
 		return recovery, nil
@@ -46,15 +48,17 @@ func (s *ForgotUserPasswordService) Execute(
 
 	recovery, err = entities.NewPasswordRecovery(user.GetId(), 5*time.Minute)
 	if err != nil {
-		slog.Debug(fmt.Sprintf("recovery creation error %v", err))
+		slog.Error(fmt.Sprintf("recovery creation error %v", err))
 		return nil, err
 	}
 
 	err = s.passwordRecoveryRepository.Create(recovery)
 	if err != nil {
-		slog.Debug(fmt.Sprintf("recovery repository create error %v", err))
+		slog.Error(fmt.Sprintf("recovery repository create error %v", err))
 		return nil, err
 	}
+
+	slog.Info("forgot password service finished...")
 
 	return recovery, nil
 }

@@ -1,10 +1,13 @@
 package postgres_repos
 
 import (
+	errorr "errors"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
 	"scheduler/internal/persistence"
 	"scheduler/pkg/postgres"
+
+	"gorm.io/gorm"
 )
 
 type PostgresUserRepository struct {
@@ -70,6 +73,10 @@ func (r *PostgresUserRepository) Create(user *entities.User) error {
 
 	err = db.Create(m).Error
 
+	if errorr.Is(err, gorm.ErrDuplicatedKey) {
+		return errors.USER_ALREADY_EXISTS_ERROR()
+	}
+
 	return err
 }
 
@@ -89,7 +96,7 @@ func (r *PostgresUserRepository) Update(user *entities.User) error {
 func (r *PostgresUserRepository) Delete(id string) error {
 	db := r.db.GetInstance()
 
-	db.Delete(&persistence.UserModel{}, id)
+	err := db.Delete(&persistence.UserModel{}, "id = ?", id).Error
 
-	return nil
+	return err
 }

@@ -89,7 +89,7 @@ func (db *Database) CommitTransaction() error {
 func (db *Database) migrations() error {
 	slog.Info("running migrations...")
 
-	return db.db.AutoMigrate(&persistence.UserModel{})
+	return db.db.AutoMigrate(&persistence.UserModel{}, &persistence.PasswordRecovery{})
 }
 
 func connectToDatabase(config *config.DatabaseConfig) (*gorm.DB, error) {
