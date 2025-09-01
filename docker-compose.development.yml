@@ -1,4 +1,16 @@
 services:
+  postgres:
+    container_name: "postgres"
+    image: "postgres:14.7-alpine"
+    env_file: ./.env.development
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
   be:
     build:
       context: .
@@ -7,6 +19,10 @@ services:
     env_file: ./.env.development
     ports:
       - ${PORT}:${PORT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
     develop:
       watch:
         - action: sync

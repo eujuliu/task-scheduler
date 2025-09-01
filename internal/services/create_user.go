@@ -24,6 +24,7 @@ func (s *CreateUserService) Execute(
 	email string,
 	password string,
 ) (*entities.User, error) {
+	slog.Info("create user service started...")
 	exists, _ := s.userRepository.GetFirstByEmail(email)
 
 	if exists != nil {
@@ -32,15 +33,19 @@ func (s *CreateUserService) Execute(
 
 	user, err := entities.NewUser(username, email, password)
 	if err != nil {
-		slog.Debug(fmt.Sprintf("user entity creation error: %v", err))
+		slog.Error(fmt.Sprintf("user entity creation error: %v", err))
 		return nil, err
 	}
 
 	err = s.userRepository.Create(user)
 	if err != nil {
-		slog.Debug(fmt.Sprintf("user repo creation error: %v", err))
+		slog.Error(fmt.Sprintf("user repo creation error: %v", err))
 		return nil, errors.INTERNAL_SERVER_ERROR()
 	}
+
+	slog.Debug(fmt.Sprintf("returned user: %+v", user))
+
+	slog.Info("create user service finished")
 
 	return user, nil
 }

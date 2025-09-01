@@ -5,6 +5,7 @@ import (
 	"scheduler/internal/errors"
 	"scheduler/pkg/utils"
 	"strings"
+	"time"
 	"unicode"
 
 	"golang.org/x/crypto/bcrypt"
@@ -44,6 +45,24 @@ func NewUser(username string, email string, password string) (*User, error) {
 	return user, nil
 }
 
+func HydrateUser(id string, createdAt, updatedAt time.Time,
+	username, email, hashedPassword string,
+	credits, frozenCredits int,
+) *User {
+	return &User{
+		BaseEntity: BaseEntity{
+			id:        id,
+			createdAt: createdAt,
+			updatedAt: updatedAt,
+		},
+		username:       username,
+		email:          email,
+		password:       hashedPassword,
+		credits:        credits,
+		frozen_credits: frozenCredits,
+	}
+}
+
 func (u *User) SetUsername(username string) error {
 	cleanedStr := strings.Join(strings.Fields(username), " ")
 
@@ -60,6 +79,8 @@ func (u *User) SetUsername(username string) error {
 			return errors.INVALID_FIELD_VALUE("username")
 		}
 	}
+
+	u.username = cleanedStr
 
 	return nil
 }
@@ -120,8 +141,8 @@ func (u *User) SetPassword(password string) error {
 
 func (u *User) GetPassword() (string, error) {
 	_, err := bcrypt.Cost([]byte(u.password))
-	if err != nil {
-		return u.password, nil
+	if err == nil {
+		return u.password, err
 	}
 
 	hashed, err := hashPassword(u.password)

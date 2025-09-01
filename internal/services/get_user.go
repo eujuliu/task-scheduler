@@ -23,16 +23,18 @@ func (s *GetUserService) Execute(
 	email string,
 	password string,
 ) (*entities.User, error) {
+	slog.Info("Get user service started...")
+
 	user, err := s.userRepository.GetFirstByEmail(email)
 	if err != nil {
-		slog.Debug(fmt.Sprintf("user find error: %v", err))
+		slog.Error(fmt.Sprintf("user find error: %v", err))
 		return nil, err
 	}
 
 	ok := user.CheckPasswordHash(password)
 
 	if !ok {
-		slog.Debug(
+		slog.Error(
 			fmt.Sprintf(
 				"wrong password %s, for user %s",
 				password,
@@ -42,5 +44,8 @@ func (s *GetUserService) Execute(
 		return nil, errors.WRONG_LOGIN_DATA_ERROR()
 	}
 
+	slog.Debug(fmt.Sprintf("Returned User: %+v", user))
+
+	slog.Info("Get user service finished")
 	return user, nil
 }
