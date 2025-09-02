@@ -1,0 +1,116 @@
+package postgres_repos
+
+import (
+	"scheduler/internal/entities"
+	"scheduler/internal/errors"
+	"scheduler/internal/persistence"
+	"scheduler/pkg/postgres"
+)
+
+type PostgresTransactionRepository struct {
+	db *postgres.Database
+}
+
+func NewPostgresTransactionRepository() *PostgresTransactionRepository {
+	return &PostgresTransactionRepository{
+		db: postgres.DB,
+	}
+}
+
+func (r *PostgresTransactionRepository) Get() []entities.Transaction {
+	db := r.db.GetInstance()
+
+	var transactions []persistence.TransactionModel
+	var result []entities.Transaction
+
+	db.Find(&transactions)
+
+	for _, transaction := range transactions {
+		result = append(result, *persistence.ToTransactionDomain(&transaction))
+	}
+
+	return result
+}
+
+func (r *PostgresTransactionRepository) GetByUserId(
+	userId string,
+) []entities.Transaction {
+	db := r.db.GetInstance()
+
+	var transactions []persistence.TransactionModel
+	var result []entities.Transaction
+
+	db.Find(&transactions, "user_id = ?", userId)
+
+	for _, transaction := range transactions {
+		result = append(result, *persistence.ToTransactionDomain(&transaction))
+	}
+
+	return result
+}
+
+func (r *PostgresTransactionRepository) GetFirstById(
+	id string,
+) (*entities.Transaction, error) {
+	db := r.db.GetInstance()
+
+	var transaction persistence.TransactionModel
+
+	if err := db.First(&transaction, "id = ?", id).Error; err != nil {
+		return nil, errors.USER_NOT_FOUND_ERROR()
+	}
+
+	return persistence.ToTransactionDomain(&transaction), nil
+}
+
+func (r *PostgresTransactionRepository) GetFirstByReferenceId(
+	id string,
+) (*entities.Transaction, error) {
+	db := r.db.GetInstance()
+
+	var transaction persistence.TransactionModel
+
+	if err := db.First(&transaction, "reference_id = ?", id).Error; err != nil {
+		return nil, errors.USER_NOT_FOUND_ERROR()
+	}
+
+	return persistence.ToTransactionDomain(&transaction), nil
+}
+
+func (r *PostgresTransactionRepository) GetFirstByIdempotencyKey(
+	key string,
+) (*entities.Transaction, error) {
+	db := r.db.GetInstance()
+
+	var transaction persistence.TransactionModel
+
+	if err := db.First(&transaction, "idempotent_key = ?", key).Error; err != nil {
+		return nil, errors.USER_NOT_FOUND_ERROR()
+	}
+
+	return persistence.ToTransactionDomain(&transaction), nil
+}
+
+func (r *PostgresTransactionRepository) Create(
+	transaction *entities.Transaction,
+) error {
+	db := r.db.GetInstance()
+
+	m := persistence.ToTransactionModel(transaction)
+
+	err := db.Create(m).Error
+
+	return err
+}
+
+func (r *PostgresTransactionRepository) Update(
+	transaction *entities.Transaction,
+) error {
+	db := r.db.GetInstance()
+
+	m := persistence.ToTransactionModel(transaction)
+
+	err := db.Model(m).Updates(m).Error
+
+	return err
+}

@@ -95,10 +95,12 @@ func Login(c *gin.Context) {
 	)
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":        user.GetId(),
-		"username":  user.GetUsername(),
-		"email":     user.GetEmail(),
-		"createdAt": user.GetCreatedAt(),
-		"updateAt":  user.GetUpdatedAt(),
+		"id":             user.GetId(),
+		"username":       user.GetUsername(),
+		"email":          user.GetEmail(),
+		"credits":        user.GetCredits(),
+		"frozen_credits": user.GetFrozenCredits(),
+		"createdAt":      user.GetCreatedAt(),
+		"updateAt":       user.GetUpdatedAt(),
 	})
 }

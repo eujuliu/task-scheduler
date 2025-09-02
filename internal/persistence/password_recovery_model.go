@@ -5,19 +5,19 @@ import (
 	"time"
 )
 
-type PasswordRecovery struct {
+type PasswordRecoveryModel struct {
 	BaseModel
 	UserID     string        `gorm:"type:uuid;not null;index"`
 	User       UserModel     `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Expiration time.Duration `gorm:"not null"`
 }
 
-func (PasswordRecovery) TableName() string {
+func (PasswordRecoveryModel) TableName() string {
 	return "password_recoveries"
 }
 
-func ToPasswordRecoveryModel(pr *entities.PasswordRecovery) (*PasswordRecovery, error) {
-	return &PasswordRecovery{
+func ToPasswordRecoveryModel(pr *entities.PasswordRecovery) (*PasswordRecoveryModel, error) {
+	return &PasswordRecoveryModel{
 		BaseModel: BaseModel{
 			ID:        pr.GetId(),
 			CreatedAt: pr.GetCreatedAt(),
@@ -29,6 +29,6 @@ func ToPasswordRecoveryModel(pr *entities.PasswordRecovery) (*PasswordRecovery, 
 	}, nil
 }
 
-func ToPasswordRecoveryDomain(m *PasswordRecovery) *entities.PasswordRecovery {
+func ToPasswordRecoveryDomain(m *PasswordRecoveryModel) *entities.PasswordRecovery {
 	return entities.HydratePasswordRecovery(m.ID, m.UserID, m.Expiration, m.CreatedAt, m.UpdatedAt)
 }

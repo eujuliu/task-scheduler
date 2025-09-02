@@ -51,7 +51,7 @@ func (s *UpdateTaskTransactionService) Complete(
 		return nil, err
 	}
 
-	err = user.RemoveFrozenCredits(transaction.GetCredits(), false)
+	err = user.RemoveFrozenCredits(int(transaction.GetCredits()), false)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (s *UpdateTaskTransactionService) Fail(
 		return nil, err
 	}
 
-	err = user.RemoveFrozenCredits(transaction.GetCredits(), refund)
+	err = user.RemoveFrozenCredits(int(transaction.GetCredits()), refund)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (s *UpdateTaskTransactionService) Frozen(
 		return nil, err
 	}
 
-	err = user.AddFrozenCredits(transaction.GetCredits())
+	err = user.AddFrozenCredits(int(transaction.GetCredits()))
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (s *UpdateTaskTransactionService) Cancel(
 		return nil, err
 	}
 
-	err = user.RemoveFrozenCredits(transaction.GetCredits(), true)
+	err = user.RemoveFrozenCredits(int(transaction.GetCredits()), true)
 	if err != nil {
 		return nil, err
 	}

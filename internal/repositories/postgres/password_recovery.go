@@ -20,7 +20,7 @@ func NewPostgresPasswordRepository() *PostgresPasswordRecoveryRepository {
 func (r *PostgresPasswordRecoveryRepository) Get() []entities.PasswordRecovery {
 	db := r.db.GetInstance()
 
-	var tokens []persistence.PasswordRecovery
+	var tokens []persistence.PasswordRecoveryModel
 	var result []entities.PasswordRecovery
 
 	db.Find(&tokens)
@@ -35,7 +35,7 @@ func (r *PostgresPasswordRecoveryRepository) Get() []entities.PasswordRecovery {
 func (r *PostgresPasswordRecoveryRepository) GetFirstById(
 	id string,
 ) (*entities.PasswordRecovery, error) {
-	var token persistence.PasswordRecovery
+	var token persistence.PasswordRecoveryModel
 
 	db := r.db.GetInstance()
 
@@ -49,7 +49,7 @@ func (r *PostgresPasswordRecoveryRepository) GetFirstById(
 func (r *PostgresPasswordRecoveryRepository) GetFirstByUserId(
 	userId string,
 ) (*entities.PasswordRecovery, error) {
-	var token persistence.PasswordRecovery
+	var token persistence.PasswordRecoveryModel
 
 	db := r.db.GetInstance()
 
@@ -78,7 +78,7 @@ func (r *PostgresPasswordRecoveryRepository) Create(
 func (r *PostgresPasswordRecoveryRepository) Delete(id string) error {
 	db := r.db.GetInstance()
 
-	err := db.Delete(&persistence.PasswordRecovery{}, "id = ? ", id).Error
+	err := db.Delete(&persistence.PasswordRecoveryModel{}, "id = ? ", id).Error
 
 	return err
 }

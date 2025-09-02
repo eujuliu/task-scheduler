@@ -44,7 +44,7 @@ func (s *GetUserService) Execute(
 		return nil, errors.WRONG_LOGIN_DATA_ERROR()
 	}
 
-	slog.Debug(fmt.Sprintf("Returned User: %+v", user))
+	slog.Debug(fmt.Sprintf("returned user: %+v", user))
 
 	slog.Info("Get user service finished")
 	return user, nil

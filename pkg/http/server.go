@@ -92,12 +92,15 @@ func (s *Server) setupRoutes() {
 	protected.Use(middlewares.Authentication)
 	{
 		protected.POST("/refresh", middlewares.VerifyRefreshToken, http_handlers.Refresh)
+
+		protected.POST("/buy-credits", http_handlers.BuyCredits)
+		protected.GET("/transactions", http_handlers.Transactions)
+		protected.GET("/transaction/:id", http_handlers.Transaction)
+
 		protected.POST("/task", func(c *gin.Context) {})
 		protected.PUT("/task", func(c *gin.Context) {})
 		protected.PUT("/task/cancel", func(c *gin.Context) {})
 		protected.GET("/task/:id", func(c *gin.Context) {})
 		protected.GET("/tasks", func(c *gin.Context) {})
-		protected.POST("/buy-credits", func(c *gin.Context) {})
-		protected.GET("/transactions", func(c *gin.Context) {})
 	}
 }

@@ -39,7 +39,7 @@ func (s *UpdatePurchaseTransactionService) Complete(
 		return nil, errors.USER_NOT_FOUND_ERROR()
 	}
 
-	user.AddCredits(transaction.GetCredits())
+	user.AddCredits(int(transaction.GetCredits()))
 
 	err := transaction.SetStatus(entities.StatusCompleted)
 	if err != nil {

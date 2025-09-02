@@ -88,9 +88,9 @@ func (r *PostgresUserRepository) Update(user *entities.User) error {
 		return err
 	}
 
-	db.Model(m).Updates(m)
+	err = db.Model(m).Updates(m).Error
 
-	return nil
+	return err
 }
 
 func (r *PostgresUserRepository) Delete(id string) error {
