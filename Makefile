@@ -1,4 +1,4 @@
-.PHONY: build run watch test coverage clean fmt lint check pre-commit
+.PHONY: build run watch watch_down test coverage clean fmt lint check pre-commit
 
 BINARY_NAME=scheduler
 OUTPUT_DIR=bin
@@ -14,12 +14,15 @@ dev:
 watch:
 	docker compose --env-file ./.env.development -f ./docker-compose.development.yml -p scheduler-test up --watch
 
+watch_down:
+	docker compose --env-file ./.env.development -f ./docker-compose.development.yml down --rmi all
+
 run:
 	make build
 	./$(OUTPUT_DIR)/scheduler
 
 test:
-	go test ./... -count=1
+	go test -tags=unit -count=1 -short -v ./...
 
 coverage:
 	make clean

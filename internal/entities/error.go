@@ -1,5 +1,7 @@
 package entities
 
+import "time"
+
 const (
 	TypeErrorTransaction string = "TRANSACTION"
 	TypeErrorTask        string = "TASK"
@@ -11,7 +13,6 @@ type Error struct {
 	userId      string
 	kind        string
 	reason      string
-	options     map[string]string
 }
 
 func NewError(
@@ -19,15 +20,31 @@ func NewError(
 	kind string,
 	reason string,
 	userId string,
-	options map[string]string,
 ) *Error {
 	return &Error{
 		BaseEntity:  *NewBaseEntity(),
 		referenceId: referenceId,
 		kind:        kind,
 		reason:      reason,
-		options:     options,
 		userId:      userId,
+	}
+}
+
+func HydrateError(
+	id, kind, userId, reason, referenceId string,
+	createdAt, updatedAt time.Time,
+) *Error {
+	return &Error{
+		BaseEntity: BaseEntity{
+			id:        id,
+			createdAt: createdAt,
+			updatedAt: updatedAt,
+		},
+
+		kind:        kind,
+		userId:      userId,
+		reason:      reason,
+		referenceId: referenceId,
 	}
 }
 
@@ -45,16 +62,4 @@ func (e *Error) GetType() string {
 
 func (e *Error) GetReason() string {
 	return e.reason
-}
-
-func (e *Error) SetOption(key string, value string) {
-	e.options[key] = value
-}
-
-func (e *Error) RemoveOption(key string) {
-	delete(e.options, key)
-}
-
-func (e *Error) GetOptions() map[string]string {
-	return e.options
 }

@@ -17,6 +17,8 @@ func TestUser_New(t *testing.T) {
 	Equals(t, true, user.CheckPasswordHash("Password@123"))
 	Equals(t, 0, user.GetCredits())
 	Equals(t, 0, user.GetFrozenCredits())
+	Equals(t, "testuser", user.GetUsername())
+	Equals(t, "foo@gmail.com", user.GetEmail())
 }
 
 func TestUser_InvalidUsername(t *testing.T) {

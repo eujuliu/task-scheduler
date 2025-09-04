@@ -28,6 +28,24 @@ func NewPasswordRecovery(
 	return recovery, nil
 }
 
+func HydratePasswordRecovery(
+	id, userId string,
+	expiration time.Duration,
+	createdAt time.Time,
+	updatedAt time.Time,
+) *PasswordRecovery {
+	return &PasswordRecovery{
+		BaseEntity: BaseEntity{
+			id:        id,
+			createdAt: createdAt,
+			updatedAt: updatedAt,
+		},
+
+		userId:     userId,
+		expiration: expiration,
+	}
+}
+
 func (pr *PasswordRecovery) GetUserId() string {
 	return pr.userId
 }

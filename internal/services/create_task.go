@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
 	"time"
@@ -10,7 +12,6 @@ import (
 
 type CreateTaskService struct {
 	userRepository           repos.IUserRepository
-	transactionRepository    repos.ITransactionRepository
 	taskRepository           repos.ITaskRepository
 	createTransactionService *CreateTransactionService
 	updateTransactionService *UpdateTaskTransactionService
@@ -18,14 +19,12 @@ type CreateTaskService struct {
 
 func NewCreateTaskService(
 	userRepository repos.IUserRepository,
-	transactionRepository repos.ITransactionRepository,
 	taskRepository repos.ITaskRepository,
 	createTransactionService *CreateTransactionService,
 	updateTransactionService *UpdateTaskTransactionService,
 ) *CreateTaskService {
 	return &CreateTaskService{
 		userRepository:           userRepository,
-		transactionRepository:    transactionRepository,
 		taskRepository:           taskRepository,
 		createTransactionService: createTransactionService,
 		updateTransactionService: updateTransactionService,
@@ -41,24 +40,36 @@ func (s *CreateTaskService) Execute(
 	referenceId string,
 	idempotencyKey string,
 ) (*entities.Task, error) {
+	slog.Info("create task service started...")
+	slog.Debug(fmt.Sprint("input ", kind,
+		runAt,
+		timezone,
+		priority,
+		userId,
+		referenceId,
+		idempotencyKey))
+
+	user, _ := s.userRepository.GetFirstById(userId)
+	if user == nil {
+		slog.Error("user not found error")
+		return nil, errors.USER_NOT_FOUND_ERROR()
+	}
+
 	task, _ := s.taskRepository.GetFirstByReferenceId(referenceId)
 
 	if task != nil {
-		return nil, errors.TASK_ALREADY_EXISTS_ERROR()
+		slog.Error("task already exists error")
+		return task, nil
 	}
 
 	task, _ = s.taskRepository.GetFirstByIdempotencyKey(idempotencyKey)
 
 	if task != nil {
-		return nil, errors.TASK_ALREADY_EXISTS_ERROR()
+		slog.Error("task already exists error")
+		return task, nil
 	}
 
-	user, err := s.userRepository.GetFirstById(userId)
-	if err != nil {
-		return nil, errors.USER_NOT_FOUND_ERROR()
-	}
-
-	task, err = entities.NewTask(
+	task, err := entities.NewTask(
 		kind,
 		user.GetId(),
 		10,
@@ -68,18 +79,21 @@ func (s *CreateTaskService) Execute(
 		idempotencyKey,
 	)
 	if err != nil {
+		slog.Error(fmt.Sprintf("task creation error %s", err.Error()))
 		return nil, err
 	}
 
 	if priority != entities.PriorityLow {
 		err = task.SetPriority(priority)
 		if err != nil {
+			slog.Error(fmt.Sprintf("priority set error %s", err.Error()))
 			return nil, err
 		}
 	}
 
 	err = s.taskRepository.Create(task)
 	if err != nil {
+		slog.Error(fmt.Sprintf("save task into repository error %s", err.Error()))
 		return nil, err
 	}
 
@@ -93,13 +107,18 @@ func (s *CreateTaskService) Execute(
 		task.GetIdempotencyKey(),
 	)
 	if err != nil {
+		slog.Error(fmt.Sprintf("transaction creation error %s", err.Error()))
 		return nil, err
 	}
 
 	_, err = s.updateTransactionService.Frozen(transaction.GetId())
 	if err != nil {
+		slog.Error(fmt.Sprintf("update transaction error %s", err.Error()))
 		return nil, err
 	}
+
+	slog.Info("create task service finished...")
+	slog.Debug(fmt.Sprintf("returned task %+v", task))
 
 	return task, nil
 }

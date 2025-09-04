@@ -18,6 +18,20 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("status %d: %v", e.Code, e.Err)
 }
 
+func (e *Error) Msg() string {
+	return e.Err.Error()
+}
+
+func GetError(err error) *Error {
+	e, ok := err.(*Error)
+
+	if !ok {
+		return nil
+	}
+
+	return e
+}
+
 func INTERNAL_SERVER_ERROR() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
@@ -46,7 +60,7 @@ func USER_ALREADY_EXISTS_ERROR() *Error {
 	return &Error{
 		Id:   uuid.NewString(),
 		Code: http.StatusConflict,
-		Err:  errors.New("already exists an user with this email"),
+		Err:  errors.New("already exists an user with this email or username"),
 	}
 }
 

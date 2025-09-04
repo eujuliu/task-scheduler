@@ -30,6 +30,8 @@ var (
 	CreateTransactionService         *services.CreateTransactionService
 	UpdatePurchaseTransactionService *services.UpdatePurchaseTransactionService
 	UpdateTaskTransactionService     *services.UpdateTaskTransactionService
+	GetTransactionsService           *services.GetTransactionsService
+	GetTransactionService            *services.GetTransactionService
 )
 
 var (
@@ -39,13 +41,7 @@ var (
 	GetTaskService    *services.GetTaskService
 )
 
-func teardown(tb testing.TB) {
-	UserRepository = in_memory_repos.NewInMemoryUserRepository()
-	PasswordRepository = in_memory_repos.NewInMemoryPasswordRepository()
-	TransactionRepository = in_memory_repos.NewInMemoryTransactionRepository()
-	ErrorRepository = in_memory_repos.NewInMemoryErrorRepository()
-	TaskRepository = in_memory_repos.NewInMemoryTaskRepository()
-}
+func teardown(tb testing.TB) {}
 
 func Setup(tb testing.TB) func(tb testing.TB) {
 	UserRepository = in_memory_repos.NewInMemoryUserRepository()
@@ -80,10 +76,17 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 		TransactionRepository,
 		ErrorRepository,
 	)
+	GetTransactionsService = services.NewGetTransactionsService(
+		UserRepository,
+		TransactionRepository,
+	)
+	GetTransactionService = services.NewGetTransactionService(
+		UserRepository,
+		TransactionRepository,
+	)
 
 	CreateTaskService = services.NewCreateTaskService(
 		UserRepository,
-		TransactionRepository,
 		TaskRepository,
 		CreateTransactionService,
 		UpdateTaskTransactionService,

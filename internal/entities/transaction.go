@@ -4,6 +4,7 @@ import (
 	"scheduler/internal/errors"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -83,6 +84,30 @@ func NewTransaction(
 	}
 
 	return transaction, nil
+}
+
+func HydrateTransaction(
+	id, userId string,
+	credits, amount int,
+	currency, status, kind, referenceID, idempotentKey string,
+	createdAt, updatedAt time.Time,
+) *Transaction {
+	return &Transaction{
+		BaseEntity: BaseEntity{
+			id:        id,
+			createdAt: createdAt,
+			updatedAt: updatedAt,
+		},
+
+		userId:        userId,
+		credits:       credits,
+		amount:        amount,
+		currency:      currency,
+		status:        status,
+		kind:          kind,
+		referenceId:   referenceID,
+		idempotentKey: idempotentKey,
+	}
 }
 
 func (t *Transaction) GetUserId() string {
