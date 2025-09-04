@@ -57,7 +57,7 @@ func (r *PostgresTransactionRepository) GetFirstById(
 	var transaction persistence.TransactionModel
 
 	if err := db.First(&transaction, "id = ?", id).Error; err != nil {
-		return nil, errors.USER_NOT_FOUND_ERROR()
+		return nil, errors.TRANSACTION_NOT_FOUND()
 	}
 
 	return persistence.ToTransactionDomain(&transaction), nil
@@ -71,7 +71,7 @@ func (r *PostgresTransactionRepository) GetFirstByReferenceId(
 	var transaction persistence.TransactionModel
 
 	if err := db.First(&transaction, "reference_id = ?", id).Error; err != nil {
-		return nil, errors.USER_NOT_FOUND_ERROR()
+		return nil, errors.TRANSACTION_NOT_FOUND()
 	}
 
 	return persistence.ToTransactionDomain(&transaction), nil
@@ -84,8 +84,8 @@ func (r *PostgresTransactionRepository) GetFirstByIdempotencyKey(
 
 	var transaction persistence.TransactionModel
 
-	if err := db.First(&transaction, "idempotent_key = ?", key).Error; err != nil {
-		return nil, errors.USER_NOT_FOUND_ERROR()
+	if err := db.First(&transaction, "idempotency_key = ?", key).Error; err != nil {
+		return nil, errors.TRANSACTION_NOT_FOUND()
 	}
 
 	return persistence.ToTransactionDomain(&transaction), nil
@@ -110,7 +110,7 @@ func (r *PostgresTransactionRepository) Update(
 
 	m := persistence.ToTransactionModel(transaction)
 
-	err := db.Model(m).Updates(m).Error
+	err := db.Model(&m).Updates(m.ToMap()).Error
 
 	return err
 }

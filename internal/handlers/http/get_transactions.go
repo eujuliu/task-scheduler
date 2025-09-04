@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Transactions(c *gin.Context) {
+func GetTransactions(c *gin.Context) {
 	userRepository := postgres_repos.NewPostgresUserRepository()
 	transactionRepository := postgres_repos.NewPostgresTransactionRepository()
 	getTransactionsService := services.NewGetTransactionsService(
@@ -23,6 +23,7 @@ func Transactions(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code":    http.StatusUnauthorized,
 			"message": "This access token is not valid",
+			"success": false,
 		})
 	}
 
@@ -31,15 +32,14 @@ func Transactions(c *gin.Context) {
 
 	for _, transaction := range transactions {
 		result = append(result, map[string]any{
-			"id":            transaction.GetId(),
-			"credits":       transaction.GetCredits(),
-			"amount":        transaction.GetAmount(),
-			"currency":      transaction.GetCurrency(),
-			"status":        transaction.GetStatus(),
-			"type":          transaction.GetType(),
-			"idempotentKey": transaction.GetIdempotencyKey(),
-			"createdAt":     transaction.GetCreatedAt(),
-			"updatedAt":     transaction.GetUpdatedAt(),
+			"id":        transaction.GetId(),
+			"credits":   transaction.GetCredits(),
+			"amount":    transaction.GetAmount(),
+			"currency":  transaction.GetCurrency(),
+			"status":    transaction.GetStatus(),
+			"type":      transaction.GetType(),
+			"createdAt": transaction.GetCreatedAt(),
+			"updatedAt": transaction.GetUpdatedAt(),
 		})
 	}
 

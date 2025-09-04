@@ -187,13 +187,11 @@ func (u *User) AddFrozenCredits(amount int) error {
 }
 
 func (u *User) RemoveFrozenCredits(amount int, refund bool) error {
-	total := u.frozen_credits - amount
-
-	if total < 0 {
+	if u.frozen_credits-amount < 0 {
 		return errors.NOT_ENOUGH_CREDITS_ERROR()
 	}
 
-	u.frozen_credits = total
+	u.frozen_credits -= amount
 
 	if refund {
 		u.credits += amount

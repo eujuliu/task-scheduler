@@ -33,6 +33,13 @@ func (s *CreateTransactionService) Execute(
 	idempotencyKey string,
 ) (*entities.Transaction, error) {
 	slog.Info("create transaction service started...")
+	slog.Debug(fmt.Sprint("input ", userId,
+		credits,
+		amount,
+		currency,
+		kind,
+		referenceId,
+		idempotencyKey))
 
 	user, _ := s.userRepository.GetFirstById(userId)
 	if user == nil {

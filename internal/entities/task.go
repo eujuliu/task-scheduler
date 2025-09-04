@@ -61,6 +61,36 @@ func NewTask(
 	return task, nil
 }
 
+func HydrateTask(
+	id, kind, userId string,
+	cost int,
+	status string,
+	runAt time.Time,
+	timezone string,
+	retries, priority int,
+	referenceId, idempotencyKey string,
+	createdAt, updateAt time.Time,
+) *Task {
+	return &Task{
+		BaseEntity: BaseEntity{
+			id:        id,
+			createdAt: createdAt,
+			updatedAt: updateAt,
+		},
+
+		kind:           kind,
+		userId:         userId,
+		cost:           cost,
+		status:         status,
+		runAt:          runAt,
+		timezone:       timezone,
+		retries:        retries,
+		priority:       priority,
+		referenceId:    referenceId,
+		idempotencyKey: idempotencyKey,
+	}
+}
+
 func (t *Task) GetType() string {
 	return t.kind
 }

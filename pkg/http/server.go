@@ -8,11 +8,14 @@ import (
 	"os/signal"
 	"scheduler/internal/config"
 	http_handlers "scheduler/internal/handlers/http"
+	"scheduler/pkg/http/helpers"
 	"scheduler/pkg/http/middlewares"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 type Server struct {
@@ -28,6 +31,7 @@ func New(config *config.ServerConfig) *Server {
 
 	router.Use(middlewares.SecureHeaders)
 	router.Use(middlewares.Logger)
+	router.Use(middlewares.Errors)
 	router.Use(middlewares.Cors)
 	router.Use(gin.Recovery())
 
@@ -48,6 +52,7 @@ func New(config *config.ServerConfig) *Server {
 }
 
 func (s *Server) Start() {
+	s.setupValidators()
 	s.setupRoutes()
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -94,13 +99,20 @@ func (s *Server) setupRoutes() {
 		protected.POST("/refresh", middlewares.VerifyRefreshToken, http_handlers.Refresh)
 
 		protected.POST("/buy-credits", http_handlers.BuyCredits)
-		protected.GET("/transactions", http_handlers.Transactions)
-		protected.GET("/transaction/:id", http_handlers.Transaction)
+		protected.GET("/transactions", http_handlers.GetTransactions)
+		protected.GET("/transaction/:id", http_handlers.GetTransaction)
 
-		protected.POST("/task", func(c *gin.Context) {})
-		protected.PUT("/task", func(c *gin.Context) {})
-		protected.PUT("/task/cancel", func(c *gin.Context) {})
-		protected.GET("/task/:id", func(c *gin.Context) {})
-		protected.GET("/tasks", func(c *gin.Context) {})
+		protected.POST("/task", http_handlers.CreateTask)
+		protected.PUT("/task/:id", http_handlers.UpdateTask)
+		protected.PUT("/task/cancel/:id", http_handlers.CancelTask)
+		protected.GET("/task/:id", http_handlers.GetTask)
+		protected.GET("/tasks", http_handlers.GetTasks)
+	}
+}
+
+func (s *Server) setupValidators() {
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		slog.Info("setup validators...")
+		_ = v.RegisterValidation("date", helpers.Datatime)
 	}
 }

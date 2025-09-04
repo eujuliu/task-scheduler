@@ -3,7 +3,6 @@ package http_handlers
 import (
 	"net/http"
 	"scheduler/internal/config"
-	"scheduler/internal/errors"
 	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/utils"
@@ -22,7 +21,10 @@ func Register(c *gin.Context) {
 	var json RegisterRequest
 
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{"error": err.Error(), "code": http.StatusBadRequest, "success": false},
+		)
 		return
 	}
 
@@ -32,18 +34,8 @@ func Register(c *gin.Context) {
 
 	user, err := createUserService.Execute(json.Username, json.Email, json.Password)
 	if err != nil {
-		if e := errors.GetError(err); e != nil {
-			c.JSON(e.Code, gin.H{
-				"code":    e.Code,
-				"message": e.Msg(),
-			})
-			return
-		}
+		_ = c.Error(err)
 
-		c.JSON(
-			http.StatusInternalServerError,
-			gin.H{"error": "Internal Server Error", "message": "contact the admin"},
-		)
 		return
 	}
 
@@ -55,7 +47,9 @@ func Register(c *gin.Context) {
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": err.Error(),
+			"code":    http.StatusUnauthorized,
+			"error":   err.Error(),
+			"success": false,
 		})
 
 		return
@@ -69,7 +63,9 @@ func Register(c *gin.Context) {
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": err.Error(),
+			"code":    http.StatusUnauthorized,
+			"error":   err.Error(),
+			"success": false,
 		})
 
 		return

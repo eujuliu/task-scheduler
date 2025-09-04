@@ -87,7 +87,6 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 
 	CreateTaskService = services.NewCreateTaskService(
 		UserRepository,
-		TransactionRepository,
 		TaskRepository,
 		CreateTransactionService,
 		UpdateTaskTransactionService,

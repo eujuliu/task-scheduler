@@ -25,6 +25,9 @@ func (s *CreateUserService) Execute(
 	password string,
 ) (*entities.User, error) {
 	slog.Info("create user service started...")
+	slog.Debug(fmt.Sprint("input ", username,
+		email))
+
 	exists, _ := s.userRepository.GetFirstByEmail(email)
 
 	if exists != nil {

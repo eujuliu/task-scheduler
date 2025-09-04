@@ -93,6 +93,8 @@ func (db *Database) migrations() error {
 		&persistence.UserModel{},
 		&persistence.PasswordRecoveryModel{},
 		&persistence.TransactionModel{},
+		&persistence.TaskModel{},
+		&persistence.ErrorModel{},
 	)
 }
 

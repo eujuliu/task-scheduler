@@ -88,7 +88,7 @@ func (r *PostgresUserRepository) Update(user *entities.User) error {
 		return err
 	}
 
-	err = db.Model(m).Updates(m).Error
+	err = db.Model(&m).Updates(m.ToMap()).Error
 
 	return err
 }

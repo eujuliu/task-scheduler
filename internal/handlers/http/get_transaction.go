@@ -2,7 +2,6 @@ package http_handlers
 
 import (
 	"net/http"
-	"scheduler/internal/errors"
 	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
@@ -10,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Transaction(c *gin.Context) {
+func GetTransaction(c *gin.Context) {
 	id := c.Param("id")
 
 	userRepository := postgres_repos.NewPostgresUserRepository()
@@ -31,30 +30,19 @@ func Transaction(c *gin.Context) {
 
 	transaction, err := getTransactionService.Execute(userId, id)
 	if err != nil {
-		if e := errors.GetError(err); e != nil {
-			c.JSON(e.Code, gin.H{
-				"code":    e.Code,
-				"message": e.Msg(),
-			})
-			return
-		}
+		_ = c.Error(err)
 
-		c.JSON(
-			http.StatusInternalServerError,
-			gin.H{"error": "Internal Server Error", "message": "contact the admin"},
-		)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":            transaction.GetId(),
-		"credits":       transaction.GetCredits(),
-		"amount":        transaction.GetAmount(),
-		"currency":      transaction.GetCurrency(),
-		"status":        transaction.GetStatus(),
-		"type":          transaction.GetType(),
-		"idempotentKey": transaction.GetIdempotencyKey(),
-		"createdAt":     transaction.GetCreatedAt(),
-		"updatedAt":     transaction.GetUpdatedAt(),
+		"id":        transaction.GetId(),
+		"credits":   transaction.GetCredits(),
+		"amount":    transaction.GetAmount(),
+		"currency":  transaction.GetCurrency(),
+		"status":    transaction.GetStatus(),
+		"type":      transaction.GetType(),
+		"createdAt": transaction.GetCreatedAt(),
+		"updatedAt": transaction.GetUpdatedAt(),
 	})
 }

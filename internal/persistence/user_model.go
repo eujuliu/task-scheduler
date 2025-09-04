@@ -48,3 +48,16 @@ func ToUserDomain(m *UserModel) *entities.User {
 		m.FrozenCredits,
 	)
 }
+
+func (m *UserModel) ToMap() map[string]any {
+	return map[string]any{
+		"ID":            m.ID,
+		"CreatedAt":     m.CreatedAt,
+		"UpdatedAt":     m.UpdatedAt,
+		"Username":      m.Username,
+		"Email":         m.Email,
+		"Password":      m.Password,
+		"Credits":       m.Credits,
+		"FrozenCredits": m.FrozenCredits,
+	}
+}

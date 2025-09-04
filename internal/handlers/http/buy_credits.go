@@ -1,9 +1,9 @@
 package http_handlers
 
 import (
+	"log/slog"
 	"net/http"
 	"scheduler/internal/entities"
-	"scheduler/internal/errors"
 	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
@@ -14,15 +14,34 @@ import (
 )
 
 type BuyCreditsRequest struct {
-	Credits       int    `json:"credits"       binding:"required"`
-	IdempotentKey string `json:"idempotentKey" binding:"required"`
+	Credits int `json:"credits" binding:"required"`
 }
 
 func BuyCredits(c *gin.Context) {
 	var json BuyCreditsRequest
 
+	idempotencyKey := c.Request.Header.Get("Idempotency-Key")
+
+	slog.Info(idempotencyKey)
+
+	if idempotencyKey == "" {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error":   "Missing idempotency key header (Idempotency-Key)",
+				"code":    http.StatusBadRequest,
+				"success": false,
+			},
+		)
+
+		return
+	}
+
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{"error": err.Error(), "code": http.StatusBadRequest, "success": false},
+		)
 		return
 	}
 
@@ -43,6 +62,7 @@ func BuyCredits(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code":    http.StatusUnauthorized,
 			"message": "This access token is not valid",
+			"success": false,
 		})
 
 		return
@@ -55,36 +75,25 @@ func BuyCredits(c *gin.Context) {
 		"BRL",
 		entities.TypeTransactionPurchase,
 		uuid.NewString(),
-		json.IdempotentKey,
+		idempotencyKey,
 	)
 	if err != nil {
 		_ = postgres.DB.RollbackTransaction()
 
-		if e := errors.GetError(err); e != nil {
-			c.JSON(e.Code, gin.H{
-				"code":    e.Code,
-				"message": e.Msg(),
-			})
-			return
-		}
+		_ = c.Error(err)
 
-		c.JSON(
-			http.StatusInternalServerError,
-			gin.H{"error": "Internal Server Error", "message": "contact the admin"},
-		)
 		return
 	}
 
 	_ = postgres.DB.CommitTransaction()
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":            transaction.GetId(),
-		"credits":       transaction.GetCredits(),
-		"amount":        transaction.GetAmount(),
-		"currency":      transaction.GetCurrency(),
-		"status":        transaction.GetStatus(),
-		"idempotentKey": transaction.GetIdempotencyKey(),
-		"createdAt":     transaction.GetCreatedAt(),
-		"updateAt":      transaction.GetUpdatedAt(),
+		"id":        transaction.GetId(),
+		"credits":   transaction.GetCredits(),
+		"amount":    transaction.GetAmount(),
+		"currency":  transaction.GetCurrency(),
+		"status":    transaction.GetStatus(),
+		"createdAt": transaction.GetCreatedAt(),
+		"updateAt":  transaction.GetUpdatedAt(),
 	})
 }

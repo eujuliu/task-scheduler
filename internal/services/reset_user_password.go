@@ -29,6 +29,8 @@ func (s *ResetUserPasswordService) Execute(
 	newPassword string,
 ) error {
 	slog.Info("reset user password service started...")
+	slog.Debug(fmt.Sprint("input", tokenId))
+
 	recovery, err := s.passwordRepository.GetFirstById(tokenId)
 	if err != nil {
 		slog.Error(fmt.Sprintf("recovery not found error %v", err))

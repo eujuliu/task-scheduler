@@ -50,3 +50,19 @@ func ToTransactionDomain(m *TransactionModel) *entities.Transaction {
 		m.UpdatedAt,
 	)
 }
+
+func (m *TransactionModel) ToMap() map[string]any {
+	return map[string]any{
+		"ID":             m.ID,
+		"UserID":         m.UserID,
+		"Credits":        m.Credits,
+		"Amount":         m.Amount,
+		"Currency":       m.Currency,
+		"Status":         m.Status,
+		"Type":           m.Type,
+		"ReferenceID":    m.ReferenceID,
+		"IdempotencyKey": m.IdempotencyKey,
+		"CreatedAt":      m.CreatedAt,
+		"UpdatedAt":      m.UpdatedAt,
+	}
+}

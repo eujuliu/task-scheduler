@@ -28,6 +28,7 @@ func (s *ForgotUserPasswordService) Execute(
 	email string,
 ) (*entities.PasswordRecovery, error) {
 	slog.Info("forgot password service started...")
+	slog.Debug(fmt.Sprint("input ", email))
 
 	user, err := s.userRepository.GetFirstByEmail(email)
 	if err != nil {
@@ -59,6 +60,7 @@ func (s *ForgotUserPasswordService) Execute(
 	}
 
 	slog.Info("forgot password service finished...")
+	slog.Debug(fmt.Sprint("input", recovery))
 
 	return recovery, nil
 }

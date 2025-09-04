@@ -1,0 +1,50 @@
+package http_handlers
+
+import (
+	"net/http"
+	postgres_repos "scheduler/internal/repositories/postgres"
+	"scheduler/internal/services"
+	"scheduler/pkg/http/helpers"
+
+	"github.com/gin-gonic/gin"
+)
+
+func GetTasks(c *gin.Context) {
+	userRepository := postgres_repos.NewPostgresUserRepository()
+	taskRepository := postgres_repos.NewPostgresTaskRepository()
+	getTasksService := services.NewGetTasksService(
+		userRepository,
+		taskRepository,
+	)
+
+	userId, ok := helpers.GetUserID(c)
+
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    http.StatusUnauthorized,
+			"message": "This access token is not valid",
+			"success": false,
+		})
+	}
+
+	tasks := getTasksService.Execute(userId)
+	result := []map[string]any{}
+
+	for _, task := range tasks {
+		result = append(result, map[string]any{
+			"id":          task.GetId(),
+			"status":      task.GetStatus(),
+			"cost":        task.GetCost(),
+			"runAt":       task.GetRunAt(),
+			"timezone":    task.GetTimezone(),
+			"retries":     task.GetRetries(),
+			"priority":    task.GetPriority(),
+			"type":        task.GetType(),
+			"referenceId": task.GetReferenceId(),
+			"createdAt":   task.GetCreatedAt(),
+			"updateAt":    task.GetUpdatedAt(),
+		})
+	}
+
+	c.JSON(http.StatusOK, result)
+}

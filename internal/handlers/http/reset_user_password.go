@@ -2,7 +2,6 @@ package http_handlers
 
 import (
 	"net/http"
-	"scheduler/internal/errors"
 	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/postgres"
@@ -19,7 +18,10 @@ func ResetUserPassword(c *gin.Context) {
 	var json ResetUserPasswordRequest
 
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{"error": err.Error(), "code": http.StatusBadRequest, "success": false},
+		)
 		return
 	}
 
@@ -33,18 +35,8 @@ func ResetUserPassword(c *gin.Context) {
 	if err != nil {
 		_ = postgres.DB.RollbackTransaction()
 
-		if e := errors.GetError(err); e != nil {
-			c.JSON(e.Code, gin.H{
-				"code":    e.Code,
-				"message": e.Msg(),
-			})
-			return
-		}
+		_ = c.Error(err)
 
-		c.JSON(
-			http.StatusInternalServerError,
-			gin.H{"error": "Internal Server Error", "message": "contact the admin"},
-		)
 		return
 	}
 

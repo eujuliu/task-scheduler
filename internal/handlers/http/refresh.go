@@ -15,7 +15,9 @@ func Refresh(c *gin.Context) {
 
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid claim into token",
+			"code":    http.StatusUnauthorized,
+			"error":   "Invalid claim into token",
+			"success": false,
 		})
 	}
 
@@ -23,7 +25,9 @@ func Refresh(c *gin.Context) {
 
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid claim into token",
+			"code":    http.StatusUnauthorized,
+			"error":   "Invalid claim into token",
+			"success": false,
 		})
 	}
 
@@ -35,7 +39,9 @@ func Refresh(c *gin.Context) {
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": err.Error(),
+			"code":    http.StatusUnauthorized,
+			"error":   err.Error(),
+			"success": false,
 		})
 
 		return

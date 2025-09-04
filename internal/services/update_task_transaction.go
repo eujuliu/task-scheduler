@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
 
@@ -29,38 +30,36 @@ func NewUpdateTaskTransactionService(
 func (s *UpdateTaskTransactionService) Complete(
 	transactionId string,
 ) (*entities.Transaction, error) {
+	slog.Info("update task transaction (complete) service started...")
+	slog.Debug(fmt.Sprint("input ", transactionId))
 	transaction, _ := s.transactionRepository.GetFirstById(transactionId)
 
 	if transaction == nil {
+		slog.Error("transaction not found error")
 		return nil, errors.TRANSACTION_NOT_FOUND()
 	}
 
 	user, _ := s.userRepository.GetFirstById(transaction.GetUserId())
 
 	if user == nil {
+		slog.Error("user not found error")
 		return nil, errors.USER_NOT_FOUND_ERROR()
 	}
 
-	err := transaction.SetStatus(entities.StatusCanceled)
+	err := s.updateTransactionStatus(transaction, entities.StatusCompleted)
 	if err != nil {
+		slog.Error(fmt.Sprintf("transaction status update error %s", err.Error()))
 		return nil, err
 	}
 
-	err = s.transactionRepository.Update(transaction)
+	err = s.removeUserFrozenCredits(transaction, user, false)
 	if err != nil {
+		slog.Error(fmt.Sprintf("removing user frozen credits error %s", err.Error()))
 		return nil, err
 	}
 
-	err = user.RemoveFrozenCredits(int(transaction.GetCredits()), false)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.userRepository.Update(user)
-	if err != nil {
-		return nil, err
-	}
-
+	slog.Info("update task transaction (complete) service finished...")
+	slog.Debug(fmt.Sprintf("returned transaction %+v", transaction))
 	return transaction, nil
 }
 
@@ -69,35 +68,31 @@ func (s *UpdateTaskTransactionService) Fail(
 	refund bool,
 	reason string,
 ) (*entities.Transaction, error) {
+	slog.Info("update task transaction (fail) service started...")
+	slog.Debug(fmt.Sprint("input ", transactionId))
 	transaction, _ := s.transactionRepository.GetFirstById(transactionId)
 
 	if transaction == nil {
+		slog.Error("transaction not found error")
 		return nil, errors.TRANSACTION_NOT_FOUND()
 	}
 
 	user, _ := s.userRepository.GetFirstById(transaction.GetUserId())
 
 	if user == nil {
+		slog.Error("user not found error")
 		return nil, errors.USER_NOT_FOUND_ERROR()
 	}
 
-	err := transaction.SetStatus(entities.StatusFailed)
+	err := s.updateTransactionStatus(transaction, entities.StatusFailed)
 	if err != nil {
+		slog.Error(fmt.Sprintf("transaction status update error %s", err.Error()))
 		return nil, err
 	}
 
-	err = s.transactionRepository.Update(transaction)
+	err = s.removeUserFrozenCredits(transaction, user, refund)
 	if err != nil {
-		return nil, err
-	}
-
-	err = user.RemoveFrozenCredits(int(transaction.GetCredits()), refund)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.userRepository.Update(user)
-	if err != nil {
+		slog.Error(fmt.Sprintf("removing user frozen credits error %s", err.Error()))
 		return nil, err
 	}
 
@@ -106,89 +101,140 @@ func (s *UpdateTaskTransactionService) Fail(
 		entities.TypeErrorTask,
 		reason,
 		user.GetId(),
-		map[string]string{"refund": fmt.Sprint(refund)},
 	)
 
 	err = s.errorRepository.Create(error)
 	if err != nil {
+
+		slog.Error(fmt.Sprintf("create error entity error %s", err.Error()))
 		return nil, err
 	}
 
+	slog.Info("update task transaction (fail) service finished...")
+	slog.Debug(fmt.Sprintf("returned transaction %+v", transaction))
 	return transaction, nil
 }
 
 func (s *UpdateTaskTransactionService) Frozen(
 	transactionId string,
 ) (*entities.Transaction, error) {
+	slog.Info("update task transaction (frozen) service started...")
+	slog.Debug(fmt.Sprint("input ", transactionId))
 	transaction, _ := s.transactionRepository.GetFirstById(transactionId)
 
 	if transaction == nil {
+		slog.Error("transaction not found error")
 		return nil, errors.TRANSACTION_NOT_FOUND()
 	}
 
 	user, _ := s.userRepository.GetFirstById(transaction.GetUserId())
 
 	if user == nil {
+		slog.Error("user not found error")
 		return nil, errors.USER_NOT_FOUND_ERROR()
 	}
 
 	err := transaction.SetStatus(entities.StatusFrozen)
 	if err != nil {
+		slog.Error(fmt.Sprintf("transaction set status error %s", err.Error()))
 		return nil, err
 	}
 
 	err = s.transactionRepository.Update(transaction)
 	if err != nil {
+		slog.Error(fmt.Sprintf("update transaction error error %s", err.Error()))
 		return nil, err
 	}
 
-	err = user.AddFrozenCredits(int(transaction.GetCredits()))
+	err = user.AddFrozenCredits(transaction.GetCredits())
 	if err != nil {
+		slog.Error(fmt.Sprintf("remove frozen credits error %s", err.Error()))
 		return nil, err
 	}
 
 	err = s.userRepository.Update(user)
 	if err != nil {
+		slog.Error(fmt.Sprintf("user update error %s", err.Error()))
 		return nil, err
 	}
 
+	slog.Info("update task transaction (frozen) service finished...")
+	slog.Debug(fmt.Sprintf("returned transaction %+v", transaction))
 	return transaction, nil
 }
 
 func (s *UpdateTaskTransactionService) Cancel(
 	transactionId string,
 ) (*entities.Transaction, error) {
+	slog.Info("update task transaction (cancel) service started...")
+	slog.Debug(fmt.Sprint("input ", transactionId))
 	transaction, _ := s.transactionRepository.GetFirstById(transactionId)
 
 	if transaction == nil {
+		slog.Error("transaction not found error")
 		return nil, errors.TRANSACTION_NOT_FOUND()
 	}
 
 	user, _ := s.userRepository.GetFirstById(transaction.GetUserId())
 
 	if user == nil {
+		slog.Error("user not found error")
 		return nil, errors.USER_NOT_FOUND_ERROR()
 	}
 
-	err := transaction.SetStatus(entities.StatusCanceled)
+	err := s.updateTransactionStatus(transaction, entities.StatusCanceled)
 	if err != nil {
+		slog.Error(fmt.Sprintf("transaction status update error %s", err.Error()))
 		return nil, err
+	}
+
+	err = s.removeUserFrozenCredits(transaction, user, true)
+	if err != nil {
+		slog.Error(fmt.Sprintf("removing user frozen credits error %s", err.Error()))
+		return nil, err
+	}
+
+	slog.Info("update task transaction (cancel) service finished...")
+	slog.Debug(fmt.Sprintf("returned transaction %+v", transaction))
+
+	return transaction, nil
+}
+
+func (s *UpdateTaskTransactionService) updateTransactionStatus(
+	transaction *entities.Transaction,
+	status string,
+) error {
+	err := transaction.SetStatus(status)
+	if err != nil {
+		return err
 	}
 
 	err = s.transactionRepository.Update(transaction)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = user.RemoveFrozenCredits(int(transaction.GetCredits()), true)
+	return nil
+}
+
+func (s *UpdateTaskTransactionService) removeUserFrozenCredits(
+	transaction *entities.Transaction,
+	user *entities.User,
+	refund bool,
+) error {
+	err := user.RemoveFrozenCredits(transaction.GetCredits(), refund)
 	if err != nil {
-		return nil, err
+		slog.Error(fmt.Sprintf("remove frozen credits error %s", err.Error()))
+		return err
 	}
 
 	err = s.userRepository.Update(user)
+
+	slog.Debug(fmt.Sprintf("user %+v", user))
 	if err != nil {
-		return nil, err
+		slog.Error(fmt.Sprintf("user update error %s", err.Error()))
+		return err
 	}
 
-	return transaction, nil
+	return nil
 }
