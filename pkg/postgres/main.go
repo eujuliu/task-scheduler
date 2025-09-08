@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"scheduler/internal/config"
+	"scheduler/internal/entities"
 	"scheduler/internal/persistence"
 
 	"gorm.io/driver/postgres"
@@ -84,6 +85,13 @@ func (db *Database) CommitTransaction() error {
 	db.tx = nil
 
 	return nil
+}
+
+func (db *Database) SeedForTest() {
+	user, _ := entities.NewUser("testuser", "testuser@email.com", "Password@123")
+
+	m, _ := persistence.ToUserModel(user)
+	_ = db.GetInstance().Create(m).Error
 }
 
 func (db *Database) migrations() error {

@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"fmt"
 	"scheduler/internal/errors"
 	"slices"
 	"time"
@@ -116,7 +117,14 @@ func (t *Task) SetStatus(status string) error {
 	}
 
 	if !slices.Contains(availableStatus, status) {
-		return errors.INVALID_FIELD_VALUE("status")
+		reason := fmt.Sprintf(
+			"you can set one of these (%s, %s, %s, %s)",
+			StatusRunning,
+			StatusCompleted,
+			StatusFailed,
+			StatusFrozen,
+		)
+		return errors.INVALID_FIELD_VALUE("status", &reason)
 	}
 
 	t.status = status
@@ -136,7 +144,7 @@ func (t *Task) SetRunAt(when time.Time) error {
 	now := time.Now().UTC()
 
 	if when.Before(now) || when.After(now.AddDate(0, 6, 0)) {
-		return errors.INVALID_FIELD_VALUE("run at")
+		return errors.INVALID_FIELD_VALUE("run at", nil)
 	}
 
 	t.runAt = when
@@ -155,7 +163,8 @@ func (t *Task) SetTimezone(timezone string) error {
 
 	_, err := time.LoadLocation(timezone)
 	if err != nil {
-		return errors.INVALID_FIELD_VALUE("timezone")
+		reason := "you need to set one of the IATA timezones"
+		return errors.INVALID_FIELD_VALUE("timezone", &reason)
 	}
 
 	t.timezone = timezone
@@ -198,7 +207,11 @@ func (t *Task) SetPriority(priority int) error {
 	}
 
 	if !slices.Contains(availablePriorities, priority) {
-		return errors.INVALID_FIELD_VALUE("priority")
+		reason := fmt.Sprintf("you need to set one of these (%d, %d, %d, %d)", PriorityHigh,
+			PriorityMedium,
+			PriorityLow,
+			PriorityExtraLow)
+		return errors.INVALID_FIELD_VALUE("priority", &reason)
 	}
 
 	t.priority = priority

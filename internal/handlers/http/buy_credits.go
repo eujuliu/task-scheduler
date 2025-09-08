@@ -1,28 +1,26 @@
 package http_handlers
 
 import (
-	"log/slog"
 	"net/http"
 	"scheduler/internal/entities"
+	stripe_paymentgateway "scheduler/internal/payment_gateway/stripe"
 	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
 	"scheduler/pkg/postgres"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type BuyCreditsRequest struct {
-	Credits int `json:"credits" binding:"required"`
+	Credits  int    `json:"credits"  binding:"required,gte=10,lte=100"`
+	Currency string `json:"currency" binding:"required,iso4217"`
 }
 
 func BuyCredits(c *gin.Context) {
 	var json BuyCreditsRequest
 
 	idempotencyKey := c.Request.Header.Get("Idempotency-Key")
-
-	slog.Info(idempotencyKey)
 
 	if idempotencyKey == "" {
 		c.JSON(
@@ -47,13 +45,17 @@ func BuyCredits(c *gin.Context) {
 
 	postgres.DB.BeginTransaction()
 
-	// Payment gateway logic
-
 	userRepository := postgres_repos.NewPostgresUserRepository()
 	transactionRepository := postgres_repos.NewPostgresTransactionRepository()
+
+	customerPaymentGateway := stripe_paymentgateway.NewStripeCustomerPaymentGateway()
+	paymentPaymentGateway := stripe_paymentgateway.NewStripePaymentPaymentGateway()
+
 	createTransactionService := services.NewCreateTransactionService(
 		userRepository,
 		transactionRepository,
+		customerPaymentGateway,
+		paymentPaymentGateway,
 	)
 
 	userId, ok := helpers.GetUserID(c)
@@ -71,10 +73,9 @@ func BuyCredits(c *gin.Context) {
 	transaction, err := createTransactionService.Execute(
 		userId,
 		json.Credits,
-		10,
-		"BRL",
+		json.Currency,
 		entities.TypeTransactionPurchase,
-		uuid.NewString(),
+		"",
 		idempotencyKey,
 	)
 	if err != nil {
@@ -88,12 +89,13 @@ func BuyCredits(c *gin.Context) {
 	_ = postgres.DB.CommitTransaction()
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":        transaction.GetId(),
-		"credits":   transaction.GetCredits(),
-		"amount":    transaction.GetAmount(),
-		"currency":  transaction.GetCurrency(),
-		"status":    transaction.GetStatus(),
-		"createdAt": transaction.GetCreatedAt(),
-		"updateAt":  transaction.GetUpdatedAt(),
+		"id":          transaction.GetId(),
+		"credits":     transaction.GetCredits(),
+		"amount":      transaction.GetAmount(),
+		"currency":    transaction.GetCurrency(),
+		"status":      transaction.GetStatus(),
+		"createdAt":   transaction.GetCreatedAt(),
+		"updateAt":    transaction.GetUpdatedAt(),
+		"referenceId": transaction.GetReferenceId(),
 	})
 }

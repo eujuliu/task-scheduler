@@ -24,7 +24,6 @@ func TestUpdatePurchaseTransactionService_Complete(t *testing.T) {
 	transaction, err := CreateTransactionService.Execute(
 		user.GetId(),
 		20,
-		10,
 		"USD",
 		entities.TypeTransactionPurchase,
 		uuid.NewString(),
@@ -59,7 +58,6 @@ func TestUpdatePurchaseTransactionService_Fail(t *testing.T) {
 	transaction, err := CreateTransactionService.Execute(
 		user.GetId(),
 		20,
-		10,
 		"USD",
 		entities.TypeTransactionPurchase,
 		uuid.NewString(),

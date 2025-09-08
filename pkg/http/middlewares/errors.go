@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"log/slog"
 	"net/http"
 	"scheduler/internal/errors"
 
@@ -12,6 +13,8 @@ func Errors(c *gin.Context) {
 
 	if len(c.Errors) > 0 {
 		err := c.Errors.Last().Err
+
+		slog.Error(err.Error())
 
 		if e := errors.GetError(err); e != nil {
 			c.JSON(e.Code, gin.H{

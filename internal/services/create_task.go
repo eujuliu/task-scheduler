@@ -58,14 +58,14 @@ func (s *CreateTaskService) Execute(
 	task, _ := s.taskRepository.GetFirstByReferenceId(referenceId)
 
 	if task != nil {
-		slog.Error("task already exists error")
+		slog.Info("task already exists with this reference id")
 		return task, nil
 	}
 
 	task, _ = s.taskRepository.GetFirstByIdempotencyKey(idempotencyKey)
 
 	if task != nil {
-		slog.Error("task already exists error")
+		slog.Info("task already exists with this idempotency key")
 		return task, nil
 	}
 
@@ -100,8 +100,7 @@ func (s *CreateTaskService) Execute(
 	transaction, err := s.createTransactionService.Execute(
 		user.GetId(),
 		task.GetCost(),
-		0,
-		"",
+		"TASK",
 		entities.TypeTransactionTaskSend,
 		task.GetReferenceId(),
 		task.GetIdempotencyKey(),

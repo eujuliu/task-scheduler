@@ -1,22 +1,26 @@
 services:
   postgres:
-    container_name: "postgres"
     image: "postgres:14.7-alpine"
-    env_file: ./.env.development
+    restart: unless-stopped
+    container_name: "postgres"
+    env_file: ./.env.docker
     ports:
       - "${POSTGRES_PORT}:5432"
-    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 3s
       retries: 3
-  be:
+
+    profiles: [scheduler_dev]
+
+  app:
     build:
       context: .
       dockerfile: Dockerfile.development
-    container_name: be
-    env_file: ./.env.development
+    restart: unless-stopped
+    container_name: app
+    env_file: ./.env.docker
     ports:
       - ${PORT}:${PORT}
     depends_on:
@@ -35,3 +39,25 @@ services:
             - tmp/
             - bin/
             - docker*
+        - action: rebuild
+          path: ./env*
+          target: /app/
+          ignore:
+            - "!.env*"
+
+    profiles: [scheduler_dev]
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    container_name: ngrok
+    command:
+      - "http"
+      - "--url=${NGROK_URL}"
+      - "http://app:${PORT}"
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    ports:
+      - 4040:4040
+
+    profiles: [scheduler_dev]

@@ -1,6 +1,7 @@
 package entities_test
 
 import (
+	"fmt"
 	"scheduler/internal/errors"
 	"testing"
 
@@ -26,6 +27,23 @@ func TestTransaction_New(t *testing.T) {
 	Equals(t, StatusPending, transaction.GetStatus())
 }
 
+func TestTransaction_InvalidCreditsQuantity(t *testing.T) {
+	_, err := NewTransaction(
+		uuid.NewString(),
+		9,
+		10,
+		"BRL",
+		TypeTransactionPurchase,
+		uuid.NewString(),
+		"123",
+	)
+
+	reason := "the credits can only be a number between 10 and 100"
+
+	Assert(t, err != nil, "expected error got success")
+	Equals(t, errors.INVALID_FIELD_VALUE("credits", &reason).Error(), err.Error())
+}
+
 func TestTransaction_WrongType(t *testing.T) {
 	_, err := NewTransaction(
 		uuid.NewString(),
@@ -36,8 +54,12 @@ func TestTransaction_WrongType(t *testing.T) {
 		uuid.NewString(),
 		"123",
 	)
-
-	Equals(t, errors.INVALID_FIELD_VALUE("type").Error(), err.Error())
+	reason := fmt.Sprintf(
+		"you need to set one of these (%s, %s)",
+		TypeTransactionPurchase,
+		TypeTransactionTaskSend,
+	)
+	Equals(t, errors.INVALID_FIELD_VALUE("type", &reason).Error(), err.Error())
 }
 
 func TestTransaction_PurchaseWithoutAmount(t *testing.T) {
@@ -51,7 +73,8 @@ func TestTransaction_PurchaseWithoutAmount(t *testing.T) {
 		"123",
 	)
 
-	Equals(t, errors.INVALID_FIELD_VALUE("type").Error(), err.Error())
+	reason := "for purchases you need to set the amount and the currency"
+	Equals(t, errors.INVALID_FIELD_VALUE("type", &reason).Error(), err.Error())
 }
 
 func TestTransaction_PurchaseWithoutCurrency(t *testing.T) {
@@ -65,7 +88,8 @@ func TestTransaction_PurchaseWithoutCurrency(t *testing.T) {
 		"123",
 	)
 
-	Equals(t, errors.INVALID_FIELD_VALUE("type").Error(), err.Error())
+	reason := "for purchases you need to set the amount and the currency"
+	Equals(t, errors.INVALID_FIELD_VALUE("type", &reason).Error(), err.Error())
 }
 
 func TestTransaction_SetStatus(t *testing.T) {

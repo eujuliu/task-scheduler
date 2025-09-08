@@ -25,21 +25,21 @@ func TestUser_InvalidUsername(t *testing.T) {
 	_, err := NewUser("test", "test@email.com", "Password@123")
 
 	Assert(t, err != nil, "want invalid username got valid")
-	Equals(t, errors.INVALID_FIELD_VALUE("username").Error(), err.Error())
+	Equals(t, errors.INVALID_FIELD_VALUE("username", nil).Error(), err.Error())
 }
 
 func TestUser_InvalidEmail(t *testing.T) {
 	_, err := NewUser("testuser", "test@.com", "Password@123")
 
 	Assert(t, err != nil, "want invalid email got valid")
-	Equals(t, errors.INVALID_FIELD_VALUE("email").Error(), err.Error())
+	Equals(t, errors.INVALID_FIELD_VALUE("email", nil).Error(), err.Error())
 }
 
 func TestUser_InvalidPassword(t *testing.T) {
 	_, err := NewUser("testuser", "test@email.com", "123456")
 
 	Assert(t, err != nil, "want invalid password got valid")
-	Equals(t, errors.INVALID_FIELD_VALUE("password").Error(), err.Error())
+	Equals(t, errors.INVALID_FIELD_VALUE("password", nil).Error(), err.Error())
 }
 
 func TestUser_AddCredits(t *testing.T) {

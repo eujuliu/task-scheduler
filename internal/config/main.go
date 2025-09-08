@@ -8,12 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type Config struct {
-	Server   *ServerConfig
-	JWT      *JWTConfig
-	Database *DatabaseConfig
-}
-
 type ServerConfig struct {
 	Host            string
 	Port            string
@@ -38,14 +32,26 @@ type DatabaseConfig struct {
 	Host     string
 }
 
-var Instance *Config
+type StripeConfig struct {
+	APIKey         string
+	EndpointSecret string
+}
+
+type Config struct {
+	Server   *ServerConfig
+	JWT      *JWTConfig
+	Database *DatabaseConfig
+	Stripe   *StripeConfig
+}
+
+var Data *Config
 
 func Load() *Config {
-	if Instance != nil {
-		return Instance
+	if Data != nil {
+		return Data
 	}
 
-	Instance = &Config{
+	Data = &Config{
 		Server: &ServerConfig{
 			Host:            utils.GetEnv("Host", "0.0.0.0"),
 			Port:            utils.GetEnv("PORT", "8080"),
@@ -67,7 +73,11 @@ func Load() *Config {
 			DBName:   utils.GetEnv("POSTGRES_DB", "taskscheduler"),
 			Host:     utils.GetEnv("POSTGRES_HOST", "localhost"),
 		},
+		Stripe: &StripeConfig{
+			APIKey:         utils.GetEnv("STRIPE_API_KEY", ""),
+			EndpointSecret: utils.GetEnv("STRIPE_WEBHOOK_SIGNING_SECRET", ""),
+		},
 	}
 
-	return Instance
+	return Data
 }

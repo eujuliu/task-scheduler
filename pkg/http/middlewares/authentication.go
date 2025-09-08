@@ -34,7 +34,7 @@ func Authentication(c *gin.Context) {
 		return
 	}
 
-	claims, err := utils.ValidateToken(cookie.Value, config.Instance.JWT.AccessTokenSecret)
+	claims, err := utils.ValidateToken(cookie.Value, config.Data.JWT.AccessTokenSecret)
 	if err != nil {
 		slog.Debug(fmt.Sprintf("Token validation failed %s", err))
 
@@ -81,7 +81,7 @@ func VerifyRefreshToken(c *gin.Context) {
 		return
 	}
 
-	_, err = utils.ValidateToken(cookie.Value, config.Instance.JWT.RefreshTokenSecret)
+	_, err = utils.ValidateToken(cookie.Value, config.Data.JWT.RefreshTokenSecret)
 	if err != nil {
 		slog.Debug(fmt.Sprintf("Token validation failed %s", err))
 

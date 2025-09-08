@@ -2,6 +2,7 @@ package http_handlers
 
 import (
 	"net/http"
+	stripe_paymentgateway "scheduler/internal/payment_gateway/stripe"
 	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
@@ -48,9 +49,15 @@ func CreateTask(c *gin.Context) {
 	transactionRepository := postgres_repos.NewPostgresTransactionRepository()
 	taskRepository := postgres_repos.NewPostgresTaskRepository()
 	errorRepository := postgres_repos.NewPostgresErrorRepository()
+
+	customerPaymentGateway := stripe_paymentgateway.NewStripeCustomerPaymentGateway()
+	paymentPaymentGateway := stripe_paymentgateway.NewStripePaymentPaymentGateway()
+
 	createTransactionService := services.NewCreateTransactionService(
 		userRepository,
 		transactionRepository,
+		customerPaymentGateway,
+		paymentPaymentGateway,
 	)
 	updateTransactionService := services.NewUpdateTaskTransactionService(
 		userRepository,
