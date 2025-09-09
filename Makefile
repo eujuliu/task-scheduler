@@ -1,4 +1,4 @@
-.PHONY: build run watch watch_down test coverage clean fmt lint check pre-commit
+.PHONY: build run watch watch_down test coverage clean fmt lint check pre-commit test_stripe
 
 BINARY_NAME=scheduler
 OUTPUT_DIR=bin
@@ -12,10 +12,21 @@ dev:
 	air
 
 watch:
-	docker compose --env-file ./.env.development -f ./docker-compose.development.yml -p scheduler-test up --watch
+	@echo "Do you want to unify all env files into a single one? (y/N)"; \
+	read ANSWER; \
+	rm -f .env.docker; \
+	if [ "$$ANSWER" = "y" ]; then \
+		cat .env* > .env.docker; \
+	else \
+		cp .env.development .env.docker; \
+	fi; \
+	docker compose --env-file ./.env.docker -f ./docker-compose.development.yml -p scheduler-test --profile scheduler_dev watch --prune; \
+	make watch_down
 
 watch_down:
-	docker compose --env-file ./.env.development -f ./docker-compose.development.yml down --rmi all
+	docker stop $$(docker ps -a -q --filter "label=com.docker.compose.project=scheduler-test"); \
+	docker system prune -a --filter "label=com.docker.compose.project=scheduler-test" -f; \
+	rm -f .env.docker
 
 run:
 	make build
@@ -25,9 +36,9 @@ test:
 	go test -tags=unit -count=1 -short -v ./...
 
 coverage:
-	make clean
-	mkdir $(COVERAGE_DIR)
-	go test -coverprofile=coverage/cover.out ./...
+	make clean; \
+	mkdir $(COVERAGE_DIR); \
+	go test -coverprofile=coverage/cover.out ./...; \
 	go tool cover -html=coverage/cover.out -o coverage/cover.html
 
 fmt:
@@ -41,8 +52,12 @@ check:
 	make lint
 
 clean:
-	rm -rf $(OUTPUT_DIR)
+	rm -rf $(OUTPUT_DIR); \
 	rm -rf $(COVERAGE_DIR)
 
 pre-commit:
 	pre-commit install
+
+test_stripe:
+	# npm i -g live-server
+	live-server --port=5500 --host="localhost"

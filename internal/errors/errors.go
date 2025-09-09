@@ -96,13 +96,20 @@ func FINISHED_OPERATION_ERROR() *Error {
 	}
 }
 
-func INVALID_FIELD_VALUE(field string) *Error {
+func INVALID_FIELD_VALUE(field string, reason *string) *Error {
+	defaultMessage := "please verify the requirements"
+
+	if reason == nil {
+		reason = &defaultMessage
+	}
+
 	return &Error{
 		Id:   uuid.NewString(),
 		Code: http.StatusBadRequest,
 		Err: fmt.Errorf(
-			"this %s is not valid, please check the requirements",
+			"this %s is not valid, %s",
 			field,
+			*reason,
 		),
 	}
 }

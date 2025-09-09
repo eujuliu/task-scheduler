@@ -35,8 +35,7 @@ func TestUpdateTaskTransactionService_Complete(t *testing.T) {
 	transaction, err := CreateTransactionService.Execute(
 		user.GetId(),
 		20,
-		0,
-		"",
+		"TASK",
 		entities.TypeTransactionTaskSend,
 		uuid.NewString(),
 		uuid.NewString(),
@@ -77,8 +76,7 @@ func TestUpdateTaskTransactionService_Frozen(t *testing.T) {
 	transaction, err := CreateTransactionService.Execute(
 		user.GetId(),
 		20,
-		0,
-		"",
+		"TASK",
 		entities.TypeTransactionTaskSend,
 		uuid.NewString(),
 		uuid.NewString(),
@@ -119,8 +117,7 @@ func TestUpdateTaskTransactionService_FailWithRefund(t *testing.T) {
 	transaction, err := CreateTransactionService.Execute(
 		user.GetId(),
 		20,
-		0,
-		"",
+		"TASK",
 		entities.TypeTransactionTaskSend,
 		uuid.NewString(),
 		uuid.NewString(),
@@ -176,8 +173,7 @@ func TestUpdateTaskTransactionService_FailWithoutRefund(t *testing.T) {
 	transaction, err := CreateTransactionService.Execute(
 		user.GetId(),
 		20,
-		0,
-		"",
+		"TASK",
 		entities.TypeTransactionTaskSend,
 		uuid.NewString(),
 		uuid.NewString(),
@@ -233,8 +229,7 @@ func TestUpdateTaskTransactionService_Cancel(t *testing.T) {
 	transaction, err := CreateTransactionService.Execute(
 		user.GetId(),
 		20,
-		0,
-		"",
+		"TASK",
 		entities.TypeTransactionTaskSend,
 		uuid.NewString(),
 		uuid.NewString(),

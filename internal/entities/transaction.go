@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"fmt"
 	"scheduler/internal/errors"
 	"slices"
 	"strings"
@@ -55,7 +56,12 @@ func NewTransaction(
 	idempotencyKey string,
 ) (*Transaction, error) {
 	if uuid.Validate(userId) != nil {
-		return nil, errors.INVALID_FIELD_VALUE("user id")
+		return nil, errors.INVALID_FIELD_VALUE("user id", nil)
+	}
+
+	if credits < 10 || credits > 100 {
+		reason := "the credits can only be a number between 10 and 100"
+		return nil, errors.INVALID_FIELD_VALUE("credits", &reason)
 	}
 
 	transactionTypes := []string{
@@ -64,11 +70,17 @@ func NewTransaction(
 	}
 
 	if !slices.Contains(transactionTypes, kind) {
-		return nil, errors.INVALID_FIELD_VALUE("type")
+		reason := fmt.Sprintf(
+			"you need to set one of these (%s, %s)",
+			TypeTransactionPurchase,
+			TypeTransactionTaskSend,
+		)
+		return nil, errors.INVALID_FIELD_VALUE("type", &reason)
 	}
 
 	if kind == TypeTransactionPurchase && (amount <= 0 || len(currency) == 0) {
-		return nil, errors.INVALID_FIELD_VALUE("type")
+		reason := "for purchases you need to set the amount and the currency"
+		return nil, errors.INVALID_FIELD_VALUE("type", &reason)
 	}
 
 	transaction := &Transaction{
@@ -136,11 +148,12 @@ func (t *Transaction) SetStatus(status string) error {
 	_, ok := AvailableStatusPerType[t.kind]
 
 	if !ok {
-		return errors.INVALID_FIELD_VALUE("type")
+		return errors.INVALID_FIELD_VALUE("type", nil)
 	}
 
 	if !slices.Contains(AvailableStatusPerType[t.kind], formatted) {
-		return errors.INVALID_FIELD_VALUE("status")
+		reason := "see the available status for this kind of transaction"
+		return errors.INVALID_FIELD_VALUE("status", &reason)
 	}
 
 	t.status = formatted
@@ -154,6 +167,17 @@ func (t *Transaction) GetStatus() string {
 
 func (t *Transaction) GetType() string {
 	return t.kind
+}
+
+func (t *Transaction) SetReferenceId(referenceId string) error {
+	if t.referenceId != "" {
+		reason := "the reference id is already added"
+		return errors.INVALID_FIELD_VALUE("reference id", &reason)
+	}
+
+	t.referenceId = referenceId
+
+	return nil
 }
 
 func (t *Transaction) GetReferenceId() string {

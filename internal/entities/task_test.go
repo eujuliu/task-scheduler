@@ -123,7 +123,7 @@ func TestTask_SetRunAtBeforeToday(t *testing.T) {
 	)
 
 	Assert(t, err != nil, "expected err got success")
-	Equals(t, errors.INVALID_FIELD_VALUE("run at").Error(), err.Error())
+	Equals(t, errors.INVALID_FIELD_VALUE("run at", nil).Error(), err.Error())
 }
 
 func TestTask_SetRunAtAfterSixMonthsForward(t *testing.T) {
@@ -138,7 +138,7 @@ func TestTask_SetRunAtAfterSixMonthsForward(t *testing.T) {
 	)
 
 	Assert(t, err != nil, "expected err got success")
-	Equals(t, errors.INVALID_FIELD_VALUE("run at").Error(), err.Error())
+	Equals(t, errors.INVALID_FIELD_VALUE("run at", nil).Error(), err.Error())
 }
 
 func TestTask_SetTimezone(t *testing.T) {
@@ -175,7 +175,8 @@ func TestTask_SetTimezoneInvalidTimezone(t *testing.T) {
 	err = task.SetTimezone("GTM-3")
 
 	Assert(t, err != nil, "expected error got success")
-	Equals(t, errors.INVALID_FIELD_VALUE("timezone").Error(), err.Error())
+	reason := "you need to set one of the IATA timezones"
+	Equals(t, errors.INVALID_FIELD_VALUE("timezone", &reason).Error(), err.Error())
 }
 
 func TestTask_AddRetry(t *testing.T) {

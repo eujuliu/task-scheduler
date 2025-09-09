@@ -67,7 +67,7 @@ func (u *User) SetUsername(username string) error {
 	cleanedStr := strings.Join(strings.Fields(username), " ")
 
 	if len(cleanedStr) < 5 || len(cleanedStr) > 20 {
-		return errors.INVALID_FIELD_VALUE("username")
+		return errors.INVALID_FIELD_VALUE("username", nil)
 	}
 
 	for _, c := range cleanedStr {
@@ -76,7 +76,7 @@ func (u *User) SetUsername(username string) error {
 		}
 
 		if !utils.IsAlphanumeric(byte(c)) {
-			return errors.INVALID_FIELD_VALUE("username")
+			return errors.INVALID_FIELD_VALUE("username", nil)
 		}
 	}
 
@@ -92,7 +92,7 @@ func (u *User) GetUsername() string {
 func (u *User) SetEmail(email string) error {
 	mail, err := mail.ParseAddress(email)
 	if err != nil {
-		return errors.INVALID_FIELD_VALUE("email")
+		return errors.INVALID_FIELD_VALUE("email", nil)
 	}
 
 	u.email = mail.Address
@@ -126,7 +126,7 @@ func (u *User) SetPassword(password string) error {
 	}
 
 	if count < 8 || !number || !upper || !lower || !symbol {
-		return errors.INVALID_FIELD_VALUE("password")
+		return errors.INVALID_FIELD_VALUE("password", nil)
 	}
 
 	hash, err := hashPassword(password)

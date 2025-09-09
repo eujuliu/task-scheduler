@@ -34,7 +34,7 @@ func Refresh(c *gin.Context) {
 	accessToken, err := utils.GenerateToken(
 		userId,
 		email,
-		config.Instance.JWT.AccessTokenSecret,
+		config.Data.JWT.AccessTokenSecret,
 		15*time.Minute,
 	)
 	if err != nil {
@@ -53,7 +53,7 @@ func Refresh(c *gin.Context) {
 		15*60*1000,
 		"/",
 		"",
-		config.Instance.Server.GinMode == "release",
+		config.Data.Server.GinMode == "release",
 		true,
 	)
 

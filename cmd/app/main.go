@@ -6,6 +6,9 @@ import (
 	"scheduler/internal/config"
 	"scheduler/pkg/http"
 	"scheduler/pkg/postgres"
+	"scheduler/pkg/stripe"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -13,7 +16,7 @@ func main() {
 
 	loggerLevel := slog.LevelInfo
 
-	if config.Server.GinMode == "debug" {
+	if config.Server.GinMode == gin.DebugMode {
 		loggerLevel = slog.LevelDebug
 	}
 
@@ -23,11 +26,17 @@ func main() {
 
 	slog.SetDefault(logger)
 
+	_ = stripe.Load(config.Stripe)
+
 	server := http.New(config.Server)
-	_, err := postgres.Load(config.Database)
+	db, err := postgres.Load(config.Database)
 	if err != nil {
 		slog.Error(err.Error())
 		panic(err)
+	}
+
+	if config.Server.GinMode == gin.DebugMode {
+		db.SeedForTest()
 	}
 
 	server.Start()

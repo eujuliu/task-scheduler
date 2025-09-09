@@ -27,7 +27,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	conf := config.Instance
+	conf := config.Data
 	userRepository := postgres_repos.NewPostgresUserRepository()
 	getUserService := services.NewGetUserService(userRepository)
 

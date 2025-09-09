@@ -26,7 +26,7 @@ func TestPasswordRecovery_SmallerTime(t *testing.T) {
 	Assert(t, err != nil, "expect error got success")
 	Equals(
 		t,
-		errors.INVALID_FIELD_VALUE("expiration time").Error(),
+		errors.INVALID_FIELD_VALUE("expiration time", nil).Error(),
 		err.Error(),
 	)
 }
@@ -37,7 +37,7 @@ func TestPasswordRecovery_GreaterTime(t *testing.T) {
 	Assert(t, err != nil, "expect error got success")
 	Equals(
 		t,
-		errors.INVALID_FIELD_VALUE("expiration time").Error(),
+		errors.INVALID_FIELD_VALUE("expiration time", nil).Error(),
 		err.Error(),
 	)
 }

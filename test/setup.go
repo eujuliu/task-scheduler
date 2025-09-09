@@ -1,6 +1,8 @@
 package test
 
 import (
+	paymentgateway "scheduler/internal/payment_gateway"
+	in_memory_paymentgateway "scheduler/internal/payment_gateway/in_memory"
 	"scheduler/internal/services"
 	"testing"
 
@@ -14,6 +16,11 @@ var (
 	TransactionRepository repos.ITransactionRepository
 	ErrorRepository       repos.IErrorRepository
 	TaskRepository        repos.ITaskRepository
+)
+
+var (
+	CustomerPaymentGateway paymentgateway.ICustomerPaymentGateway
+	PaymentPaymentGateway  paymentgateway.IPaymentPaymentGateway
 )
 
 var (
@@ -50,7 +57,10 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 	ErrorRepository = in_memory_repos.NewInMemoryErrorRepository()
 	TaskRepository = in_memory_repos.NewInMemoryTaskRepository()
 
-	CreateUserService = services.NewCreateUserService(UserRepository)
+	CustomerPaymentGateway = in_memory_paymentgateway.NewInMemoryCustomerPaymentGateway()
+	PaymentPaymentGateway = in_memory_paymentgateway.NewInMemoryPaymentPaymentGateway()
+
+	CreateUserService = services.NewCreateUserService(UserRepository, CustomerPaymentGateway)
 	GetUserService = services.NewGetUserService(UserRepository)
 
 	ForgotUserPasswordService = services.NewForgotUserPasswordService(
@@ -65,6 +75,8 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 	CreateTransactionService = services.NewCreateTransactionService(
 		UserRepository,
 		TransactionRepository,
+		CustomerPaymentGateway,
+		PaymentPaymentGateway,
 	)
 	UpdatePurchaseTransactionService = services.NewUpdatePurchaseTransactionService(
 		UserRepository,

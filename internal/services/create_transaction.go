@@ -5,28 +5,34 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
+	paymentgateway "scheduler/internal/payment_gateway"
 	repos "scheduler/internal/repositories"
 )
 
 type CreateTransactionService struct {
-	userRepository        repos.IUserRepository
-	transactionRepository repos.ITransactionRepository
+	userRepository         repos.IUserRepository
+	transactionRepository  repos.ITransactionRepository
+	paymentPaymentGateway  paymentgateway.IPaymentPaymentGateway
+	customerPaymentGateway paymentgateway.ICustomerPaymentGateway
 }
 
 func NewCreateTransactionService(
 	userRepository repos.IUserRepository,
 	transactionRepository repos.ITransactionRepository,
+	customerPaymentGateway paymentgateway.ICustomerPaymentGateway,
+	paymentPaymentGateway paymentgateway.IPaymentPaymentGateway,
 ) *CreateTransactionService {
 	return &CreateTransactionService{
-		userRepository:        userRepository,
-		transactionRepository: transactionRepository,
+		userRepository:         userRepository,
+		transactionRepository:  transactionRepository,
+		customerPaymentGateway: customerPaymentGateway,
+		paymentPaymentGateway:  paymentPaymentGateway,
 	}
 }
 
 func (s *CreateTransactionService) Execute(
 	userId string,
 	credits int,
-	amount int,
 	currency string,
 	kind string,
 	referenceId string,
@@ -35,10 +41,8 @@ func (s *CreateTransactionService) Execute(
 	slog.Info("create transaction service started...")
 	slog.Debug(fmt.Sprint("input ", userId,
 		credits,
-		amount,
 		currency,
 		kind,
-		referenceId,
 		idempotencyKey))
 
 	user, _ := s.userRepository.GetFirstById(userId)
@@ -47,21 +51,30 @@ func (s *CreateTransactionService) Execute(
 		return nil, errors.USER_NOT_FOUND_ERROR()
 	}
 
-	exists, _ := s.transactionRepository.GetFirstByReferenceId(referenceId)
+	if kind == entities.TypeTransactionPurchase {
+		referenceId = ""
+	}
 
-	if exists != nil {
+	transaction, _ := s.transactionRepository.GetFirstByReferenceId(referenceId)
+
+	if transaction != nil {
 		slog.Error("transaction with this reference id already exists")
-		return nil, errors.TRANSACTION_ALREADY_EXISTS_ERROR()
+		return transaction, nil
 	}
 
-	exists, _ = s.transactionRepository.GetFirstByIdempotencyKey(idempotencyKey)
+	transaction, _ = s.transactionRepository.GetFirstByIdempotencyKey(idempotencyKey)
 
-	if exists != nil {
+	if transaction != nil {
 		slog.Error("transaction with this idempotency key already exists")
-		return nil, errors.TRANSACTION_ALREADY_EXISTS_ERROR()
+		return transaction, nil
 	}
 
-	transaction, err := entities.NewTransaction(
+	amount, err := s.calculateAmount(credits, currency)
+	if err != nil {
+		return nil, err
+	}
+
+	transaction, err = entities.NewTransaction(
 		user.GetId(),
 		credits,
 		amount,
@@ -81,8 +94,67 @@ func (s *CreateTransactionService) Execute(
 		return nil, err
 	}
 
+	if transaction.GetType() == entities.TypeTransactionPurchase {
+		slog.Info("creating payment into payment gateway...")
+		customer, _ := s.customerPaymentGateway.GetFirstByEmail(user.GetEmail())
+
+		payment, err := s.paymentPaymentGateway.Create(
+			transaction.GetId(),
+			customer,
+			amount,
+			currency,
+			idempotencyKey,
+			nil,
+		)
+		if err != nil {
+			slog.Error(err.Error())
+			return nil, err
+		}
+
+		err = transaction.SetReferenceId(payment)
+		if err != nil {
+			slog.Error(err.Error())
+			return nil, err
+		}
+
+		err = s.transactionRepository.Update(transaction)
+		if err != nil {
+			slog.Error(err.Error())
+			return nil, err
+		}
+
+		slog.Info("finish creation of payment into payment gateway...")
+	}
+
 	slog.Info("create transaction service finished...")
 	slog.Debug(fmt.Sprintf("returned transaction %+v", transaction))
 
 	return transaction, nil
+}
+
+func (s *CreateTransactionService) calculateAmount(credits int, currency string) (int, error) {
+	/*
+		Obviously that if you want to use this in production
+		you will need to get the conversions from some api, but this project is only for
+		learn proposes then i will continue with this static function
+	*/
+
+	creditsInDollars := float32(credits / 10)
+	conversions := map[string]float32{
+		"USD":  1,
+		"BRL":  5.42,
+		"EUR":  0.85,
+		"TASK": 1,
+	}
+
+	conversion, ok := conversions[currency]
+
+	if !ok {
+		reason := "the valid currencies are (BRL, USD, EUR)"
+		return 0, errors.INVALID_FIELD_VALUE("currency", &reason)
+	}
+
+	quantity := (creditsInDollars * conversion) / conversions["USD"]
+
+	return int(quantity * 100), nil
 }

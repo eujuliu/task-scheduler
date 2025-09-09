@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"scheduler/internal/config"
 	http_handlers "scheduler/internal/handlers/http"
+	http_webhooks "scheduler/internal/handlers/http/webhooks"
 	"scheduler/pkg/http/helpers"
 	"scheduler/pkg/http/middlewares"
 	"syscall"
@@ -82,12 +83,13 @@ func (s *Server) Start() {
 }
 
 func (s *Server) setupRoutes() {
-	routes := s.router.Group("/api/v1")
+	routes := s.router.Group("/")
 	{
 		routes.POST("/auth/register", http_handlers.Register)
 		routes.POST("/auth/login", http_handlers.Login)
 		routes.POST("/auth/forgot-password", http_handlers.ForgotPassword)
 		routes.POST("/auth/reset-password", http_handlers.ResetUserPassword)
+		routes.Any("/stripe-webhook", http_webhooks.StripePayments)
 		routes.GET("/ping", func(c *gin.Context) {
 			c.String(200, "pong")
 		})

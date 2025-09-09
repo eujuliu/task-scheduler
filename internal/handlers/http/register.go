@@ -3,6 +3,7 @@ package http_handlers
 import (
 	"net/http"
 	"scheduler/internal/config"
+	stripe_paymentgateway "scheduler/internal/payment_gateway/stripe"
 	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/utils"
@@ -28,9 +29,13 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	conf := config.Instance
+	conf := config.Data
+
 	userRepository := postgres_repos.NewPostgresUserRepository()
-	createUserService := services.NewCreateUserService(userRepository)
+
+	customerPaymentGateway := stripe_paymentgateway.NewStripeCustomerPaymentGateway()
+
+	createUserService := services.NewCreateUserService(userRepository, customerPaymentGateway)
 
 	user, err := createUserService.Execute(json.Username, json.Email, json.Password)
 	if err != nil {
