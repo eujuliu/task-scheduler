@@ -9,8 +9,8 @@ type UserModel struct {
 	Username      string `gorm:"size:20;uniqueIndex;not null"`
 	Email         string `gorm:"size:255;uniqueIndex;not null"`
 	Password      string `gorm:"size:72;not null"`
-	Credits       int
-	FrozenCredits int
+	Credits       int    `gorm:"not null"`
+	FrozenCredits int    `gorm:"not null"`
 }
 
 func (UserModel) TableName() string { return "users" }
