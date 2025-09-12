@@ -1,6 +1,9 @@
-package repos
+package interfaces
 
-import "scheduler/internal/entities"
+import (
+	"scheduler/internal/entities"
+	"time"
+)
 
 type IUserRepository interface {
 	Get() []entities.User
@@ -38,7 +41,7 @@ type IErrorRepository interface {
 }
 
 type ITaskRepository interface {
-	Get() []entities.Task
+	Get(status *string, asc *bool, limit *int, from *time.Time) []entities.Task
 	GetByUserId(userId string) []entities.Task
 	GetFirstById(id string) (*entities.Task, error)
 	GetFirstByReferenceId(id string) (*entities.Task, error)
@@ -46,4 +49,24 @@ type ITaskRepository interface {
 	Create(*entities.Task) error
 	Update(*entities.Task) error
 	Delete(id string) error
+}
+
+type ICustomerPaymentGateway interface {
+	GetFirstByEmail(email string) (*string, error)
+	Create(internalID, username, email string, props *map[string]string) (string, error)
+}
+
+type IPaymentPaymentGateway interface {
+	Create(
+		internalID string,
+		customerID *string,
+		amount int,
+		currency, idempotencyKey string,
+		props *map[string]string,
+	) (string, error)
+}
+
+type IQueue interface {
+	Publish(queueName string, data []byte) error
+	Consume(queueName string) (<-chan []byte, error)
 }

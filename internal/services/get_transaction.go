@@ -5,17 +5,17 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
-	repos "scheduler/internal/repositories"
+	"scheduler/internal/interfaces"
 )
 
 type GetTransactionService struct {
-	userRepository        repos.IUserRepository
-	transactionRepository repos.ITransactionRepository
+	userRepository        interfaces.IUserRepository
+	transactionRepository interfaces.ITransactionRepository
 }
 
 func NewGetTransactionService(
-	userRepository repos.IUserRepository,
-	transactionRepository repos.ITransactionRepository,
+	userRepository interfaces.IUserRepository,
+	transactionRepository interfaces.ITransactionRepository,
 ) *GetTransactionService {
 	return &GetTransactionService{
 		userRepository:        userRepository,

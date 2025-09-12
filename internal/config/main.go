@@ -44,14 +44,8 @@ type Config struct {
 	Stripe   *StripeConfig
 }
 
-var Data *Config
-
-func Load() *Config {
-	if Data != nil {
-		return Data
-	}
-
-	Data = &Config{
+func NewConfig() *Config {
+	return &Config{
 		Server: &ServerConfig{
 			Host:            utils.GetEnv("Host", "0.0.0.0"),
 			Port:            utils.GetEnv("PORT", "8080"),
@@ -78,6 +72,4 @@ func Load() *Config {
 			EndpointSecret: utils.GetEnv("STRIPE_WEBHOOK_SIGNING_SECRET", ""),
 		},
 	}
-
-	return Data
 }

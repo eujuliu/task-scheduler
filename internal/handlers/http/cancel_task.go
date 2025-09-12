@@ -2,44 +2,42 @@ package http_handlers
 
 import (
 	"net/http"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/postgres"
 
 	"github.com/gin-gonic/gin"
 )
 
-func CancelTask(c *gin.Context) {
+type CancelTaskHandler struct {
+	db                *postgres.Database
+	updateTaskService *services.UpdateTaskService
+}
+
+func NewCancelTaskHandler(
+	db *postgres.Database,
+	updateTaskService *services.UpdateTaskService,
+) *CancelTaskHandler {
+	return &CancelTaskHandler{
+		db:                db,
+		updateTaskService: updateTaskService,
+	}
+}
+
+func (h *CancelTaskHandler) Handle(c *gin.Context) {
 	taskId := c.Param("id")
 
-	userRepository := postgres_repos.NewPostgresUserRepository()
-	transactionRepository := postgres_repos.NewPostgresTransactionRepository()
-	taskRepository := postgres_repos.NewPostgresTaskRepository()
-	errorRepository := postgres_repos.NewPostgresErrorRepository()
+	h.db.BeginTransaction()
 
-	updateTransactionService := services.NewUpdateTaskTransactionService(
-		userRepository,
-		transactionRepository,
-		errorRepository,
-	)
-	updateTaskService := services.NewUpdateTaskService(
-		taskRepository,
-		transactionRepository,
-		updateTransactionService,
-	)
-
-	postgres.DB.BeginTransaction()
-
-	task, err := updateTaskService.Cancel(taskId)
+	task, err := h.updateTaskService.Cancel(taskId)
 	if err != nil {
-		_ = postgres.DB.RollbackTransaction()
+		_ = h.db.RollbackTransaction()
 
 		_ = c.Error(err)
 
 		return
 	}
 
-	_ = postgres.DB.CommitTransaction()
+	_ = h.db.CommitTransaction()
 
 	c.JSON(http.StatusOK, gin.H{
 		"id":          task.GetId(),

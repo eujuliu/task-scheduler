@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"scheduler/internal/config"
 	"scheduler/pkg/utils"
 
 	"github.com/gin-gonic/gin"
@@ -34,7 +33,7 @@ func Authentication(c *gin.Context) {
 		return
 	}
 
-	claims, err := utils.ValidateToken(cookie.Value, config.Data.JWT.AccessTokenSecret)
+	claims, err := utils.ValidateToken(cookie.Value, utils.GetEnv("ACCESS_TOKEN_SECRET", ""))
 	if err != nil {
 		slog.Debug(fmt.Sprintf("Token validation failed %s", err))
 
@@ -81,7 +80,7 @@ func VerifyRefreshToken(c *gin.Context) {
 		return
 	}
 
-	_, err = utils.ValidateToken(cookie.Value, config.Data.JWT.RefreshTokenSecret)
+	_, err = utils.ValidateToken(cookie.Value, utils.GetEnv("REFRESH_TOKEN_SECRET", ""))
 	if err != nil {
 		slog.Debug(fmt.Sprintf("Token validation failed %s", err))
 

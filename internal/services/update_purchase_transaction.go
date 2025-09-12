@@ -5,19 +5,19 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
-	repos "scheduler/internal/repositories"
+	"scheduler/internal/interfaces"
 )
 
 type UpdatePurchaseTransactionService struct {
-	userRepository        repos.IUserRepository
-	transactionRepository repos.ITransactionRepository
-	errorRepository       repos.IErrorRepository
+	userRepository        interfaces.IUserRepository
+	transactionRepository interfaces.ITransactionRepository
+	errorRepository       interfaces.IErrorRepository
 }
 
 func NewUpdatePurchaseTransactionService(
-	userRepository repos.IUserRepository,
-	transactionRepository repos.ITransactionRepository,
-	errorRepository repos.IErrorRepository,
+	userRepository interfaces.IUserRepository,
+	transactionRepository interfaces.ITransactionRepository,
+	errorRepository interfaces.IErrorRepository,
 ) *UpdatePurchaseTransactionService {
 	return &UpdatePurchaseTransactionService{
 		userRepository:        userRepository,

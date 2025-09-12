@@ -5,19 +5,17 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
-	paymentgateway "scheduler/internal/payment_gateway"
-
-	repos "scheduler/internal/repositories"
+	"scheduler/internal/interfaces"
 )
 
 type CreateUserService struct {
-	userRepository         repos.IUserRepository
-	customerPaymentGateway paymentgateway.ICustomerPaymentGateway
+	userRepository         interfaces.IUserRepository
+	customerPaymentGateway interfaces.ICustomerPaymentGateway
 }
 
 func NewCreateUserService(
-	userRepo repos.IUserRepository,
-	customerPaymentGateway paymentgateway.ICustomerPaymentGateway,
+	userRepo interfaces.IUserRepository,
+	customerPaymentGateway interfaces.ICustomerPaymentGateway,
 ) *CreateUserService {
 	return &CreateUserService{
 		userRepository:         userRepo,

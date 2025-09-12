@@ -1,29 +1,60 @@
 package postgres_repos
 
 import (
+	"fmt"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
 	"scheduler/internal/persistence"
 	"scheduler/pkg/postgres"
+	"time"
 )
 
 type PostgresTaskRepository struct {
-	db postgres.Database
+	db *postgres.Database
 }
 
-func NewPostgresTaskRepository() *PostgresTaskRepository {
+func NewPostgresTaskRepository(db *postgres.Database) *PostgresTaskRepository {
 	return &PostgresTaskRepository{
-		db: *postgres.DB,
+		db: db,
 	}
 }
 
-func (r *PostgresTaskRepository) Get() []entities.Task {
-	db := r.db.GetInstance()
+func (r *PostgresTaskRepository) Get(
+	status *string,
+	asc *bool,
+	limit *int,
+	from *time.Time,
+) []entities.Task {
+	db := r.db.Get()
 
 	var tasks []persistence.TaskModel
 	var result []entities.Task
 
-	db.Find(&tasks)
+	query := db.Model(&tasks)
+
+	if status != nil {
+		query = query.Where("status = ?", *status)
+	}
+
+	if from != nil {
+		query = query.Where("run_at > ?", *from)
+	}
+
+	if asc != nil {
+		order := "asc"
+
+		if !*asc {
+			order = "desc"
+		}
+
+		query = query.Order(fmt.Sprintf("run_at %s", order))
+	}
+
+	if limit != nil {
+		query = query.Limit(*limit)
+	}
+
+	query.Find(&tasks)
 
 	for _, task := range tasks {
 		result = append(result, *persistence.ToTaskDomain(&task))
@@ -33,7 +64,7 @@ func (r *PostgresTaskRepository) Get() []entities.Task {
 }
 
 func (r *PostgresTaskRepository) GetByUserId(userId string) []entities.Task {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var tasks []persistence.TaskModel
 	var result []entities.Task
@@ -50,7 +81,7 @@ func (r *PostgresTaskRepository) GetByUserId(userId string) []entities.Task {
 func (r *PostgresTaskRepository) GetFirstById(
 	id string,
 ) (*entities.Task, error) {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var task persistence.TaskModel
 
@@ -64,7 +95,7 @@ func (r *PostgresTaskRepository) GetFirstById(
 func (r *PostgresTaskRepository) GetFirstByReferenceId(
 	id string,
 ) (*entities.Task, error) {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var task persistence.TaskModel
 
@@ -78,7 +109,7 @@ func (r *PostgresTaskRepository) GetFirstByReferenceId(
 func (r *PostgresTaskRepository) GetFirstByIdempotencyKey(
 	key string,
 ) (*entities.Task, error) {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var task persistence.TaskModel
 
@@ -90,7 +121,7 @@ func (r *PostgresTaskRepository) GetFirstByIdempotencyKey(
 }
 
 func (r *PostgresTaskRepository) Create(task *entities.Task) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	m := persistence.ToTaskModel(task)
 
@@ -100,7 +131,7 @@ func (r *PostgresTaskRepository) Create(task *entities.Task) error {
 }
 
 func (r *PostgresTaskRepository) Update(task *entities.Task) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	m := persistence.ToTaskModel(task)
 
@@ -110,7 +141,7 @@ func (r *PostgresTaskRepository) Update(task *entities.Task) error {
 }
 
 func (r *PostgresTaskRepository) Delete(id string) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	err := db.Delete(&persistence.TaskModel{}, "id = ?", id).Error
 

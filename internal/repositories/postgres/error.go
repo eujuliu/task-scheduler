@@ -7,17 +7,17 @@ import (
 )
 
 type PostgresErrorRepository struct {
-	db postgres.Database
+	db *postgres.Database
 }
 
-func NewPostgresErrorRepository() *PostgresErrorRepository {
+func NewPostgresErrorRepository(db *postgres.Database) *PostgresErrorRepository {
 	return &PostgresErrorRepository{
-		db: *postgres.DB,
+		db: db,
 	}
 }
 
 func (r *PostgresErrorRepository) Get() []entities.Error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var troubles []persistence.ErrorModel
 	var result []entities.Error
@@ -32,7 +32,7 @@ func (r *PostgresErrorRepository) Get() []entities.Error {
 }
 
 func (r *PostgresErrorRepository) GetByUserId(userId string) []entities.Error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var troubles []persistence.ErrorModel
 	var result []entities.Error
@@ -49,7 +49,7 @@ func (r *PostgresErrorRepository) GetByUserId(userId string) []entities.Error {
 func (r *PostgresErrorRepository) GetFirstByUserId(
 	userId string,
 ) (*entities.Error, error) {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var trouble persistence.ErrorModel
 
@@ -63,7 +63,7 @@ func (r *PostgresErrorRepository) GetFirstByUserId(
 func (r *PostgresErrorRepository) GetFirstByReferenceId(
 	id string,
 ) (*entities.Error, error) {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var trouble persistence.ErrorModel
 
@@ -75,7 +75,7 @@ func (r *PostgresErrorRepository) GetFirstByReferenceId(
 }
 
 func (r *PostgresErrorRepository) Create(trouble *entities.Error) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	m := persistence.ToErrorModel(trouble)
 

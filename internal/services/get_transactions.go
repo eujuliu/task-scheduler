@@ -2,17 +2,17 @@ package services
 
 import (
 	"scheduler/internal/entities"
-	repos "scheduler/internal/repositories"
+	"scheduler/internal/interfaces"
 )
 
 type GetTransactionsService struct {
-	userRepository        repos.IUserRepository
-	transactionRepository repos.ITransactionRepository
+	userRepository        interfaces.IUserRepository
+	transactionRepository interfaces.ITransactionRepository
 }
 
 func NewGetTransactionsService(
-	userRepository repos.IUserRepository,
-	transactionsRepository repos.ITransactionRepository,
+	userRepository interfaces.IUserRepository,
+	transactionsRepository interfaces.ITransactionRepository,
 ) *GetTransactionsService {
 	return &GetTransactionsService{
 		userRepository:        userRepository,

@@ -11,14 +11,14 @@ type PostgresPasswordRecoveryRepository struct {
 	db *postgres.Database
 }
 
-func NewPostgresPasswordRepository() *PostgresPasswordRecoveryRepository {
+func NewPostgresPasswordRepository(db *postgres.Database) *PostgresPasswordRecoveryRepository {
 	return &PostgresPasswordRecoveryRepository{
-		db: postgres.DB,
+		db: db,
 	}
 }
 
 func (r *PostgresPasswordRecoveryRepository) Get() []entities.PasswordRecovery {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var tokens []persistence.PasswordRecoveryModel
 	var result []entities.PasswordRecovery
@@ -37,7 +37,7 @@ func (r *PostgresPasswordRecoveryRepository) GetFirstById(
 ) (*entities.PasswordRecovery, error) {
 	var token persistence.PasswordRecoveryModel
 
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	if err := db.First(&token, "id = ?", id).Error; err != nil {
 		return nil, errors.RECOVERY_TOKEN_NOT_FOUND()
@@ -51,7 +51,7 @@ func (r *PostgresPasswordRecoveryRepository) GetFirstByUserId(
 ) (*entities.PasswordRecovery, error) {
 	var token persistence.PasswordRecoveryModel
 
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	if err := db.First(&token, "userID = ?", userId).Error; err != nil {
 		return nil, errors.RECOVERY_TOKEN_NOT_FOUND()
@@ -63,7 +63,7 @@ func (r *PostgresPasswordRecoveryRepository) GetFirstByUserId(
 func (r *PostgresPasswordRecoveryRepository) Create(
 	token *entities.PasswordRecovery,
 ) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	m, err := persistence.ToPasswordRecoveryModel(token)
 	if err != nil {
@@ -76,7 +76,7 @@ func (r *PostgresPasswordRecoveryRepository) Create(
 }
 
 func (r *PostgresPasswordRecoveryRepository) Delete(id string) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	err := db.Delete(&persistence.PasswordRecoveryModel{}, "id = ? ", id).Error
 

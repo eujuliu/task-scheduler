@@ -3,7 +3,6 @@ package http_handlers
 import (
 	"net/http"
 	"scheduler/internal/config"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/utils"
 	"time"
@@ -16,7 +15,19 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func Login(c *gin.Context) {
+type LoginHandler struct {
+	config         *config.Config
+	getUserService *services.GetUserService
+}
+
+func NewLoginHandler(config *config.Config, getUserService *services.GetUserService) *LoginHandler {
+	return &LoginHandler{
+		config:         config,
+		getUserService: getUserService,
+	}
+}
+
+func (h *LoginHandler) Handle(c *gin.Context) {
 	var json LoginRequest
 
 	if err := c.ShouldBindJSON(&json); err != nil {
@@ -27,11 +38,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	conf := config.Data
-	userRepository := postgres_repos.NewPostgresUserRepository()
-	getUserService := services.NewGetUserService(userRepository)
-
-	user, err := getUserService.Execute(json.Email, json.Password)
+	user, err := h.getUserService.Execute(json.Email, json.Password)
 	if err != nil {
 		_ = c.Error(err)
 
@@ -41,7 +48,7 @@ func Login(c *gin.Context) {
 	accessToken, err := utils.GenerateToken(
 		user.GetId(),
 		user.GetEmail(),
-		conf.JWT.AccessTokenSecret,
+		h.config.JWT.AccessTokenSecret,
 		15*time.Minute,
 	)
 	if err != nil {
@@ -57,7 +64,7 @@ func Login(c *gin.Context) {
 	refreshToken, err := utils.GenerateToken(
 		user.GetId(),
 		user.GetEmail(),
-		conf.JWT.RefreshTokenSecret,
+		h.config.JWT.RefreshTokenSecret,
 		time.Hour*24*7,
 	)
 	if err != nil {
@@ -76,7 +83,7 @@ func Login(c *gin.Context) {
 		15*60*1000,
 		"/",
 		"",
-		conf.Server.GinMode == "release",
+		h.config.Server.GinMode == "release",
 		true,
 	)
 
@@ -86,7 +93,7 @@ func Login(c *gin.Context) {
 		7*24*60*1000,
 		"/",
 		"",
-		conf.Server.GinMode == "release",
+		h.config.Server.GinMode == "release",
 		true,
 	)
 

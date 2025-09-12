@@ -17,13 +17,7 @@ type Database struct {
 	config *config.DatabaseConfig
 }
 
-var DB *Database
-
-func Load(config *config.DatabaseConfig) (*Database, error) {
-	if DB != nil {
-		return DB, nil
-	}
-
+func NewPostgres(config *config.DatabaseConfig) (*Database, error) {
 	err := createInitialDatabase(config)
 	if err != nil {
 		return nil, err
@@ -34,7 +28,7 @@ func Load(config *config.DatabaseConfig) (*Database, error) {
 		return nil, err
 	}
 
-	DB = &Database{
+	DB := &Database{
 		db:     db,
 		tx:     nil,
 		config: config,
@@ -48,7 +42,7 @@ func Load(config *config.DatabaseConfig) (*Database, error) {
 	return DB, nil
 }
 
-func (db *Database) GetInstance() *gorm.DB {
+func (db *Database) Get() *gorm.DB {
 	if db.tx != nil {
 		return db.tx
 	}
@@ -90,8 +84,10 @@ func (db *Database) CommitTransaction() error {
 func (db *Database) SeedForTest() {
 	user, _ := entities.NewUser("testuser", "testuser@email.com", "Password@123")
 
+	user.AddCredits(100000000)
+
 	m, _ := persistence.ToUserModel(user)
-	_ = db.GetInstance().Create(m).Error
+	_ = db.Get().Create(m).Error
 }
 
 func (db *Database) migrations() error {

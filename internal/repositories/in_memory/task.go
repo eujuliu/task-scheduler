@@ -3,6 +3,7 @@ package in_memory_repos
 import (
 	"scheduler/internal/entities"
 	"slices"
+	"time"
 )
 
 type InMemoryTaskRepository struct {
@@ -15,7 +16,12 @@ func NewInMemoryTaskRepository() *InMemoryTaskRepository {
 	}
 }
 
-func (r *InMemoryTaskRepository) Get() []entities.Task {
+func (r *InMemoryTaskRepository) Get(
+	status *string,
+	asc *bool,
+	limit *int,
+	from *time.Time,
+) []entities.Task {
 	return r.tasks
 }
 

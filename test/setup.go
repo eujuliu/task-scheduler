@@ -1,26 +1,24 @@
 package test
 
 import (
-	paymentgateway "scheduler/internal/payment_gateway"
+	"scheduler/internal/interfaces"
 	in_memory_paymentgateway "scheduler/internal/payment_gateway/in_memory"
+	in_memory_repos "scheduler/internal/repositories/in_memory"
 	"scheduler/internal/services"
 	"testing"
-
-	repos "scheduler/internal/repositories"
-	in_memory_repos "scheduler/internal/repositories/in_memory"
 )
 
 var (
-	UserRepository        repos.IUserRepository
-	PasswordRepository    repos.IPasswordRecoveryRepository
-	TransactionRepository repos.ITransactionRepository
-	ErrorRepository       repos.IErrorRepository
-	TaskRepository        repos.ITaskRepository
+	UserRepository        interfaces.IUserRepository
+	PasswordRepository    interfaces.IPasswordRecoveryRepository
+	TransactionRepository interfaces.ITransactionRepository
+	ErrorRepository       interfaces.IErrorRepository
+	TaskRepository        interfaces.ITaskRepository
 )
 
 var (
-	CustomerPaymentGateway paymentgateway.ICustomerPaymentGateway
-	PaymentPaymentGateway  paymentgateway.IPaymentPaymentGateway
+	CustomerPaymentGateway interfaces.ICustomerPaymentGateway
+	PaymentPaymentGateway  interfaces.IPaymentPaymentGateway
 )
 
 var (
@@ -42,10 +40,11 @@ var (
 )
 
 var (
-	CreateTaskService *services.CreateTaskService
-	UpdateTaskService *services.UpdateTaskService
-	GetTasksService   *services.GetTasksService
-	GetTaskService    *services.GetTaskService
+	CreateTaskService       *services.CreateTaskService
+	UpdateTaskService       *services.UpdateTaskService
+	GetTasksByUserIdService *services.GetTasksByUserIdService
+	GetTasksByRunAtService  *services.GetTasksByRunAtService
+	GetTaskService          *services.GetTaskService
 )
 
 func teardown(tb testing.TB) {}
@@ -108,8 +107,11 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 		TransactionRepository,
 		UpdateTaskTransactionService,
 	)
-	GetTasksService = services.NewGetTasksService(
+	GetTasksByUserIdService = services.NewGetTasksByUserIdService(
 		UserRepository,
+		TaskRepository,
+	)
+	GetTasksByRunAtService = services.NewGetTasksByRunAtService(
 		TaskRepository,
 	)
 	GetTaskService = services.NewGetTaskService(

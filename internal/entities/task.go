@@ -14,6 +14,10 @@ const (
 	PriorityExtraLow
 )
 
+const (
+	StatusRunning string = "RUNNING"
+)
+
 type Task struct {
 	BaseEntity
 	kind           string

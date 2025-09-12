@@ -3,8 +3,6 @@ package http_handlers
 import (
 	"net/http"
 	"scheduler/internal/config"
-	stripe_paymentgateway "scheduler/internal/payment_gateway/stripe"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/utils"
 	"time"
@@ -18,7 +16,22 @@ type RegisterRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func Register(c *gin.Context) {
+type RegisterHandler struct {
+	config            *config.Config
+	createUserService *services.CreateUserService
+}
+
+func NewRegisterHandler(
+	config *config.Config,
+	createUserService *services.CreateUserService,
+) *RegisterHandler {
+	return &RegisterHandler{
+		config:            config,
+		createUserService: createUserService,
+	}
+}
+
+func (h *RegisterHandler) Handle(c *gin.Context) {
 	var json RegisterRequest
 
 	if err := c.ShouldBindJSON(&json); err != nil {
@@ -29,15 +42,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	conf := config.Data
-
-	userRepository := postgres_repos.NewPostgresUserRepository()
-
-	customerPaymentGateway := stripe_paymentgateway.NewStripeCustomerPaymentGateway()
-
-	createUserService := services.NewCreateUserService(userRepository, customerPaymentGateway)
-
-	user, err := createUserService.Execute(json.Username, json.Email, json.Password)
+	user, err := h.createUserService.Execute(json.Username, json.Email, json.Password)
 	if err != nil {
 		_ = c.Error(err)
 
@@ -47,7 +52,7 @@ func Register(c *gin.Context) {
 	accessToken, err := utils.GenerateToken(
 		user.GetId(),
 		user.GetEmail(),
-		conf.JWT.AccessTokenSecret,
+		h.config.JWT.AccessTokenSecret,
 		15*time.Minute,
 	)
 	if err != nil {
@@ -63,7 +68,7 @@ func Register(c *gin.Context) {
 	refreshToken, err := utils.GenerateToken(
 		user.GetId(),
 		user.GetEmail(),
-		conf.JWT.RefreshTokenSecret,
+		h.config.JWT.RefreshTokenSecret,
 		time.Hour*24*7,
 	)
 	if err != nil {
@@ -82,7 +87,7 @@ func Register(c *gin.Context) {
 		15*60*1000,
 		"/",
 		"",
-		conf.Server.GinMode == "release",
+		h.config.Server.GinMode == "release",
 		true,
 	)
 	c.SetCookie(
@@ -91,7 +96,7 @@ func Register(c *gin.Context) {
 		7*24*60*1000,
 		"/",
 		"",
-		conf.Server.GinMode == "release",
+		h.config.Server.GinMode == "release",
 		true,
 	)
 

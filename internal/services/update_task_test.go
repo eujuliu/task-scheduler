@@ -37,11 +37,15 @@ func TestUpdateTaskService_Properties(t *testing.T) {
 
 	runAt := time.Now().AddDate(0, 4, 0)
 
+	timezone := "Europe/Berlin"
+	priority := entities.PriorityHigh
+
 	task, err = UpdateTaskService.Execute(
 		task.GetId(),
-		runAt,
-		"Europe/Berlin",
-		entities.PriorityHigh,
+		nil,
+		&runAt,
+		&timezone,
+		&priority,
 	)
 
 	Ok(t, err)
