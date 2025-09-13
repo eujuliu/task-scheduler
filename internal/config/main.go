@@ -37,11 +37,20 @@ type StripeConfig struct {
 	EndpointSecret string
 }
 
+type RabbitMQConfig struct {
+	Port     string
+	User     string
+	Password string
+	Host     string
+	Url      string
+}
+
 type Config struct {
 	Server   *ServerConfig
 	JWT      *JWTConfig
 	Database *DatabaseConfig
 	Stripe   *StripeConfig
+	RabbitMQ *RabbitMQConfig
 }
 
 func NewConfig() *Config {
@@ -70,6 +79,16 @@ func NewConfig() *Config {
 		Stripe: &StripeConfig{
 			APIKey:         utils.GetEnv("STRIPE_API_KEY", ""),
 			EndpointSecret: utils.GetEnv("STRIPE_WEBHOOK_SIGNING_SECRET", ""),
+		},
+		RabbitMQ: &RabbitMQConfig{
+			Port:     utils.GetEnv("RABBITMQ_PORT", "5672"),
+			User:     utils.GetEnv("RABBITMQ_DEFAULT_USER", "local_user"),
+			Password: utils.GetEnv("RABBITMQ_DEFAULT_PASS", "local_password"),
+			Host:     utils.GetEnv("RABBITMQ_HOST", "localhost"),
+			Url: utils.GetEnv(
+				"RABBITMQ_CONNECTION_STRING",
+				"amqp://guest:guest@localhost:5672/",
+			),
 		},
 	}
 }

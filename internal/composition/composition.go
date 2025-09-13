@@ -6,11 +6,12 @@ import (
 	"scheduler/internal/config"
 	http_handlers "scheduler/internal/handlers/http"
 	http_webhooks "scheduler/internal/handlers/http/webhooks"
+	"scheduler/internal/interfaces"
 	stripe_paymentgateway "scheduler/internal/payment_gateway/stripe"
-	"scheduler/internal/queue"
 	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/postgres"
+	"scheduler/pkg/rabbitmq"
 	"scheduler/pkg/scheduler"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,7 @@ type Dependencies struct {
 	DB                        *postgres.Database
 	Scheduler                 *scheduler.Scheduler
 	Config                    *config.Config
+	Queue                     *interfaces.IQueue
 	BuyCreditsHandler         *http_handlers.BuyCreditsHandler
 	CancelTaskHandler         *http_handlers.CancelTaskHandler
 	CreateTaskHandler         *http_handlers.CreateTaskHandler
@@ -45,6 +47,16 @@ func Initialize() (*Dependencies, error) {
 		return nil, err
 	}
 
+	rmq, err := rabbitmq.NewRabbitMQ(config.RabbitMQ)
+	if err != nil {
+		return nil, err
+	}
+
+	err = rmq.AddDurableQueue("tasks-queue", "task-exchange", "task.send")
+	if err != nil {
+		return nil, err
+	}
+
 	loggerLevel := slog.LevelInfo
 
 	if config.Server.GinMode == gin.DebugMode {
@@ -57,9 +69,7 @@ func Initialize() (*Dependencies, error) {
 
 	slog.SetDefault(logger)
 
-	queue := queue.NewInMemoryQueue()
-
-	scheduler := scheduler.NewScheduler(clockwork.NewRealClock(), queue, 20)
+	scheduler := scheduler.NewScheduler(clockwork.NewRealClock(), rmq, 20)
 
 	userRepository := postgres_repos.NewPostgresUserRepository(db)
 	passwordRepository := postgres_repos.NewPostgresPasswordRepository(db)

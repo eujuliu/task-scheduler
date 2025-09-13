@@ -26,13 +26,13 @@ func (q *InMemoryQueue) ensureQueue(name string) {
 	}()
 }
 
-func (q *InMemoryQueue) Publish(name string, data []byte) error {
+func (q *InMemoryQueue) Publish(name string, exchangeName string, data []byte) error {
 	q.ensureQueue(name)
 	q.queues[name] <- data
 	return nil
 }
 
-func (q *InMemoryQueue) Consume(name string) (<-chan []byte, error) {
+func (q *InMemoryQueue) Consume(name string) (any, error) {
 	q.ensureQueue(name)
 	return q.queues[name], nil
 }

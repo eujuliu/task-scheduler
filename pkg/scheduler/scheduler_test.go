@@ -87,7 +87,7 @@ func TestScheduler(t *testing.T) {
 	tasksCh, _ := queue.Consume("tasks")
 
 	select {
-	case <-tasksCh:
+	case <-tasksCh.(chan []byte):
 		t.Fatal("unexpected received result before timer expired")
 	case <-time.After(2 * time.Second):
 	}
@@ -97,7 +97,7 @@ func TestScheduler(t *testing.T) {
 	result := []string{"0", "4", "3", "2", "1"}
 
 	for _, i := range result {
-		d := <-tasksCh
+		d := <-tasksCh.(chan []byte)
 		var got persistence.TaskModel
 		_ = json.Unmarshal(d, &got)
 

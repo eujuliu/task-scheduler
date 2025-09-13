@@ -88,7 +88,7 @@ func (s *Scheduler) ExecuteTask(task *entities.Task) {
 
 	data, _ := json.Marshal(persistence.ToTaskModel(task))
 
-	_ = s.queue.Publish("tasks", data)
+	_ = s.queue.Publish("tasks", "task-exchange", data)
 }
 
 func (s *Scheduler) upsert(task *entities.Task) {
