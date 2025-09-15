@@ -90,3 +90,7 @@ func (r *InMemoryTransactionRepository) Update(
 
 	return nil
 }
+
+func (r *InMemoryTransactionRepository) Clear() {
+	r.transactions = []entities.Transaction{}
+}

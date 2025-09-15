@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	PriorityHigh = iota + 1
-	PriorityMedium
+	PriorityExtraLow = iota + 1
 	PriorityLow
-	PriorityExtraLow
+	PriorityMedium
+	PriorityHigh
 )
 
 const (

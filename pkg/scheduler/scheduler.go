@@ -9,7 +9,6 @@ import (
 	"scheduler/internal/interfaces"
 	"scheduler/internal/persistence"
 	"sync"
-	"time"
 
 	"github.com/jonboulle/clockwork"
 )
@@ -20,12 +19,12 @@ type Scheduler struct {
 	mu             sync.Mutex
 	clock          clockwork.Clock
 	addCh          chan *entities.Task
+	updateCh       chan *entities.Task
 	stopCh         chan struct{}
+	values         map[string]int
 	queue          interfaces.IQueue
 	taskRepository interfaces.ITaskRepository
 }
-
-var indexes = make(map[string]int)
 
 func NewScheduler(
 	clock clockwork.Clock,
@@ -38,13 +37,16 @@ func NewScheduler(
 		capacity:       capacity,
 		clock:          clock,
 		addCh:          make(chan *entities.Task),
+		updateCh:       make(chan *entities.Task),
 		stopCh:         make(chan struct{}),
+		values:         make(map[string]int),
 		queue:          queue,
 		taskRepository: taskRepository,
 	}
 
 	heap.Init(&sc.heap)
 
+	sc.loadNextTasks()
 	return sc
 }
 
@@ -53,13 +55,11 @@ func (s *Scheduler) PeekTasks() Heap {
 }
 
 func (s *Scheduler) Run() {
-	go s.loadNextTasks()
-
 	for {
 		if len(s.heap) == 0 {
 			select {
 			case x := <-s.addCh:
-				s.upsert(x)
+				s.push(x)
 			case <-s.stopCh:
 				return
 			}
@@ -69,7 +69,9 @@ func (s *Scheduler) Run() {
 			waitDuration := next.GetRunAt().Sub(now)
 
 			if waitDuration <= 0 {
+				s.mu.Lock()
 				x := heap.Pop(&s.heap).(*entities.Task)
+				s.mu.Unlock()
 
 				s.ExecuteTask(x)
 			} else {
@@ -77,16 +79,32 @@ func (s *Scheduler) Run() {
 
 				select {
 				case <-timer:
+					s.mu.Lock()
 					task := heap.Pop(&s.heap).(*entities.Task)
+					s.mu.Unlock()
 					s.ExecuteTask(task)
 				case task := <-s.addCh:
-					s.upsert(task)
+					s.push(task)
+				case task := <-s.updateCh:
+					s.update(task)
 				case <-s.stopCh:
 					return
 				}
 			}
 		}
 	}
+}
+
+func (s *Scheduler) Add(task *entities.Task) {
+	s.addCh <- task
+}
+
+func (s *Scheduler) Update(task *entities.Task) {
+	s.updateCh <- task
+}
+
+func (s *Scheduler) Stop() {
+	close(s.stopCh)
 }
 
 func (s *Scheduler) ExecuteTask(task *entities.Task) {
@@ -98,6 +116,7 @@ func (s *Scheduler) ExecuteTask(task *entities.Task) {
 			task.GetRunAt().String(),
 		),
 	)
+	delete(s.values, task.GetId())
 
 	err := task.SetStatus(entities.StatusRunning)
 	if err != nil {
@@ -119,82 +138,80 @@ func (s *Scheduler) ExecuteTask(task *entities.Task) {
 		panic(err)
 	}
 
-	go s.loadNextTasks()
+	s.loadNextTasks()
+}
+
+func (s *Scheduler) push(task *entities.Task) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if _, ok := s.values[task.GetId()]; ok {
+		return
+	}
+
+	if len(s.heap) < s.capacity {
+		heap.Push(&s.heap, task)
+		s.values[task.GetId()] = 1
+		slog.Debug(fmt.Sprintf("task %s added into the heap", task.GetId()))
+		return
+	}
+
+	n := len(s.heap)
+	lastTask := s.heap[n-1]
+
+	if task.GetRunAt().After(lastTask.GetRunAt()) {
+		return
+	}
+
+	if task.GetRunAt().Equal(lastTask.GetRunAt()) && task.GetPriority() < lastTask.GetPriority() {
+		return
+	}
+
+	heap.Remove(&s.heap, n-1)
+	heap.Push(&s.heap, task)
+	s.values[task.GetId()] = 1
+	slog.Debug(fmt.Sprintf("task %s added into the heap", task.GetId()))
+}
+
+func (s *Scheduler) update(task *entities.Task) {
+	s.mu.Lock()
+	indexes := make(map[string]int)
+
+	for i, t := range s.heap {
+		indexes[t.GetId()] = i
+	}
+	s.mu.Unlock()
+
+	if _, ok := indexes[task.GetId()]; !ok {
+		s.push(task)
+
+		return
+	}
+
+	s.mu.Lock()
+	heap.Remove(&s.heap, indexes[task.GetId()])
+	heap.Push(&s.heap, task)
+	s.mu.Unlock()
+
+	slog.Debug(fmt.Sprintf("task %s updated into the heap", task.GetId()))
 }
 
 func (s *Scheduler) loadNextTasks() {
 	slog.Info("getting tasks from the repository...")
 
-	from := time.Now()
-	quantity := s.capacity
+	from := s.clock.Now()
+	n := len(s.heap)
+	quantity := min(20, s.capacity-n)
 	status := entities.StatusPending
 	asc := true
-	n := len(s.heap)
-
-	if len(s.heap) > 0 {
-		lastTask := s.heap[n-1]
-		from = lastTask.GetRunAt()
-
-		quantity -= n
-	}
 
 	tasks := s.taskRepository.Get(&status, &asc, &quantity, &from)
 
-	slog.Debug(fmt.Sprintf("adding %d tasks in the scheduler...", len(tasks)))
+	slog.Info(fmt.Sprintf("find new %d tasks for add in the heap...", len(tasks)))
 
-	for _, task := range tasks {
-		s.Add(&task)
-	}
-}
-
-func (s *Scheduler) upsert(task *entities.Task) {
-	index, ok := indexes[task.GetId()]
-
-	slog.Debug(fmt.Sprintf("current indexes %v", indexes))
-
-	if ok {
-		s.mu.Lock()
-		heap.Remove(&s.heap, index)
-		heap.Push(&s.heap, task)
-		s.mu.Unlock()
-
-		slog.Info(fmt.Sprintf("task updated into index %d, task id %s", index, task.GetId()))
-		return
-	}
-
-	s.mu.Lock()
-	heap.Push(&s.heap, task)
-	indexes[task.GetId()] = len(s.heap) - 1
-	s.mu.Unlock()
-
-	s.removeExtra()
-
-	slog.Info(
-		fmt.Sprintf(
-			"new task %s added to heap and now have %d tasks on heap",
-			task.GetId(),
-			len(s.heap),
-		),
-	)
-}
-
-func (s *Scheduler) removeExtra() {
-	if len(s.heap) <= s.capacity {
-		return
-	}
-
-	for i := len(s.heap) - 1; i > 19; i-- {
-		s.mu.Lock()
-		task := heap.Remove(&s.heap, i).(*entities.Task)
-		delete(indexes, task.GetId())
-		s.mu.Unlock()
-	}
-}
-
-func (s *Scheduler) Add(task *entities.Task) {
-	s.addCh <- task
-}
-
-func (s *Scheduler) Stop() {
-	close(s.stopCh)
+	go func() {
+		for _, task := range tasks {
+			s.Add(&task)
+		}
+	}()
 }

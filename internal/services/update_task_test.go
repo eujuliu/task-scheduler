@@ -25,7 +25,7 @@ func TestUpdateTaskService_Properties(t *testing.T) {
 
 	task, err := CreateTaskService.Execute(
 		"email",
-		time.Now().AddDate(0, 4, 0),
+		time.Now().Add(10*time.Minute),
 		"America/Sao_Paulo",
 		entities.PriorityMedium,
 		user.GetId(),
@@ -35,7 +35,7 @@ func TestUpdateTaskService_Properties(t *testing.T) {
 
 	Ok(t, err)
 
-	runAt := time.Now().AddDate(0, 4, 0)
+	runAt := time.Now().Add(10 * time.Minute)
 
 	timezone := "Europe/Berlin"
 	priority := entities.PriorityHigh
@@ -69,7 +69,7 @@ func TestUpdateTaskService_Complete(t *testing.T) {
 
 	task, err := CreateTaskService.Execute(
 		"email",
-		time.Now().AddDate(0, 4, 0),
+		time.Now().Add(10*time.Minute),
 		"America/Sao_Paulo",
 		entities.PriorityMedium,
 		user.GetId(),
@@ -101,7 +101,7 @@ func TestUpdateTaskService_FailWithRefund(t *testing.T) {
 
 	task, err := CreateTaskService.Execute(
 		"email",
-		time.Now().AddDate(0, 4, 0),
+		time.Now().Add(10*time.Minute),
 		"America/Sao_Paulo",
 		entities.PriorityMedium,
 		user.GetId(),
@@ -139,7 +139,7 @@ func TestUpdateTaskService_FailWithoutRefund(t *testing.T) {
 
 	task, err := CreateTaskService.Execute(
 		"email",
-		time.Now().AddDate(0, 4, 0),
+		time.Now().Add(10*time.Minute),
 		"America/Sao_Paulo",
 		entities.PriorityMedium,
 		user.GetId(),
@@ -177,7 +177,7 @@ func TestUpdateTaskService_Cancel(t *testing.T) {
 
 	task, err := CreateTaskService.Execute(
 		"email",
-		time.Now().AddDate(0, 4, 0),
+		time.Now().Add(10*time.Minute),
 		"America/Sao_Paulo",
 		entities.PriorityMedium,
 		user.GetId(),

@@ -5,7 +5,10 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"scheduler/internal/entities"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 // assert fails the test if the condition is false.
@@ -46,4 +49,34 @@ func Equals(tb testing.TB, exp, act any) {
 		)
 		tb.FailNow()
 	}
+}
+
+func CreateUserWithCredits(name, email, password string) (*entities.User, error) {
+	user, err := CreateUserService.Execute(
+		name,
+		email,
+		password,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	transaction, err := CreateTransactionService.Execute(
+		user.GetId(),
+		100,
+		"BRL",
+		entities.TypeTransactionPurchase,
+		"",
+		uuid.NewString(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = UpdatePurchaseTransactionService.Complete(transaction.GetId())
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

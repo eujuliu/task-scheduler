@@ -98,7 +98,7 @@ func (s *UpdateTaskService) Execute(
 		return nil, err
 	}
 
-	s.scheduler.Add(task)
+	s.scheduler.Update(task)
 
 	slog.Info("update task service finished...")
 	slog.Debug(fmt.Sprintf("returned task %+v", task))

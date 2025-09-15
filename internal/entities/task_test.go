@@ -24,7 +24,7 @@ func TestTask(t *testing.T) {
 	)
 
 	Ok(t, err)
-	Equals(t, 3, task.GetPriority())
+	Equals(t, PriorityLow, task.GetPriority())
 	Equals(t, 0, task.GetRetries())
 	Equals(t, StatusPending, task.GetStatus())
 }

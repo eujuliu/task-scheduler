@@ -100,3 +100,7 @@ func (r *InMemoryTaskRepository) Delete(id string) error {
 
 	return nil
 }
+
+func (r *InMemoryTaskRepository) Clear() {
+	r.tasks = []entities.Task{}
+}

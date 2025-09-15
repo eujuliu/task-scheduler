@@ -7,10 +7,13 @@ import (
 	in_memory_repos "scheduler/internal/repositories/in_memory"
 	"scheduler/internal/services"
 	"scheduler/pkg/scheduler"
+	"sync"
 	"testing"
 
 	"github.com/jonboulle/clockwork"
 )
+
+var once sync.Once
 
 var (
 	UserRepository        interfaces.IUserRepository
@@ -58,85 +61,91 @@ var (
 )
 
 func teardown(tb testing.TB) {
-	Scheduler.Stop()
+	UserRepository.(*in_memory_repos.InMemoryUserRepository).Clear()
+	PasswordRepository.(*in_memory_repos.InMemoryPasswordRecoveryRepository).Clear()
+	TransactionRepository.(*in_memory_repos.InMemoryTransactionRepository).Clear()
+	ErrorRepository.(*in_memory_repos.InMemoryErrorRepository).Clear()
+	TaskRepository.(*in_memory_repos.InMemoryTaskRepository).Clear()
 }
 
 func Setup(tb testing.TB) func(tb testing.TB) {
-	UserRepository = in_memory_repos.NewInMemoryUserRepository()
-	PasswordRepository = in_memory_repos.NewInMemoryPasswordRepository()
-	TransactionRepository = in_memory_repos.NewInMemoryTransactionRepository()
-	ErrorRepository = in_memory_repos.NewInMemoryErrorRepository()
-	TaskRepository = in_memory_repos.NewInMemoryTaskRepository()
+	once.Do(func() {
+		UserRepository = in_memory_repos.NewInMemoryUserRepository()
+		PasswordRepository = in_memory_repos.NewInMemoryPasswordRepository()
+		TransactionRepository = in_memory_repos.NewInMemoryTransactionRepository()
+		ErrorRepository = in_memory_repos.NewInMemoryErrorRepository()
+		TaskRepository = in_memory_repos.NewInMemoryTaskRepository()
 
-	CustomerPaymentGateway = in_memory_paymentgateway.NewInMemoryCustomerPaymentGateway()
-	PaymentPaymentGateway = in_memory_paymentgateway.NewInMemoryPaymentPaymentGateway()
+		CustomerPaymentGateway = in_memory_paymentgateway.NewInMemoryCustomerPaymentGateway()
+		PaymentPaymentGateway = in_memory_paymentgateway.NewInMemoryPaymentPaymentGateway()
 
-	Clock = clockwork.NewFakeClock()
-	Queue = queue.NewInMemoryQueue()
-	Scheduler = scheduler.NewScheduler(Clock, Queue, 20, TaskRepository)
-	go Scheduler.Run()
+		Clock = clockwork.NewFakeClock()
+		Queue = queue.NewInMemoryQueue()
+		Scheduler = scheduler.NewScheduler(Clock, Queue, 20, TaskRepository)
+		go Scheduler.Run()
 
-	CreateUserService = services.NewCreateUserService(UserRepository, CustomerPaymentGateway)
-	GetUserService = services.NewGetUserService(UserRepository)
+		CreateUserService = services.NewCreateUserService(UserRepository, CustomerPaymentGateway)
+		GetUserService = services.NewGetUserService(UserRepository)
 
-	ForgotUserPasswordService = services.NewForgotUserPasswordService(
-		UserRepository,
-		PasswordRepository,
-	)
-	ResetUserPasswordService = services.NewResetUserPasswordService(
-		UserRepository,
-		PasswordRepository,
-	)
+		ForgotUserPasswordService = services.NewForgotUserPasswordService(
+			UserRepository,
+			PasswordRepository,
+		)
+		ResetUserPasswordService = services.NewResetUserPasswordService(
+			UserRepository,
+			PasswordRepository,
+		)
 
-	CreateTransactionService = services.NewCreateTransactionService(
-		UserRepository,
-		TransactionRepository,
-		CustomerPaymentGateway,
-		PaymentPaymentGateway,
-	)
-	UpdatePurchaseTransactionService = services.NewUpdatePurchaseTransactionService(
-		UserRepository,
-		TransactionRepository,
-		ErrorRepository,
-	)
-	UpdateTaskTransactionService = services.NewUpdateTaskTransactionService(
-		UserRepository,
-		TransactionRepository,
-		ErrorRepository,
-	)
-	GetTransactionsService = services.NewGetTransactionsService(
-		UserRepository,
-		TransactionRepository,
-	)
-	GetTransactionService = services.NewGetTransactionService(
-		UserRepository,
-		TransactionRepository,
-	)
+		CreateTransactionService = services.NewCreateTransactionService(
+			UserRepository,
+			TransactionRepository,
+			CustomerPaymentGateway,
+			PaymentPaymentGateway,
+		)
+		UpdatePurchaseTransactionService = services.NewUpdatePurchaseTransactionService(
+			UserRepository,
+			TransactionRepository,
+			ErrorRepository,
+		)
+		UpdateTaskTransactionService = services.NewUpdateTaskTransactionService(
+			UserRepository,
+			TransactionRepository,
+			ErrorRepository,
+		)
+		GetTransactionsService = services.NewGetTransactionsService(
+			UserRepository,
+			TransactionRepository,
+		)
+		GetTransactionService = services.NewGetTransactionService(
+			UserRepository,
+			TransactionRepository,
+		)
 
-	CreateTaskService = services.NewCreateTaskService(
-		UserRepository,
-		TaskRepository,
-		CreateTransactionService,
-		UpdateTaskTransactionService,
-		Scheduler,
-	)
-	UpdateTaskService = services.NewUpdateTaskService(
-		TaskRepository,
-		TransactionRepository,
-		UpdateTaskTransactionService,
-		Scheduler,
-	)
-	GetTasksByUserIdService = services.NewGetTasksByUserIdService(
-		UserRepository,
-		TaskRepository,
-	)
-	GetTasksByRunAtService = services.NewGetTasksByRunAtService(
-		TaskRepository,
-	)
-	GetTaskService = services.NewGetTaskService(
-		UserRepository,
-		TaskRepository,
-	)
+		CreateTaskService = services.NewCreateTaskService(
+			UserRepository,
+			TaskRepository,
+			CreateTransactionService,
+			UpdateTaskTransactionService,
+			Scheduler,
+		)
+		UpdateTaskService = services.NewUpdateTaskService(
+			TaskRepository,
+			TransactionRepository,
+			UpdateTaskTransactionService,
+			Scheduler,
+		)
+		GetTasksByUserIdService = services.NewGetTasksByUserIdService(
+			UserRepository,
+			TaskRepository,
+		)
+		GetTasksByRunAtService = services.NewGetTasksByRunAtService(
+			TaskRepository,
+		)
+		GetTaskService = services.NewGetTaskService(
+			UserRepository,
+			TaskRepository,
+		)
+	})
 
 	return teardown
 }

@@ -78,7 +78,7 @@ func Initialize() (*Dependencies, error) {
 	customerPaymentGateway := stripe_paymentgateway.NewStripeCustomerPaymentGateway()
 	paymentPaymentGateway := stripe_paymentgateway.NewStripePaymentPaymentGateway()
 
-	scheduler := scheduler.NewScheduler(clockwork.NewRealClock(), rmq, 20, taskRepository)
+	scheduler := scheduler.NewScheduler(clockwork.NewRealClock(), rmq, 100, taskRepository)
 
 	createUserService := services.NewCreateUserService(userRepository, customerPaymentGateway)
 	getUserService := services.NewGetUserService(userRepository)

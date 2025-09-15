@@ -61,3 +61,7 @@ func (r *InMemoryErrorRepository) Create(err *entities.Error) error {
 
 	return nil
 }
+
+func (r *InMemoryErrorRepository) Clear() {
+	r.errors = []entities.Error{}
+}

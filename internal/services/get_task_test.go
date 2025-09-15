@@ -25,7 +25,7 @@ func TestGetTaskService(t *testing.T) {
 
 	taskOld, err := CreateTaskService.Execute(
 		"video",
-		time.Now().AddDate(0, 3, 3),
+		time.Now().Add(10*time.Minute),
 		"America/Sao_Paulo",
 		entities.PriorityMedium,
 		user.GetId(),
