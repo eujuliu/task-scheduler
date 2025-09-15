@@ -57,7 +57,7 @@ func (db *Database) BeginTransaction() {
 
 func (db *Database) RollbackTransaction() error {
 	if db.tx == nil {
-		return fmt.Errorf("you need to initialize the transction first")
+		return fmt.Errorf("you need to initialize the transaction first")
 	}
 
 	slog.Debug("transaction rollback...")
@@ -70,7 +70,7 @@ func (db *Database) RollbackTransaction() error {
 
 func (db *Database) CommitTransaction() error {
 	if db.tx == nil {
-		return fmt.Errorf("you need to initialize the transction first")
+		return fmt.Errorf("you need to initialize the transaction first")
 	}
 
 	slog.Debug("transaction commit...")

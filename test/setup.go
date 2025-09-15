@@ -3,9 +3,13 @@ package test
 import (
 	"scheduler/internal/interfaces"
 	in_memory_paymentgateway "scheduler/internal/payment_gateway/in_memory"
+	"scheduler/internal/queue"
 	in_memory_repos "scheduler/internal/repositories/in_memory"
 	"scheduler/internal/services"
+	"scheduler/pkg/scheduler"
 	"testing"
+
+	"github.com/jonboulle/clockwork"
 )
 
 var (
@@ -19,6 +23,12 @@ var (
 var (
 	CustomerPaymentGateway interfaces.ICustomerPaymentGateway
 	PaymentPaymentGateway  interfaces.IPaymentPaymentGateway
+)
+
+var (
+	Queue     interfaces.IQueue
+	Scheduler *scheduler.Scheduler
+	Clock     *clockwork.FakeClock
 )
 
 var (
@@ -47,7 +57,9 @@ var (
 	GetTaskService          *services.GetTaskService
 )
 
-func teardown(tb testing.TB) {}
+func teardown(tb testing.TB) {
+	Scheduler.Stop()
+}
 
 func Setup(tb testing.TB) func(tb testing.TB) {
 	UserRepository = in_memory_repos.NewInMemoryUserRepository()
@@ -58,6 +70,11 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 
 	CustomerPaymentGateway = in_memory_paymentgateway.NewInMemoryCustomerPaymentGateway()
 	PaymentPaymentGateway = in_memory_paymentgateway.NewInMemoryPaymentPaymentGateway()
+
+	Clock = clockwork.NewFakeClock()
+	Queue = queue.NewInMemoryQueue()
+	Scheduler = scheduler.NewScheduler(Clock, Queue, 20, TaskRepository)
+	go Scheduler.Run()
 
 	CreateUserService = services.NewCreateUserService(UserRepository, CustomerPaymentGateway)
 	GetUserService = services.NewGetUserService(UserRepository)
@@ -101,11 +118,13 @@ func Setup(tb testing.TB) func(tb testing.TB) {
 		TaskRepository,
 		CreateTransactionService,
 		UpdateTaskTransactionService,
+		Scheduler,
 	)
 	UpdateTaskService = services.NewUpdateTaskService(
 		TaskRepository,
 		TransactionRepository,
 		UpdateTaskTransactionService,
+		Scheduler,
 	)
 	GetTasksByUserIdService = services.NewGetTasksByUserIdService(
 		UserRepository,

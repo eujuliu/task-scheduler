@@ -4,26 +4,19 @@ import (
 	"encoding/json"
 	"scheduler/internal/entities"
 	"scheduler/internal/persistence"
-	"scheduler/internal/queue"
-	"scheduler/pkg/scheduler"
 	. "scheduler/test"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jonboulle/clockwork"
 )
 
 func TestScheduler(t *testing.T) {
-	queue := queue.NewInMemoryQueue()
-	c := clockwork.NewFakeClock()
-
-	sc := scheduler.NewScheduler(c, queue, 20)
-
-	go sc.Run()
+	teardown := Setup(t)
+	defer teardown(t)
 
 	times := make([]time.Time, 5)
-	times[0] = c.Now().Add(5 * time.Minute)
+	times[0] = Clock.Now().Add(5 * time.Minute)
 
 	for i := 1; i < 5; i++ {
 		times[i] = times[i-1].Add(1 * time.Minute)
@@ -38,7 +31,7 @@ func TestScheduler(t *testing.T) {
 		"0",
 		"123",
 	)
-	sc.Add(task)
+	Scheduler.Add(task)
 
 	task1, _ := entities.NewTask(
 		"video",
@@ -49,7 +42,7 @@ func TestScheduler(t *testing.T) {
 		"1",
 		"123",
 	)
-	sc.Add(task1)
+	Scheduler.Add(task1)
 
 	task2, _ := entities.NewTask(
 		"video",
@@ -60,7 +53,7 @@ func TestScheduler(t *testing.T) {
 		"2",
 		"123",
 	)
-	sc.Add(task2)
+	Scheduler.Add(task2)
 
 	task3, _ := entities.NewTask(
 		"video",
@@ -71,7 +64,7 @@ func TestScheduler(t *testing.T) {
 		"3",
 		"123",
 	)
-	sc.Add(task3)
+	Scheduler.Add(task3)
 
 	task4, _ := entities.NewTask(
 		"video",
@@ -82,9 +75,9 @@ func TestScheduler(t *testing.T) {
 		"4",
 		"123",
 	)
-	sc.Add(task4)
+	Scheduler.Add(task4)
 
-	tasksCh, _ := queue.Consume("tasks")
+	tasksCh, _ := Queue.Consume("task.send")
 
 	select {
 	case <-tasksCh.(chan []byte):
@@ -92,7 +85,7 @@ func TestScheduler(t *testing.T) {
 	case <-time.After(2 * time.Second):
 	}
 
-	c.Advance(5 * time.Minute)
+	Clock.Advance(5 * time.Minute)
 
 	result := []string{"0", "4", "3", "2", "1"}
 
@@ -102,7 +95,8 @@ func TestScheduler(t *testing.T) {
 		_ = json.Unmarshal(d, &got)
 
 		Equals(t, i, got.ReferenceID)
-		Equals(t, c.Now().Format("23:00:00"), got.RunAt.Format("23:00:00"))
-		c.Advance(1 * time.Minute)
+		Equals(t, Clock.Now().Format("23:00:00"), got.RunAt.Format("23:00:00"))
+		Equals(t, entities.StatusRunning, got.Status)
+		Clock.Advance(1 * time.Minute)
 	}
 }

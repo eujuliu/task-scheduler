@@ -20,5 +20,6 @@ func main() {
 	}
 
 	go deps.Scheduler.Run()
+
 	server.Start()
 }

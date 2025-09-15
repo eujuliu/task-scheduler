@@ -69,8 +69,6 @@ func Initialize() (*Dependencies, error) {
 
 	slog.SetDefault(logger)
 
-	scheduler := scheduler.NewScheduler(clockwork.NewRealClock(), rmq, 20)
-
 	userRepository := postgres_repos.NewPostgresUserRepository(db)
 	passwordRepository := postgres_repos.NewPostgresPasswordRepository(db)
 	transactionRepository := postgres_repos.NewPostgresTransactionRepository(db)
@@ -79,6 +77,8 @@ func Initialize() (*Dependencies, error) {
 
 	customerPaymentGateway := stripe_paymentgateway.NewStripeCustomerPaymentGateway()
 	paymentPaymentGateway := stripe_paymentgateway.NewStripePaymentPaymentGateway()
+
+	scheduler := scheduler.NewScheduler(clockwork.NewRealClock(), rmq, 20, taskRepository)
 
 	createUserService := services.NewCreateUserService(userRepository, customerPaymentGateway)
 	getUserService := services.NewGetUserService(userRepository)
@@ -124,11 +124,13 @@ func Initialize() (*Dependencies, error) {
 		taskRepository,
 		createTransactionService,
 		updateTaskTransactionService,
+		scheduler,
 	)
 	updateTaskService := services.NewUpdateTaskService(
 		taskRepository,
 		transactionRepository,
 		updateTaskTransactionService,
+		scheduler,
 	)
 	getTasksByUserIdService := services.NewGetTasksByUserIdService(
 		userRepository,
@@ -141,7 +143,7 @@ func Initialize() (*Dependencies, error) {
 
 	buyCreditsHandler := http_handlers.NewBuyCreditsHandler(db, createTransactionService)
 	cancelTaskHandler := http_handlers.NewCancelTaskHandler(db, updateTaskService)
-	createTaskHandler := http_handlers.NewCreateTaskHandler(db, scheduler, createTaskService)
+	createTaskHandler := http_handlers.NewCreateTaskHandler(db, createTaskService)
 	forgotUserPasswordHandler := http_handlers.NewForgotPasswordHandler(forgotUserPasswordService)
 	getTaskHandler := http_handlers.NewGetTaskHandler(getTaskService)
 	getTasksHandler := http_handlers.NewGetTasksHandler(getTasksByUserIdService)
@@ -154,7 +156,7 @@ func Initialize() (*Dependencies, error) {
 		db,
 		resetUserPasswordService,
 	)
-	updateTaskHandler := http_handlers.NewUpdateTaskHandler(db, scheduler, updateTaskService)
+	updateTaskHandler := http_handlers.NewUpdateTaskHandler(db, updateTaskService)
 
 	stripePaymentUpdateWebhook := http_webhooks.NewStripePaymentUpdateWebhook(
 		config.Stripe,

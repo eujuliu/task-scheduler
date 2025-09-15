@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"scheduler/internal/services"
 	"scheduler/pkg/postgres"
-	"scheduler/pkg/scheduler"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,18 +17,15 @@ type UpdateTaskRequest struct {
 
 type UpdateTaskHandler struct {
 	db                *postgres.Database
-	scheduler         *scheduler.Scheduler
 	updateTaskService *services.UpdateTaskService
 }
 
 func NewUpdateTaskHandler(
 	db *postgres.Database,
-	scheduler *scheduler.Scheduler,
 	updateTaskService *services.UpdateTaskService,
 ) *UpdateTaskHandler {
 	return &UpdateTaskHandler{
 		db:                db,
-		scheduler:         scheduler,
 		updateTaskService: updateTaskService,
 	}
 }
@@ -61,8 +57,6 @@ func (h *UpdateTaskHandler) Handle(c *gin.Context) {
 
 		return
 	}
-
-	h.scheduler.Add(task)
 
 	_ = h.db.CommitTransaction()
 

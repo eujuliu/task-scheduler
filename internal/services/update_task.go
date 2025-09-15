@@ -6,6 +6,7 @@ import (
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
 	"scheduler/internal/interfaces"
+	"scheduler/pkg/scheduler"
 	"slices"
 	"time"
 )
@@ -14,17 +15,20 @@ type UpdateTaskService struct {
 	taskRepository               interfaces.ITaskRepository
 	transactionRepository        interfaces.ITransactionRepository
 	updateTaskTransactionService *UpdateTaskTransactionService
+	scheduler                    *scheduler.Scheduler
 }
 
 func NewUpdateTaskService(
 	taskRepository interfaces.ITaskRepository,
 	transactionRepository interfaces.ITransactionRepository,
 	updateTaskTransaction *UpdateTaskTransactionService,
+	scheduler *scheduler.Scheduler,
 ) *UpdateTaskService {
 	return &UpdateTaskService{
 		taskRepository:               taskRepository,
 		transactionRepository:        transactionRepository,
 		updateTaskTransactionService: updateTaskTransaction,
+		scheduler:                    scheduler,
 	}
 }
 
@@ -93,6 +97,8 @@ func (s *UpdateTaskService) Execute(
 		slog.Error(fmt.Sprintf("task update error %s", err.Error()))
 		return nil, err
 	}
+
+	s.scheduler.Add(task)
 
 	slog.Info("update task service finished...")
 	slog.Debug(fmt.Sprintf("returned task %+v", task))
