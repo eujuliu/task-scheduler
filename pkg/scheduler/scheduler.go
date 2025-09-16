@@ -8,6 +8,7 @@ import (
 	"scheduler/internal/entities"
 	"scheduler/internal/interfaces"
 	"scheduler/internal/persistence"
+	"scheduler/internal/queue"
 	"sync"
 
 	"github.com/jonboulle/clockwork"
@@ -133,7 +134,7 @@ func (s *Scheduler) ExecuteTask(task *entities.Task) {
 		panic(err)
 	}
 
-	err = s.queue.Publish("task.send", "task-exchange", data)
+	err = s.queue.Publish(queue.AvailableQueues[task.GetType()], queue.TASK_EXCHANGE, data)
 	if err != nil {
 		panic(err)
 	}

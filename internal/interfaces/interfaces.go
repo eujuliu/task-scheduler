@@ -67,6 +67,6 @@ type IPaymentPaymentGateway interface {
 }
 
 type IQueue interface {
-	Publish(queueName string, exchangeName string, data []byte) error
+	Publish(key string, exchangeName string, data []byte) error
 	Consume(queueName string) (any, error)
 }

@@ -8,6 +8,7 @@ import (
 	http_webhooks "scheduler/internal/handlers/http/webhooks"
 	"scheduler/internal/interfaces"
 	stripe_paymentgateway "scheduler/internal/payment_gateway/stripe"
+	"scheduler/internal/queue"
 	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/postgres"
@@ -52,7 +53,7 @@ func Initialize() (*Dependencies, error) {
 		return nil, err
 	}
 
-	err = rmq.AddDurableQueue("tasks-queue", "task-exchange", "task.send")
+	err = rmq.AddDurableQueue(queue.SEND_EMAIL_QUEUE, queue.TASK_EXCHANGE, queue.SEND_EMAIL_KEY)
 	if err != nil {
 		return nil, err
 	}

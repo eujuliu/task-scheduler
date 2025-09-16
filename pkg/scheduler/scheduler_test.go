@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"scheduler/internal/entities"
 	"scheduler/internal/persistence"
+	"scheduler/internal/queue"
 	. "scheduler/test"
 	"testing"
 	"time"
@@ -23,7 +24,7 @@ func TestScheduler(t *testing.T) {
 	}
 
 	task, _ := entities.NewTask(
-		"video",
+		"email",
 		uuid.NewString(),
 		10,
 		times[0],
@@ -34,7 +35,7 @@ func TestScheduler(t *testing.T) {
 	Scheduler.Add(task)
 
 	task1, _ := entities.NewTask(
-		"video",
+		"email",
 		uuid.NewString(),
 		10,
 		times[4],
@@ -45,7 +46,7 @@ func TestScheduler(t *testing.T) {
 	Scheduler.Add(task1)
 
 	task2, _ := entities.NewTask(
-		"video",
+		"email",
 		uuid.NewString(),
 		10,
 		times[3],
@@ -56,7 +57,7 @@ func TestScheduler(t *testing.T) {
 	Scheduler.Add(task2)
 
 	task3, _ := entities.NewTask(
-		"video",
+		"email",
 		uuid.NewString(),
 		10,
 		times[2],
@@ -67,7 +68,7 @@ func TestScheduler(t *testing.T) {
 	Scheduler.Add(task3)
 
 	task4, _ := entities.NewTask(
-		"video",
+		"email",
 		uuid.NewString(),
 		10,
 		times[1],
@@ -77,7 +78,7 @@ func TestScheduler(t *testing.T) {
 	)
 	Scheduler.Add(task4)
 
-	tasksCh, _ := Queue.Consume("task.send")
+	tasksCh, _ := Queue.Consume(queue.SEND_EMAIL_KEY)
 
 	select {
 	case <-tasksCh.(chan []byte):

@@ -6,6 +6,7 @@ import (
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
 	"scheduler/internal/interfaces"
+	"scheduler/internal/queue"
 	"scheduler/pkg/scheduler"
 	"time"
 )
@@ -51,6 +52,11 @@ func (s *CreateTaskService) Execute(
 		userId,
 		referenceId,
 		idempotencyKey))
+
+	if _, ok := queue.AvailableQueues[kind]; !ok {
+		reason := "the type is not valid"
+		return nil, errors.INVALID_FIELD_VALUE("type", &reason)
+	}
 
 	user, _ := s.userRepository.GetFirstById(userId)
 	if user == nil {
