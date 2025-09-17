@@ -34,6 +34,11 @@ func New(deps *composition.Dependencies) *Server {
 	router.Use(middlewares.Logger)
 	router.Use(middlewares.Errors)
 	router.Use(middlewares.Cors)
+
+	router.GET("/ping", func(c *gin.Context) {
+		c.String(200, "pong")
+	})
+
 	router.Use(middlewares.RateLimiter(deps.RateLimiter))
 
 	server := http.Server{
@@ -90,9 +95,6 @@ func (s *Server) setupRoutes() {
 		routes.POST("/auth/forgot-password", s.deps.ForgotUserPasswordHandler.Handle)
 		routes.POST("/auth/reset-password", s.deps.ResetUserPasswordHandler.Handle)
 		routes.Any("/stripe-webhook", s.deps.StripePaymentUpdateWebhook.Hook)
-		routes.GET("/ping", func(c *gin.Context) {
-			c.String(200, "pong")
-		})
 	}
 
 	protected := routes.Group("/")
