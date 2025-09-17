@@ -11,14 +11,14 @@ type PostgresTransactionRepository struct {
 	db *postgres.Database
 }
 
-func NewPostgresTransactionRepository() *PostgresTransactionRepository {
+func NewPostgresTransactionRepository(db *postgres.Database) *PostgresTransactionRepository {
 	return &PostgresTransactionRepository{
-		db: postgres.DB,
+		db: db,
 	}
 }
 
 func (r *PostgresTransactionRepository) Get() []entities.Transaction {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var transactions []persistence.TransactionModel
 	var result []entities.Transaction
@@ -35,7 +35,7 @@ func (r *PostgresTransactionRepository) Get() []entities.Transaction {
 func (r *PostgresTransactionRepository) GetByUserId(
 	userId string,
 ) []entities.Transaction {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var transactions []persistence.TransactionModel
 	var result []entities.Transaction
@@ -52,7 +52,7 @@ func (r *PostgresTransactionRepository) GetByUserId(
 func (r *PostgresTransactionRepository) GetFirstById(
 	id string,
 ) (*entities.Transaction, error) {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var transaction persistence.TransactionModel
 
@@ -66,7 +66,7 @@ func (r *PostgresTransactionRepository) GetFirstById(
 func (r *PostgresTransactionRepository) GetFirstByReferenceId(
 	id string,
 ) (*entities.Transaction, error) {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var transaction persistence.TransactionModel
 
@@ -80,7 +80,7 @@ func (r *PostgresTransactionRepository) GetFirstByReferenceId(
 func (r *PostgresTransactionRepository) GetFirstByIdempotencyKey(
 	key string,
 ) (*entities.Transaction, error) {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var transaction persistence.TransactionModel
 
@@ -94,7 +94,7 @@ func (r *PostgresTransactionRepository) GetFirstByIdempotencyKey(
 func (r *PostgresTransactionRepository) Create(
 	transaction *entities.Transaction,
 ) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	m := persistence.ToTransactionModel(transaction)
 
@@ -106,7 +106,7 @@ func (r *PostgresTransactionRepository) Create(
 func (r *PostgresTransactionRepository) Update(
 	transaction *entities.Transaction,
 ) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	m := persistence.ToTransactionModel(transaction)
 

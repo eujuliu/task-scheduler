@@ -5,15 +5,14 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
-
-	repos "scheduler/internal/repositories"
+	"scheduler/internal/interfaces"
 )
 
 type GetUserService struct {
-	userRepository repos.IUserRepository
+	userRepository interfaces.IUserRepository
 }
 
-func NewGetUserService(userRepo repos.IUserRepository) *GetUserService {
+func NewGetUserService(userRepo interfaces.IUserRepository) *GetUserService {
 	return &GetUserService{
 		userRepository: userRepo,
 	}

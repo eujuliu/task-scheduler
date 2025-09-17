@@ -5,29 +5,33 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
+	"scheduler/internal/interfaces"
+	"scheduler/internal/queue"
+	"scheduler/pkg/scheduler"
 	"time"
-
-	repos "scheduler/internal/repositories"
 )
 
 type CreateTaskService struct {
-	userRepository           repos.IUserRepository
-	taskRepository           repos.ITaskRepository
+	userRepository           interfaces.IUserRepository
+	taskRepository           interfaces.ITaskRepository
 	createTransactionService *CreateTransactionService
 	updateTransactionService *UpdateTaskTransactionService
+	scheduler                *scheduler.Scheduler
 }
 
 func NewCreateTaskService(
-	userRepository repos.IUserRepository,
-	taskRepository repos.ITaskRepository,
+	userRepository interfaces.IUserRepository,
+	taskRepository interfaces.ITaskRepository,
 	createTransactionService *CreateTransactionService,
 	updateTransactionService *UpdateTaskTransactionService,
+	scheduler *scheduler.Scheduler,
 ) *CreateTaskService {
 	return &CreateTaskService{
 		userRepository:           userRepository,
 		taskRepository:           taskRepository,
 		createTransactionService: createTransactionService,
 		updateTransactionService: updateTransactionService,
+		scheduler:                scheduler,
 	}
 }
 
@@ -48,6 +52,11 @@ func (s *CreateTaskService) Execute(
 		userId,
 		referenceId,
 		idempotencyKey))
+
+	if _, ok := queue.AvailableQueues[kind]; !ok {
+		reason := "the type is not valid"
+		return nil, errors.INVALID_FIELD_VALUE("type", &reason)
+	}
 
 	user, _ := s.userRepository.GetFirstById(userId)
 	if user == nil {
@@ -115,6 +124,8 @@ func (s *CreateTaskService) Execute(
 		slog.Error(fmt.Sprintf("update transaction error %s", err.Error()))
 		return nil, err
 	}
+
+	s.scheduler.Add(task)
 
 	slog.Info("create task service finished...")
 	slog.Debug(fmt.Sprintf("returned task %+v", task))

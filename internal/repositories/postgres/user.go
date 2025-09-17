@@ -14,14 +14,14 @@ type PostgresUserRepository struct {
 	db *postgres.Database
 }
 
-func NewPostgresUserRepository() *PostgresUserRepository {
+func NewPostgresUserRepository(db *postgres.Database) *PostgresUserRepository {
 	return &PostgresUserRepository{
-		db: postgres.DB,
+		db: db,
 	}
 }
 
 func (r *PostgresUserRepository) Get() []entities.User {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var users []persistence.UserModel
 	var result []entities.User
@@ -38,7 +38,7 @@ func (r *PostgresUserRepository) Get() []entities.User {
 func (r *PostgresUserRepository) GetFirstById(
 	id string,
 ) (*entities.User, error) {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var user persistence.UserModel
 
@@ -52,7 +52,7 @@ func (r *PostgresUserRepository) GetFirstById(
 func (r *PostgresUserRepository) GetFirstByEmail(
 	email string,
 ) (*entities.User, error) {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	var user persistence.UserModel
 
@@ -64,7 +64,7 @@ func (r *PostgresUserRepository) GetFirstByEmail(
 }
 
 func (r *PostgresUserRepository) Create(user *entities.User) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	m, err := persistence.ToUserModel(user)
 	if err != nil {
@@ -81,7 +81,7 @@ func (r *PostgresUserRepository) Create(user *entities.User) error {
 }
 
 func (r *PostgresUserRepository) Update(user *entities.User) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	m, err := persistence.ToUserModel(user)
 	if err != nil {
@@ -94,7 +94,7 @@ func (r *PostgresUserRepository) Update(user *entities.User) error {
 }
 
 func (r *PostgresUserRepository) Delete(id string) error {
-	db := r.db.GetInstance()
+	db := r.db.Get()
 
 	err := db.Delete(&persistence.UserModel{}, "id = ?", id).Error
 

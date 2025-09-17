@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestGetTasksService(t *testing.T) {
+func TestGetTasksByUserIdService(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
 
@@ -34,7 +34,7 @@ func TestGetTasksService(t *testing.T) {
 		_ = TaskRepository.Create(task)
 	}
 
-	tasks := GetTasksService.Execute(user.GetId())
+	tasks := GetTasksByUserIdService.Execute(user.GetId())
 
 	Ok(t, err)
 	Equals(t, 10, len(tasks))

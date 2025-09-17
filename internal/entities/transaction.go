@@ -24,7 +24,6 @@ type Transaction struct {
 
 const (
 	StatusPending   string = "PENDING"
-	StatusRunning   string = "RUNNING"
 	StatusCompleted string = "COMPLETED"
 	StatusFailed    string = "FAILED"
 	StatusCanceled  string = "CANCELED"

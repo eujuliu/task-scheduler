@@ -2,8 +2,6 @@ package http_handlers
 
 import (
 	"net/http"
-	stripe_paymentgateway "scheduler/internal/payment_gateway/stripe"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
 	"scheduler/pkg/postgres"
@@ -14,13 +12,28 @@ import (
 
 type CreateTaskRequest struct {
 	Type        string    `json:"type"        binding:"required"`
-	RunAt       time.Time `json:"runAt"       binding:"required,date"`
+	RunAt       time.Time `json:"runAt"       binding:"required,date,utc"`
 	Timezone    string    `json:"timezone"    binding:"required,timezone"`
 	Priority    int       `json:"priority"    binding:"required"`
 	ReferenceID string    `json:"referenceId" binding:"required,uuid4"`
 }
 
-func CreateTask(c *gin.Context) {
+type CreateTaskHandler struct {
+	db                *postgres.Database
+	createTaskService *services.CreateTaskService
+}
+
+func NewCreateTaskHandler(
+	db *postgres.Database,
+	createTaskService *services.CreateTaskService,
+) *CreateTaskHandler {
+	return &CreateTaskHandler{
+		db:                db,
+		createTaskService: createTaskService,
+	}
+}
+
+func (h *CreateTaskHandler) Handle(c *gin.Context) {
 	var json CreateTaskRequest
 	idempotencyKey := c.GetHeader("Idempotency-Key")
 
@@ -45,33 +58,6 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 
-	userRepository := postgres_repos.NewPostgresUserRepository()
-	transactionRepository := postgres_repos.NewPostgresTransactionRepository()
-	taskRepository := postgres_repos.NewPostgresTaskRepository()
-	errorRepository := postgres_repos.NewPostgresErrorRepository()
-
-	customerPaymentGateway := stripe_paymentgateway.NewStripeCustomerPaymentGateway()
-	paymentPaymentGateway := stripe_paymentgateway.NewStripePaymentPaymentGateway()
-
-	createTransactionService := services.NewCreateTransactionService(
-		userRepository,
-		transactionRepository,
-		customerPaymentGateway,
-		paymentPaymentGateway,
-	)
-	updateTransactionService := services.NewUpdateTaskTransactionService(
-		userRepository,
-		transactionRepository,
-		errorRepository,
-	)
-
-	createTaskService := services.NewCreateTaskService(
-		userRepository,
-		taskRepository,
-		createTransactionService,
-		updateTransactionService,
-	)
-
 	userId, ok := helpers.GetUserID(c)
 
 	if !ok {
@@ -85,9 +71,9 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 
-	postgres.DB.BeginTransaction()
+	h.db.BeginTransaction()
 
-	task, err := createTaskService.Execute(
+	task, err := h.createTaskService.Execute(
 		json.Type,
 		json.RunAt,
 		json.Timezone,
@@ -97,14 +83,14 @@ func CreateTask(c *gin.Context) {
 		idempotencyKey,
 	)
 	if err != nil {
-		_ = postgres.DB.RollbackTransaction()
+		_ = h.db.RollbackTransaction()
 
 		_ = c.Error(err)
 
 		return
 	}
 
-	_ = postgres.DB.CommitTransaction()
+	_ = h.db.CommitTransaction()
 
 	c.JSON(http.StatusCreated, gin.H{
 		"id":          task.GetId(),

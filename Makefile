@@ -1,4 +1,4 @@
-.PHONY: build run watch watch_down test coverage clean fmt lint check pre-commit test_stripe
+.PHONY: build run watch watch_down test test_with_cache coverage clean fmt lint check pre-commit test_stripe
 
 BINARY_NAME=scheduler
 OUTPUT_DIR=bin
@@ -12,14 +12,7 @@ dev:
 	air
 
 watch:
-	@echo "Do you want to unify all env files into a single one? (y/N)"; \
-	read ANSWER; \
-	rm -f .env.docker; \
-	if [ "$$ANSWER" = "y" ]; then \
-		cat .env* > .env.docker; \
-	else \
-		cp .env.development .env.docker; \
-	fi; \
+	cat .env* > .env.docker; \
 	docker compose --env-file ./.env.docker -f ./docker-compose.development.yml -p scheduler-test --profile scheduler_dev watch --prune; \
 	make watch_down
 
@@ -34,6 +27,9 @@ run:
 
 test:
 	go test -tags=unit -count=1 -short -v ./...
+
+test_with_cache:
+	go test -tags=unit -short -v ./...
 
 coverage:
 	make clean; \
@@ -60,4 +56,4 @@ pre-commit:
 
 test_stripe:
 	# npm i -g live-server
-	live-server --port=5500 --host="localhost"
+	live-server --port=5500 --host="localhost" --watch=./pkg/stripe --entry-file=./pkg/stripe/index.html

@@ -61,3 +61,7 @@ func (r *InMemoryPasswordRecoveryRepository) Delete(id string) error {
 
 	return nil
 }
+
+func (r *InMemoryPasswordRecoveryRepository) Clear() {
+	r.tokens = []entities.PasswordRecovery{}
+}

@@ -5,17 +5,17 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
-	repos "scheduler/internal/repositories"
+	"scheduler/internal/interfaces"
 )
 
 type GetTaskService struct {
-	userRepository repos.IUserRepository
-	taskRepository repos.ITaskRepository
+	userRepository interfaces.IUserRepository
+	taskRepository interfaces.ITaskRepository
 }
 
 func NewGetTaskService(
-	userRepository repos.IUserRepository,
-	taskRepository repos.ITaskRepository,
+	userRepository interfaces.IUserRepository,
+	taskRepository interfaces.ITaskRepository,
 ) *GetTaskService {
 	return &GetTaskService{
 		userRepository: userRepository,

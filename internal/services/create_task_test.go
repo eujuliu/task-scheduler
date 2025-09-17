@@ -31,7 +31,7 @@ func TestCreateTaskService(t *testing.T) {
 
 	task, err := CreateTaskService.Execute(
 		"email",
-		time.Now().AddDate(0, 1, 0),
+		time.Now().Add(10*time.Minute),
 		"America/Sao_Paulo",
 		entities.PriorityMedium,
 		user.GetId(),
@@ -63,7 +63,7 @@ func TestCreateTaskService_UserNotFound(t *testing.T) {
 
 	_, err := CreateTaskService.Execute(
 		"email",
-		time.Now().AddDate(0, 1, 0),
+		time.Now().Add(10*time.Minute),
 		"America/Sao_Paulo",
 		entities.PriorityMedium,
 		uuid.NewString(),

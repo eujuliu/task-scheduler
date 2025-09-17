@@ -6,9 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os/signal"
-	"scheduler/internal/config"
-	http_handlers "scheduler/internal/handlers/http"
-	http_webhooks "scheduler/internal/handlers/http/webhooks"
+	"scheduler/internal/composition"
 	"scheduler/pkg/http/helpers"
 	"scheduler/pkg/http/middlewares"
 	"syscall"
@@ -22,19 +20,21 @@ import (
 type Server struct {
 	router *gin.Engine
 	server *http.Server
-	config *config.ServerConfig
+	deps   *composition.Dependencies
 }
 
-func New(config *config.ServerConfig) *Server {
+func New(deps *composition.Dependencies) *Server {
+	config := deps.Config.Server
 	gin.SetMode(config.GinMode)
 
 	router := gin.New()
 
+	router.Use(gin.Recovery())
 	router.Use(middlewares.SecureHeaders)
 	router.Use(middlewares.Logger)
 	router.Use(middlewares.Errors)
 	router.Use(middlewares.Cors)
-	router.Use(gin.Recovery())
+	router.Use(middlewares.RateLimiter(deps.RateLimiter))
 
 	server := http.Server{
 		Addr:           fmt.Sprintf("%s:%s", config.Host, config.Port),
@@ -48,7 +48,7 @@ func New(config *config.ServerConfig) *Server {
 	return &Server{
 		router: router,
 		server: &server,
-		config: config,
+		deps:   deps,
 	}
 }
 
@@ -85,11 +85,11 @@ func (s *Server) Start() {
 func (s *Server) setupRoutes() {
 	routes := s.router.Group("/")
 	{
-		routes.POST("/auth/register", http_handlers.Register)
-		routes.POST("/auth/login", http_handlers.Login)
-		routes.POST("/auth/forgot-password", http_handlers.ForgotPassword)
-		routes.POST("/auth/reset-password", http_handlers.ResetUserPassword)
-		routes.Any("/stripe-webhook", http_webhooks.StripePayments)
+		routes.POST("/auth/register", s.deps.RegisterUserHandler.Handle)
+		routes.POST("/auth/login", s.deps.LoginHandler.Handle)
+		routes.POST("/auth/forgot-password", s.deps.ForgotUserPasswordHandler.Handle)
+		routes.POST("/auth/reset-password", s.deps.ResetUserPasswordHandler.Handle)
+		routes.Any("/stripe-webhook", s.deps.StripePaymentUpdateWebhook.Hook)
 		routes.GET("/ping", func(c *gin.Context) {
 			c.String(200, "pong")
 		})
@@ -98,23 +98,27 @@ func (s *Server) setupRoutes() {
 	protected := routes.Group("/")
 	protected.Use(middlewares.Authentication)
 	{
-		protected.POST("/refresh", middlewares.VerifyRefreshToken, http_handlers.Refresh)
+		protected.POST(
+			"/refresh",
+			middlewares.VerifyRefreshToken,
+			s.deps.RefreshTokenHandler.Handle,
+		)
 
-		protected.POST("/buy-credits", http_handlers.BuyCredits)
-		protected.GET("/transactions", http_handlers.GetTransactions)
-		protected.GET("/transaction/:id", http_handlers.GetTransaction)
+		protected.POST("/buy-credits", s.deps.BuyCreditsHandler.Handle)
+		protected.GET("/transactions", s.deps.GetTransactionsHandler.Handle)
+		protected.GET("/transaction/:id", s.deps.GetTransactionHandler.Handle)
 
-		protected.POST("/task", http_handlers.CreateTask)
-		protected.PUT("/task/:id", http_handlers.UpdateTask)
-		protected.PUT("/task/cancel/:id", http_handlers.CancelTask)
-		protected.GET("/task/:id", http_handlers.GetTask)
-		protected.GET("/tasks", http_handlers.GetTasks)
+		protected.POST("/task", s.deps.CreateTaskHandler.Handle)
+		protected.PUT("/task/:id", s.deps.UpdateTaskHandler.Handle)
+		protected.PUT("/task/cancel/:id", s.deps.CancelTaskHandler.Handle)
+		protected.GET("/task/:id", s.deps.GetTaskHandler.Handle)
+		protected.GET("/tasks", s.deps.GetTasksHandler.Handle)
 	}
 }
 
 func (s *Server) setupValidators() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		slog.Info("setup validators...")
 		_ = v.RegisterValidation("date", helpers.Datatime)
+		_ = v.RegisterValidation("utc", helpers.UTCDateTime)
 	}
 }

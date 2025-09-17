@@ -11,3 +11,9 @@ var Datatime validator.Func = func(fl validator.FieldLevel) bool {
 
 	return ok
 }
+
+var UTCDateTime validator.Func = func(fl validator.FieldLevel) bool {
+	t, ok := fl.Field().Interface().(time.Time)
+
+	return ok && t.Location() == time.UTC
+}

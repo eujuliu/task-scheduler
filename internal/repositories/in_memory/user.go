@@ -71,3 +71,7 @@ func (r *InMemoryUserRepository) Delete(id string) error {
 
 	return nil
 }
+
+func (r *InMemoryUserRepository) Clear() {
+	r.users = []entities.User{}
+}

@@ -2,22 +2,24 @@ package http_handlers
 
 import (
 	"net/http"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetTask(c *gin.Context) {
-	id := c.Param("id")
+type GetTaskHandler struct {
+	getTaskService *services.GetTaskService
+}
 
-	userRepository := postgres_repos.NewPostgresUserRepository()
-	taskRepository := postgres_repos.NewPostgresTaskRepository()
-	getTaskService := services.NewGetTaskService(
-		userRepository,
-		taskRepository,
-	)
+func NewGetTaskHandler(getTaskService *services.GetTaskService) *GetTaskHandler {
+	return &GetTaskHandler{
+		getTaskService: getTaskService,
+	}
+}
+
+func (h *GetTaskHandler) Handle(c *gin.Context) {
+	id := c.Param("id")
 
 	userId, ok := helpers.GetUserID(c)
 
@@ -29,7 +31,7 @@ func GetTask(c *gin.Context) {
 		})
 	}
 
-	task, err := getTaskService.Execute(userId, id)
+	task, err := h.getTaskService.Execute(userId, id)
 	if err != nil {
 		_ = c.Error(err)
 

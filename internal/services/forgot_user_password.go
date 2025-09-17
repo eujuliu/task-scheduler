@@ -4,19 +4,18 @@ import (
 	"fmt"
 	"log/slog"
 	"scheduler/internal/entities"
+	"scheduler/internal/interfaces"
 	"time"
-
-	repos "scheduler/internal/repositories"
 )
 
 type ForgotUserPasswordService struct {
-	userRepository             repos.IUserRepository
-	passwordRecoveryRepository repos.IPasswordRecoveryRepository
+	userRepository             interfaces.IUserRepository
+	passwordRecoveryRepository interfaces.IPasswordRecoveryRepository
 }
 
 func NewForgotUserPasswordService(
-	userRepo repos.IUserRepository,
-	passwordRepo repos.IPasswordRecoveryRepository,
+	userRepo interfaces.IUserRepository,
+	passwordRepo interfaces.IPasswordRecoveryRepository,
 ) *ForgotUserPasswordService {
 	return &ForgotUserPasswordService{
 		userRepository:             userRepo,

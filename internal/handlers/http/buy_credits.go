@@ -3,8 +3,6 @@ package http_handlers
 import (
 	"net/http"
 	"scheduler/internal/entities"
-	stripe_paymentgateway "scheduler/internal/payment_gateway/stripe"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
 	"scheduler/pkg/postgres"
@@ -17,7 +15,22 @@ type BuyCreditsRequest struct {
 	Currency string `json:"currency" binding:"required,iso4217"`
 }
 
-func BuyCredits(c *gin.Context) {
+type BuyCreditsHandler struct {
+	db                       *postgres.Database
+	createTransactionService *services.CreateTransactionService
+}
+
+func NewBuyCreditsHandler(
+	db *postgres.Database,
+	createTransactionService *services.CreateTransactionService,
+) *BuyCreditsHandler {
+	return &BuyCreditsHandler{
+		db:                       db,
+		createTransactionService: createTransactionService,
+	}
+}
+
+func (h *BuyCreditsHandler) Handle(c *gin.Context) {
 	var json BuyCreditsRequest
 
 	idempotencyKey := c.Request.Header.Get("Idempotency-Key")
@@ -43,20 +56,7 @@ func BuyCredits(c *gin.Context) {
 		return
 	}
 
-	postgres.DB.BeginTransaction()
-
-	userRepository := postgres_repos.NewPostgresUserRepository()
-	transactionRepository := postgres_repos.NewPostgresTransactionRepository()
-
-	customerPaymentGateway := stripe_paymentgateway.NewStripeCustomerPaymentGateway()
-	paymentPaymentGateway := stripe_paymentgateway.NewStripePaymentPaymentGateway()
-
-	createTransactionService := services.NewCreateTransactionService(
-		userRepository,
-		transactionRepository,
-		customerPaymentGateway,
-		paymentPaymentGateway,
-	)
+	h.db.BeginTransaction()
 
 	userId, ok := helpers.GetUserID(c)
 
@@ -70,7 +70,7 @@ func BuyCredits(c *gin.Context) {
 		return
 	}
 
-	transaction, err := createTransactionService.Execute(
+	transaction, err := h.createTransactionService.Execute(
 		userId,
 		json.Credits,
 		json.Currency,
@@ -79,14 +79,14 @@ func BuyCredits(c *gin.Context) {
 		idempotencyKey,
 	)
 	if err != nil {
-		_ = postgres.DB.RollbackTransaction()
+		_ = h.db.RollbackTransaction()
 
 		_ = c.Error(err)
 
 		return
 	}
 
-	_ = postgres.DB.CommitTransaction()
+	_ = h.db.CommitTransaction()
 
 	c.JSON(http.StatusOK, gin.H{
 		"id":          transaction.GetId(),

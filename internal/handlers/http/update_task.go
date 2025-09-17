@@ -2,20 +2,35 @@ package http_handlers
 
 import (
 	"net/http"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
+	"scheduler/pkg/postgres"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type UpdateTaskRequest struct {
-	RunAt    time.Time `json:"runAt"    binding:"required,date"`
+	RunAt    time.Time `json:"runAt"    binding:"required,date,utc"`
 	Timezone string    `json:"timezone" binding:"required,timezone"`
 	Priority int       `json:"priority" binding:"required"`
 }
 
-func UpdateTask(c *gin.Context) {
+type UpdateTaskHandler struct {
+	db                *postgres.Database
+	updateTaskService *services.UpdateTaskService
+}
+
+func NewUpdateTaskHandler(
+	db *postgres.Database,
+	updateTaskService *services.UpdateTaskService,
+) *UpdateTaskHandler {
+	return &UpdateTaskHandler{
+		db:                db,
+		updateTaskService: updateTaskService,
+	}
+}
+
+func (h *UpdateTaskHandler) Handle(c *gin.Context) {
 	taskId := c.Param("id")
 	var json UpdateTaskRequest
 
@@ -27,28 +42,23 @@ func UpdateTask(c *gin.Context) {
 		return
 	}
 
-	userRepository := postgres_repos.NewPostgresUserRepository()
-	transactionRepository := postgres_repos.NewPostgresTransactionRepository()
-	taskRepository := postgres_repos.NewPostgresTaskRepository()
-	errorRepository := postgres_repos.NewPostgresErrorRepository()
+	h.db.BeginTransaction()
 
-	updateTransactionService := services.NewUpdateTaskTransactionService(
-		userRepository,
-		transactionRepository,
-		errorRepository,
+	task, err := h.updateTaskService.Execute(
+		taskId,
+		nil,
+		&json.RunAt,
+		&json.Timezone,
+		&json.Priority,
 	)
-	updateTaskService := services.NewUpdateTaskService(
-		taskRepository,
-		transactionRepository,
-		updateTransactionService,
-	)
-
-	task, err := updateTaskService.Execute(taskId, json.RunAt, json.Timezone, json.Priority)
 	if err != nil {
+		_ = h.db.RollbackTransaction()
 		_ = c.Error(err)
 
 		return
 	}
+
+	_ = h.db.CommitTransaction()
 
 	c.JSON(http.StatusOK, gin.H{
 		"id":          task.GetId(),

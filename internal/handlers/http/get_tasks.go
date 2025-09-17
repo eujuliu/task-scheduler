@@ -2,21 +2,23 @@ package http_handlers
 
 import (
 	"net/http"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetTasks(c *gin.Context) {
-	userRepository := postgres_repos.NewPostgresUserRepository()
-	taskRepository := postgres_repos.NewPostgresTaskRepository()
-	getTasksService := services.NewGetTasksService(
-		userRepository,
-		taskRepository,
-	)
+type GetTasksHandler struct {
+	getTasksService *services.GetTasksByUserIdService
+}
 
+func NewGetTasksHandler(getTasksService *services.GetTasksByUserIdService) *GetTasksHandler {
+	return &GetTasksHandler{
+		getTasksService: getTasksService,
+	}
+}
+
+func (h *GetTasksHandler) Handle(c *gin.Context) {
 	userId, ok := helpers.GetUserID(c)
 
 	if !ok {
@@ -27,7 +29,7 @@ func GetTasks(c *gin.Context) {
 		})
 	}
 
-	tasks := getTasksService.Execute(userId)
+	tasks := h.getTasksService.Execute(userId)
 	result := []map[string]any{}
 
 	for _, task := range tasks {

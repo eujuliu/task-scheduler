@@ -6,6 +6,7 @@ import (
 	"scheduler/internal/config"
 	"scheduler/internal/entities"
 	"scheduler/internal/persistence"
+	"sync"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -15,15 +16,10 @@ type Database struct {
 	db     *gorm.DB
 	tx     *gorm.DB
 	config *config.DatabaseConfig
+	mu     sync.Mutex
 }
 
-var DB *Database
-
-func Load(config *config.DatabaseConfig) (*Database, error) {
-	if DB != nil {
-		return DB, nil
-	}
-
+func NewPostgres(config *config.DatabaseConfig) (*Database, error) {
 	err := createInitialDatabase(config)
 	if err != nil {
 		return nil, err
@@ -34,7 +30,7 @@ func Load(config *config.DatabaseConfig) (*Database, error) {
 		return nil, err
 	}
 
-	DB = &Database{
+	DB := &Database{
 		db:     db,
 		tx:     nil,
 		config: config,
@@ -48,7 +44,10 @@ func Load(config *config.DatabaseConfig) (*Database, error) {
 	return DB, nil
 }
 
-func (db *Database) GetInstance() *gorm.DB {
+func (db *Database) Get() *gorm.DB {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
 	if db.tx != nil {
 		return db.tx
 	}
@@ -57,16 +56,20 @@ func (db *Database) GetInstance() *gorm.DB {
 }
 
 func (db *Database) BeginTransaction() {
-	slog.Debug("transaction started...")
+	db.mu.Lock()
+	defer db.mu.Unlock()
+	slog.Debug("postgres transaction started...")
 	db.tx = db.db.Begin()
 }
 
 func (db *Database) RollbackTransaction() error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
 	if db.tx == nil {
-		return fmt.Errorf("you need to initialize the transction first")
+		return fmt.Errorf("you need to initialize the transaction first")
 	}
 
-	slog.Debug("transaction rollback...")
+	slog.Debug("postgres transaction rollback...")
 	_ = db.tx.Rollback()
 
 	db.tx = nil
@@ -75,11 +78,13 @@ func (db *Database) RollbackTransaction() error {
 }
 
 func (db *Database) CommitTransaction() error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
 	if db.tx == nil {
-		return fmt.Errorf("you need to initialize the transction first")
+		return fmt.Errorf("you need to initialize the transaction first")
 	}
 
-	slog.Debug("transaction commit...")
+	slog.Debug("postgres transaction commit...")
 	_ = db.tx.Commit()
 
 	db.tx = nil
@@ -90,8 +95,10 @@ func (db *Database) CommitTransaction() error {
 func (db *Database) SeedForTest() {
 	user, _ := entities.NewUser("testuser", "testuser@email.com", "Password@123")
 
+	user.AddCredits(100000000)
+
 	m, _ := persistence.ToUserModel(user)
-	_ = db.GetInstance().Create(m).Error
+	_ = db.Get().Create(m).Error
 }
 
 func (db *Database) migrations() error {

@@ -10,7 +10,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Refresh(c *gin.Context) {
+type RefreshTokenHandler struct {
+	config *config.Config
+}
+
+func NewRefreshTokenHandler(config *config.Config) *RefreshTokenHandler {
+	return &RefreshTokenHandler{
+		config: config,
+	}
+}
+
+func (h *RefreshTokenHandler) Handle(c *gin.Context) {
 	userId, ok := helpers.GetUserID(c)
 
 	if !ok {
@@ -34,7 +44,7 @@ func Refresh(c *gin.Context) {
 	accessToken, err := utils.GenerateToken(
 		userId,
 		email,
-		config.Data.JWT.AccessTokenSecret,
+		h.config.JWT.AccessTokenSecret,
 		15*time.Minute,
 	)
 	if err != nil {
@@ -53,7 +63,7 @@ func Refresh(c *gin.Context) {
 		15*60*1000,
 		"/",
 		"",
-		config.Data.Server.GinMode == "release",
+		h.config.Server.GinMode == "release",
 		true,
 	)
 

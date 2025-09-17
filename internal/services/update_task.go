@@ -5,33 +5,39 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
-	repos "scheduler/internal/repositories"
+	"scheduler/internal/interfaces"
+	"scheduler/pkg/scheduler"
+	"slices"
 	"time"
 )
 
 type UpdateTaskService struct {
-	taskRepository               repos.ITaskRepository
-	transactionRepository        repos.ITransactionRepository
+	taskRepository               interfaces.ITaskRepository
+	transactionRepository        interfaces.ITransactionRepository
 	updateTaskTransactionService *UpdateTaskTransactionService
+	scheduler                    *scheduler.Scheduler
 }
 
 func NewUpdateTaskService(
-	taskRepository repos.ITaskRepository,
-	transactionRepository repos.ITransactionRepository,
+	taskRepository interfaces.ITaskRepository,
+	transactionRepository interfaces.ITransactionRepository,
 	updateTaskTransaction *UpdateTaskTransactionService,
+	scheduler *scheduler.Scheduler,
 ) *UpdateTaskService {
 	return &UpdateTaskService{
 		taskRepository:               taskRepository,
 		transactionRepository:        transactionRepository,
 		updateTaskTransactionService: updateTaskTransaction,
+		scheduler:                    scheduler,
 	}
 }
 
 func (s *UpdateTaskService) Execute(
 	taskId string,
-	runAt time.Time,
-	timezone string,
-	priority int,
+	status *string,
+	runAt *time.Time,
+	timezone *string,
+	priority *int,
 ) (*entities.Task, error) {
 	slog.Info("update task service started...")
 	slog.Debug(fmt.Sprint("input ", taskId, runAt, timezone, priority))
@@ -42,29 +48,57 @@ func (s *UpdateTaskService) Execute(
 		return nil, errors.TASK_NOT_FOUND_ERROR()
 	}
 
-	err := task.SetRunAt(runAt)
-	if err != nil {
-		slog.Error(fmt.Sprintf("set run at error %s", err.Error()))
-		return nil, err
+	if status != nil {
+		unavailableStatusChange := []string{
+			entities.StatusCanceled,
+			entities.StatusFailed,
+			entities.StatusCompleted,
+		}
+
+		if slices.Contains(unavailableStatusChange, *status) {
+			slog.Error("trying to set status to non running status")
+			reason := "you can't change status to non running status in this service"
+			return nil, errors.INVALID_FIELD_VALUE("status", &reason)
+		}
+
+		err := task.SetStatus(*status)
+		if err != nil {
+			slog.Error(fmt.Sprintf("set status error %s", err.Error()))
+			return nil, err
+		}
 	}
 
-	err = task.SetTimezone(timezone)
-	if err != nil {
-		slog.Error(fmt.Sprintf("set timezone error %s", err.Error()))
-		return nil, err
+	if runAt != nil {
+		err := task.SetRunAt(*runAt)
+		if err != nil {
+			slog.Error(fmt.Sprintf("set run at error %s", err.Error()))
+			return nil, err
+		}
 	}
 
-	err = task.SetPriority(priority)
-	if err != nil {
-		slog.Error(fmt.Sprintf("set priority error %s", err.Error()))
-		return nil, err
+	if timezone != nil {
+		err := task.SetTimezone(*timezone)
+		if err != nil {
+			slog.Error(fmt.Sprintf("set timezone error %s", err.Error()))
+			return nil, err
+		}
 	}
 
-	err = s.taskRepository.Update(task)
+	if priority != nil {
+		err := task.SetPriority(*priority)
+		if err != nil {
+			slog.Error(fmt.Sprintf("set priority error %s", err.Error()))
+			return nil, err
+		}
+	}
+
+	err := s.taskRepository.Update(task)
 	if err != nil {
 		slog.Error(fmt.Sprintf("task update error %s", err.Error()))
 		return nil, err
 	}
+
+	s.scheduler.Update(task)
 
 	slog.Info("update task service finished...")
 	slog.Debug(fmt.Sprintf("returned task %+v", task))

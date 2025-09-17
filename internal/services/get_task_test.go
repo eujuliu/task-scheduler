@@ -24,8 +24,8 @@ func TestGetTaskService(t *testing.T) {
 	Ok(t, err)
 
 	taskOld, err := CreateTaskService.Execute(
-		"video",
-		time.Now().AddDate(0, 3, 3),
+		"email",
+		time.Now().Add(10*time.Minute),
 		"America/Sao_Paulo",
 		entities.PriorityMedium,
 		user.GetId(),
@@ -38,5 +38,5 @@ func TestGetTaskService(t *testing.T) {
 	task, err := GetTaskService.Execute(user.GetId(), taskOld.GetId())
 
 	Ok(t, err)
-	Equals(t, "video", task.GetType())
+	Equals(t, "email", task.GetType())
 }

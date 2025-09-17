@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"scheduler/internal/config"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +12,22 @@ import (
 	"github.com/stripe/stripe-go/v82/webhook"
 )
 
-func StripePayments(c *gin.Context) {
+type StripePaymentUpdateWebhook struct {
+	config                   *config.StripeConfig
+	updateTransactionService *services.UpdatePurchaseTransactionService
+}
+
+func NewStripePaymentUpdateWebhook(
+	config *config.StripeConfig,
+	updateTransactionService *services.UpdatePurchaseTransactionService,
+) *StripePaymentUpdateWebhook {
+	return &StripePaymentUpdateWebhook{
+		config:                   config,
+		updateTransactionService: updateTransactionService,
+	}
+}
+
+func (wh *StripePaymentUpdateWebhook) Hook(c *gin.Context) {
 	const MaxBodyBytes = int64(65536)
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MaxBodyBytes)
 
@@ -27,22 +41,12 @@ func StripePayments(c *gin.Context) {
 	event, err := webhook.ConstructEvent(
 		body,
 		c.GetHeader("Stripe-Signature"),
-		config.Data.Stripe.EndpointSecret,
+		wh.config.EndpointSecret,
 	)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-
-	userRepository := postgres_repos.NewPostgresUserRepository()
-	transactionRepository := postgres_repos.NewPostgresTransactionRepository()
-	errorRepository := postgres_repos.NewPostgresErrorRepository()
-
-	updatePurchaseService := services.NewUpdatePurchaseTransactionService(
-		userRepository,
-		transactionRepository,
-		errorRepository,
-	)
 
 	switch event.Type {
 	case "payment_intent.succeeded":
@@ -53,7 +57,7 @@ func StripePayments(c *gin.Context) {
 			return
 		}
 
-		_, err := updatePurchaseService.Complete(paymentIntent.Metadata["transactionID"])
+		_, err := wh.updateTransactionService.Complete(paymentIntent.Metadata["transactionID"])
 		if err != nil {
 			_ = c.Error(err)
 
@@ -68,7 +72,7 @@ func StripePayments(c *gin.Context) {
 			return
 		}
 
-		_, err := updatePurchaseService.Fail(
+		_, err := wh.updateTransactionService.Fail(
 			paymentIntent.Metadata["transactionID"],
 			paymentIntent.LastPaymentError.Msg,
 		)

@@ -2,22 +2,26 @@ package http_handlers
 
 import (
 	"net/http"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetTransaction(c *gin.Context) {
-	id := c.Param("id")
+type GetTransactionHandler struct {
+	getTransactionService *services.GetTransactionService
+}
 
-	userRepository := postgres_repos.NewPostgresUserRepository()
-	transactionRepository := postgres_repos.NewPostgresTransactionRepository()
-	getTransactionService := services.NewGetTransactionService(
-		userRepository,
-		transactionRepository,
-	)
+func NewGetTransactionHandler(
+	getTransactionService *services.GetTransactionService,
+) *GetTransactionHandler {
+	return &GetTransactionHandler{
+		getTransactionService: getTransactionService,
+	}
+}
+
+func (h *GetTransactionHandler) Handle(c *gin.Context) {
+	id := c.Param("id")
 
 	userId, ok := helpers.GetUserID(c)
 
@@ -28,7 +32,7 @@ func GetTransaction(c *gin.Context) {
 		})
 	}
 
-	transaction, err := getTransactionService.Execute(userId, id)
+	transaction, err := h.getTransactionService.Execute(userId, id)
 	if err != nil {
 		_ = c.Error(err)
 

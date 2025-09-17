@@ -2,7 +2,6 @@ package http_handlers
 
 import (
 	"net/http"
-	postgres_repos "scheduler/internal/repositories/postgres"
 	"scheduler/internal/services"
 	"scheduler/pkg/postgres"
 
@@ -14,7 +13,22 @@ type ResetUserPasswordRequest struct {
 	NewPassword string `json:"password" binding:"required"`
 }
 
-func ResetUserPassword(c *gin.Context) {
+type ResetUserPasswordHandler struct {
+	db                       *postgres.Database
+	resetUserPasswordService *services.ResetUserPasswordService
+}
+
+func NewResetUserPasswordHandler(
+	db *postgres.Database,
+	resetUserPasswordService *services.ResetUserPasswordService,
+) *ResetUserPasswordHandler {
+	return &ResetUserPasswordHandler{
+		db:                       db,
+		resetUserPasswordService: resetUserPasswordService,
+	}
+}
+
+func (h *ResetUserPasswordHandler) Handle(c *gin.Context) {
 	var json ResetUserPasswordRequest
 
 	if err := c.ShouldBindJSON(&json); err != nil {
@@ -25,22 +39,18 @@ func ResetUserPassword(c *gin.Context) {
 		return
 	}
 
-	userRepository := postgres_repos.NewPostgresUserRepository()
-	passwordRepository := postgres_repos.NewPostgresPasswordRepository()
-	resetPasswordService := services.NewResetUserPasswordService(userRepository, passwordRepository)
+	h.db.BeginTransaction()
 
-	postgres.DB.BeginTransaction()
-
-	err := resetPasswordService.Execute(json.TokenID, json.NewPassword)
+	err := h.resetUserPasswordService.Execute(json.TokenID, json.NewPassword)
 	if err != nil {
-		_ = postgres.DB.RollbackTransaction()
+		_ = h.db.RollbackTransaction()
 
 		_ = c.Error(err)
 
 		return
 	}
 
-	_ = postgres.DB.CommitTransaction()
+	_ = h.db.CommitTransaction()
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Password has been reset!",

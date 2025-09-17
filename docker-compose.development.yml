@@ -14,6 +14,34 @@ services:
 
     profiles: [scheduler_dev]
 
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    container_name: rabbitmq
+    env_file: ./.env.docker
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis/redis-stack
+    restart: unless-stopped
+    container_name: redis
+    env_file: ./.env.docker
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
   app:
     build:
       context: .
@@ -25,6 +53,8 @@ services:
       - ${PORT}:${PORT}
     depends_on:
       postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
     develop:
@@ -55,8 +85,7 @@ services:
       - "http"
       - "--url=${NGROK_URL}"
       - "http://app:${PORT}"
-    environment:
-      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    env_file: ./.env.docker
     ports:
       - 4040:4040
 

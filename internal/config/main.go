@@ -2,6 +2,7 @@ package config
 
 import (
 	"scheduler/pkg/utils"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -37,21 +38,44 @@ type StripeConfig struct {
 	EndpointSecret string
 }
 
-type Config struct {
-	Server   *ServerConfig
-	JWT      *JWTConfig
-	Database *DatabaseConfig
-	Stripe   *StripeConfig
+type RabbitMQConfig struct {
+	Port     string
+	User     string
+	Password string
+	Host     string
+	Url      string
 }
 
-var Data *Config
+type RedisConfig struct {
+	Addr     string
+	Password string
+	Username string
+	DB       int
+}
 
-func Load() *Config {
-	if Data != nil {
-		return Data
+type RateLimiterConfig struct {
+	RequestLimit  int
+	WindowSize    int64
+	SubWindowSize int64
+}
+
+type Config struct {
+	Server      *ServerConfig
+	JWT         *JWTConfig
+	Database    *DatabaseConfig
+	Stripe      *StripeConfig
+	RabbitMQ    *RabbitMQConfig
+	Redis       *RedisConfig
+	RateLimiter *RateLimiterConfig
+}
+
+func NewConfig() *Config {
+	redis_db, err := strconv.Atoi(utils.GetEnv("REDIS_DB", "0"))
+	if err != nil {
+		panic(err)
 	}
 
-	Data = &Config{
+	return &Config{
 		Server: &ServerConfig{
 			Host:            utils.GetEnv("Host", "0.0.0.0"),
 			Port:            utils.GetEnv("PORT", "8080"),
@@ -77,7 +101,26 @@ func Load() *Config {
 			APIKey:         utils.GetEnv("STRIPE_API_KEY", ""),
 			EndpointSecret: utils.GetEnv("STRIPE_WEBHOOK_SIGNING_SECRET", ""),
 		},
+		RabbitMQ: &RabbitMQConfig{
+			Port:     utils.GetEnv("RABBITMQ_PORT", "5672"),
+			User:     utils.GetEnv("RABBITMQ_DEFAULT_USER", "local_user"),
+			Password: utils.GetEnv("RABBITMQ_DEFAULT_PASS", "local_password"),
+			Host:     utils.GetEnv("RABBITMQ_HOST", "localhost"),
+			Url: utils.GetEnv(
+				"RABBITMQ_CONNECTION_STRING",
+				"amqp://guest:guest@localhost:5672/",
+			),
+		},
+		Redis: &RedisConfig{
+			Addr:     utils.GetEnv("REDIS_ADDRESS", "localhost:6379"),
+			Password: utils.GetEnv("REDIS_PASSWORD", ""),
+			Username: utils.GetEnv("REDIS_USERNAME", ""),
+			DB:       redis_db,
+		},
+		RateLimiter: &RateLimiterConfig{
+			RequestLimit:  10,
+			WindowSize:    60, // in seconds
+			SubWindowSize: 20, // in seconds
+		},
 	}
-
-	return Data
 }

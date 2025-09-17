@@ -7,17 +7,17 @@ import (
 
 type TaskModel struct {
 	BaseModel
-	Type           string    `gorm:"type:varchar(50);not null"`
-	UserID         string    `gorm:"type:uuid;not null;index"`
+	Type           string    `gorm:"type:varchar(50);not null"                                                      json:"type"`
+	UserID         string    `gorm:"type:uuid;not null;index"                                                       json:"userId"`
 	User           UserModel `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:NO ACTION"`
-	Cost           int       `gorm:"not null"`
-	Status         string    `gorm:"type:varchar(10);not null"`
-	RunAt          time.Time `gorm:"not null"`
-	Timezone       string    `gorm:"not null"`
-	Retries        int       `gorm:"not null"`
-	Priority       int       `gorm:"not null"`
-	ReferenceID    string    `gorm:"type:varchar(128);not null"`
-	IdempotencyKey string    `gorm:"type:varchar(128);not null"`
+	Cost           int       `gorm:"not null"                                                                       json:"cost"`
+	Status         string    `gorm:"type:varchar(10);not null"                                                      json:"status"`
+	RunAt          time.Time `gorm:"not null"                                                                       json:"runAt"`
+	Timezone       string    `gorm:"not null"                                                                       json:"timezone"`
+	Retries        int       `gorm:"not null"                                                                       json:"retries"`
+	Priority       int       `gorm:"not null"                                                                       json:"priority"`
+	ReferenceID    string    `gorm:"type:varchar(128);not null"                                                     json:"referenceId"`
+	IdempotencyKey string    `gorm:"type:varchar(128);not null"                                                     json:"idempotencyKey"`
 }
 
 func (TaskModel) TableName() string { return "tasks" }
