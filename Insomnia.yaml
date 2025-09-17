@@ -1,0 +1,486 @@
+type: spec.insomnia.rest/5.0
+name: TaskScheduler
+meta:
+  id: wrk_8bfdbac7051743afaf48c2f60c5664ab
+  created: 1756601409471
+  modified: 1758109940868
+  description: ""
+collection:
+  - url: "{{ _.addr }}/ping"
+    name: ping
+    meta:
+      id: req_cf50d81db8d24175bcf9d4c2dcf15ce1
+      created: 1756601422690
+      modified: 1757345674740
+      isPrivate: false
+      description: ""
+      sortKey: -1756602667315
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.5.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/refresh"
+    name: refresh
+    meta:
+      id: req_75b51f99b0fd4e1b90a12dc958a624c4
+      created: 1756601534514
+      modified: 1757345669230
+      isPrivate: false
+      description: ""
+      sortKey: -1756602667265
+    method: POST
+    headers:
+      - name: User-Agent
+        value: insomnia/11.5.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/auth/register"
+    name: register
+    meta:
+      id: req_6c00ebf689964e4faa1d7e123cb9fc06
+      created: 1756602667215
+      modified: 1757345664868
+      isPrivate: false
+      description: ""
+      sortKey: -1756602667215
+    method: POST
+    body:
+      mimeType: application/json
+      text: >-
+        {
+        	"username": "testuser{% faker 'randomAlphaNumeric' %}{% faker 'randomAlphaNumeric' %}",
+        	"email": "{% faker 'randomEmail' %}",
+        	"password": "Password@123"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/11.5.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/auth/login"
+    name: login
+    meta:
+      id: req_bda51f60c1fe4721a70ecc0479cdcd22
+      created: 1756649431047
+      modified: 1757449740891
+      isPrivate: false
+      description: ""
+      sortKey: -1756602525627.375
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"email": "testuser@email.com",
+        	"password": "Password@123"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/11.5.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/auth/forgot-password"
+    name: forgot-password
+    meta:
+      id: req_1deaeab67623421fb8e144e9d5afcd91
+      created: 1756732757137
+      modified: 1757345655030
+      isPrivate: false
+      description: ""
+      sortKey: -1756602384039.75
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"email": "{{ _.email }}"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/11.5.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/auth/reset-password"
+    name: reset-password
+    meta:
+      id: req_e7cf6d60d9fb40c7b712aadcfc942c14
+      created: 1756759988188
+      modified: 1757345647515
+      isPrivate: false
+      description: ""
+      sortKey: -1756602242452.125
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"tokenId": "19f0fff6-1614-4cda-b21f-c5afea5536ab",
+        	"password": "Password@1233"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/11.5.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/transactions"
+    name: transactions
+    meta:
+      id: req_1b7f942de8d6402db510115f883f914f
+      created: 1756825585301
+      modified: 1757345686084
+      isPrivate: false
+      description: ""
+      sortKey: -1756602198205.9922
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.5.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/{{ _.last_transaction }}"
+    name: transaction
+    meta:
+      id: req_e79181feb33a4fc79852dd0100c3ee8c
+      created: 1756825714417
+      modified: 1757345691089
+      isPrivate: false
+      description: ""
+      sortKey: -1756602193781.379
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.5.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/buy-credits"
+    name: buy-credits
+    meta:
+      id: req_9d44ac803fd34966a1d19cb0c19ee8c2
+      created: 1756825751279
+      modified: 1757345641466
+      isPrivate: false
+      description: ""
+      sortKey: -1756602207055.2188
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"credits": 20,
+        	"currency": "BRL"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_fbbe2308827442ee887cd818735f8f73
+      - name: User-Agent
+        value: insomnia/11.5.0
+        id: pair_1e2f34c3fcfa4d52b5679c3f275f4cbf
+      - id: pair_df7bf7d81268429bb0adf85211e8c118
+        name: Idempotency-Key
+        value: "{% faker 'randomUUID' %}"
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/task"
+    name: task
+    meta:
+      id: req_f3abcaefed79499caf7d4e9b50ef338b
+      created: 1756849264472
+      modified: 1757978448276
+      isPrivate: false
+      description: ""
+      sortKey: -1756602189356.7656
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"type": "email",
+        	"runAt": "",
+        	"timezone": "America/Sao_Paulo",
+        	"priority": 2,
+        	"referenceId": "{% faker 'randomUUID' %}"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_fbbe2308827442ee887cd818735f8f73
+      - name: User-Agent
+        value: insomnia/11.5.0
+        id: pair_1e2f34c3fcfa4d52b5679c3f275f4cbf
+      - id: pair_df7bf7d81268429bb0adf85211e8c118
+        name: Idempotency-Key
+        value: "{% faker 'randomUUID' %}"
+        description: ""
+        disabled: false
+    scripts:
+      preRequest: |-
+        const uuid = require('uuid');
+
+        const min = 5
+        const max = 10
+
+        const randomMinutes = Math.floor(Math.random() * (max - min + 1)) + min;
+        const randomPriority = Math.floor(Math.random() * (4 - 1 + 1)) + 1
+
+        const futureDate = new Date();
+        futureDate.setMinutes(futureDate.getMinutes() + randomMinutes);
+
+        const jsonBody = {
+        	type: "email",
+        	runAt: futureDate.toISOString(),
+        	timezone: "America/Sao_Paulo",
+        	priority: randomPriority,
+        	referenceId: uuid.v4()
+        };
+
+        insomnia.request.body.update({
+        	mode: 'raw',
+        	raw: JSON.stringify(jsonBody, null, 2)
+        });
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/task/{{ _.last_task }}"
+    name: task
+    meta:
+      id: req_8f4eac08030f404295cf7f150d1384bf
+      created: 1756906402429
+      modified: 1757734443264
+      isPrivate: false
+      description: ""
+      sortKey: -1756602180507.539
+    method: PUT
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"runAt": "2025-09-13T03:50:09.763Z",
+        	"timezone": "America/Sao_Paulo",
+        	"priority": 2
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_fbbe2308827442ee887cd818735f8f73
+      - name: User-Agent
+        value: insomnia/11.5.0
+        id: pair_1e2f34c3fcfa4d52b5679c3f275f4cbf
+      - id: pair_df7bf7d81268429bb0adf85211e8c118
+        name: Idempotency-Key
+        value: "{% faker 'randomUUID' %}"
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/task/cancel/{{ _.last_task }}"
+    name: cance-task
+    meta:
+      id: req_59daeef4ceef4063aa1eeff207c15cb5
+      created: 1756906961775
+      modified: 1757345704387
+      isPrivate: false
+      description: ""
+      sortKey: -1756602179401.3857
+    method: PUT
+    headers:
+      - name: User-Agent
+        value: insomnia/11.5.0
+        id: pair_1e2f34c3fcfa4d52b5679c3f275f4cbf
+      - id: pair_df7bf7d81268429bb0adf85211e8c118
+        name: Idempotency-Key
+        value: "{% faker 'randomUUID' %}"
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/tasks"
+    name: tasks
+    meta:
+      id: req_8a2604c6cd364e46b90af345c7f1df43
+      created: 1756907426958
+      modified: 1757345708863
+      isPrivate: false
+      description: ""
+      sortKey: -1756602178295.2324
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.5.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.addr }}/task/{{ _.last_task }}"
+    name: task
+    meta:
+      id: req_744173014b5344b48e5c7802771380f7
+      created: 1756907441086
+      modified: 1757345713468
+      isPrivate: false
+      description: ""
+      sortKey: -1756602177189.079
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.5.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_77483b9096d64dd3b12e1c3d5e076204bf774db6
+    created: 1756601409474
+    modified: 1758072083199
+  cookies:
+    - key: access_token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4NTRhNTU5Ny01ZTA4LTRkYjktYWFhOC1lMTE0NzQxNDNiNGUiLCJlbWFpbCI6InRlc3R1c2VyQGVtYWlsLmNvbSIsInN1YiI6Ijg1NGE1NTk3LTVlMDgtNGRiOS1hYWE4LWUxMTQ3NDE0M2I0ZSIsImV4cCI6MTc1ODA3Mjk4MywibmJmIjoxNzU4MDcyMDgzLCJpYXQiOjE3NTgwNzIwODN9.y7NOm6KuVOXrzLKnuvUgCS7QtR8XflSGQJ0aCnR6tgs
+      maxAge: 900000
+      domain: localhost
+      path: /
+      httpOnly: true
+      hostOnly: true
+      creation: 2025-08-31T01:14:14.355Z
+      lastAccessed: 2025-09-17T01:21:23.199Z
+      id: e7710a8a-7cfc-4135-98f7-ed3268175603
+    - key: refresh_token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4NTRhNTU5Ny01ZTA4LTRkYjktYWFhOC1lMTE0NzQxNDNiNGUiLCJlbWFpbCI6InRlc3R1c2VyQGVtYWlsLmNvbSIsInN1YiI6Ijg1NGE1NTk3LTVlMDgtNGRiOS1hYWE4LWUxMTQ3NDE0M2I0ZSIsImV4cCI6MTc1ODY3Njg4MywibmJmIjoxNzU4MDcyMDgzLCJpYXQiOjE3NTgwNzIwODN9.Ti6wMPH0fCRr95g7J_PT3_g4HUzWJcnBrzEWcL1ceyk
+      maxAge: 10080000
+      domain: localhost
+      path: /
+      httpOnly: true
+      hostOnly: true
+      creation: 2025-08-31T01:14:14.356Z
+      lastAccessed: 2025-09-17T01:21:23.199Z
+      id: 41dd83d7-bf27-4618-8605-4e8295e73de1
+environments:
+  name: Base Environment
+  meta:
+    id: env_77483b9096d64dd3b12e1c3d5e076204bf774db6
+    created: 1756601409473
+    modified: 1757979094249
+    isPrivate: false
+  data:
+    addr: localhost:8080
+    email: "{% response 'body', 'req_6c00ebf689964e4faa1d7e123cb9fc06',
+      'b64::JC5lbWFpbA==::46b', 'never', 3600 %}"
+    last_task: "{% response 'body', 'req_f3abcaefed79499caf7d4e9b50ef338b',
+      'b64::JC5pZA==::46b', 'no-history', 60 %}"
+    last_transaction: "{% response 'body', 'req_9d44ac803fd34966a1d19cb0c19ee8c2',
+      'b64::JC5pZA==::46b', 'no-history', 60 %}"
+    next_date: ""
+spec:
+  meta:
+    id: spc_ad3886890ebf4bb2ae21e3de062aec55
+    created: 1756601409472
+    modified: 1758109940867
+testSuites:
+  - name: New Suite
+    meta:
+      id: uts_760ca94b93e343bf887573eca681fb58
+      created: 1757791408068
+      modified: 1757791408068
+      sortKey: -1757791408068
+    tests:
+      - name: Returns 200
+        meta:
+          id: ut_4e1a52f1d24c4c85bdcd5d71f3ee8c1e
+          created: 1757791410249
+          modified: 1757791410249
+          sortKey: -1757791410249
+        code: |-
+          const response1 = await insomnia.send();
+          expect(response1.status).to.equal(200);
