@@ -13,6 +13,8 @@ import (
 	"scheduler/internal/services"
 	"scheduler/pkg/postgres"
 	"scheduler/pkg/rabbitmq"
+	ratelimiter "scheduler/pkg/rate_limiter"
+	"scheduler/pkg/redis"
 	"scheduler/pkg/scheduler"
 
 	"github.com/gin-gonic/gin"
@@ -20,10 +22,13 @@ import (
 )
 
 type Dependencies struct {
-	DB                        *postgres.Database
-	Scheduler                 *scheduler.Scheduler
-	Config                    *config.Config
-	Queue                     *interfaces.IQueue
+	DB          *postgres.Database
+	Redis       *redis.Redis
+	Scheduler   *scheduler.Scheduler
+	Config      *config.Config
+	Queue       *interfaces.IQueue
+	RateLimiter *ratelimiter.SlidingWindowCounterLimiter
+
 	BuyCreditsHandler         *http_handlers.BuyCreditsHandler
 	CancelTaskHandler         *http_handlers.CancelTaskHandler
 	CreateTaskHandler         *http_handlers.CreateTaskHandler
@@ -57,6 +62,14 @@ func Initialize() (*Dependencies, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	rdb := redis.NewRedis(config.Redis)
+	limiter := ratelimiter.NewSlidingWindowCounterLimiter(
+		rdb,
+		config.RateLimiter.RequestLimit,
+		config.RateLimiter.WindowSize,
+		config.RateLimiter.SubWindowSize,
+	)
 
 	loggerLevel := slog.LevelInfo
 
@@ -165,9 +178,12 @@ func Initialize() (*Dependencies, error) {
 	)
 
 	return &Dependencies{
-		DB:                        db,
-		Scheduler:                 scheduler,
-		Config:                    config,
+		DB:          db,
+		Scheduler:   scheduler,
+		Config:      config,
+		Redis:       rdb,
+		RateLimiter: limiter,
+
 		BuyCreditsHandler:         buyCreditsHandler,
 		CancelTaskHandler:         cancelTaskHandler,
 		CreateTaskHandler:         createTaskHandler,

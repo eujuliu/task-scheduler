@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"scheduler/internal/entities"
 	"testing"
+	"unsafe"
 
 	"github.com/google/uuid"
 )
@@ -49,6 +50,24 @@ func Equals(tb testing.TB, exp, act any) {
 		)
 		tb.FailNow()
 	}
+}
+
+func SetPrivateField[T any](s T, fieldName string, value any) error {
+	v := reflect.ValueOf(s)
+
+	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Struct {
+		return fmt.Errorf("SetPrivateField: expected pointer to struct, got %T", s)
+	}
+
+	v = v.Elem()
+	f := v.FieldByName(fieldName)
+
+	if !f.IsValid() {
+		return fmt.Errorf("SetPrivateField: no such field %q", fieldName)
+	}
+
+	reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem().Set(reflect.ValueOf(value))
+	return nil
 }
 
 func CreateUserWithCredits(name, email, password string) (*entities.User, error) {

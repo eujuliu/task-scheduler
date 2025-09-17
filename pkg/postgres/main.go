@@ -6,6 +6,7 @@ import (
 	"scheduler/internal/config"
 	"scheduler/internal/entities"
 	"scheduler/internal/persistence"
+	"sync"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -15,6 +16,7 @@ type Database struct {
 	db     *gorm.DB
 	tx     *gorm.DB
 	config *config.DatabaseConfig
+	mu     sync.Mutex
 }
 
 func NewPostgres(config *config.DatabaseConfig) (*Database, error) {
@@ -43,6 +45,9 @@ func NewPostgres(config *config.DatabaseConfig) (*Database, error) {
 }
 
 func (db *Database) Get() *gorm.DB {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
 	if db.tx != nil {
 		return db.tx
 	}
@@ -51,16 +56,20 @@ func (db *Database) Get() *gorm.DB {
 }
 
 func (db *Database) BeginTransaction() {
-	slog.Debug("transaction started...")
+	db.mu.Lock()
+	defer db.mu.Unlock()
+	slog.Debug("postgres transaction started...")
 	db.tx = db.db.Begin()
 }
 
 func (db *Database) RollbackTransaction() error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
 	if db.tx == nil {
 		return fmt.Errorf("you need to initialize the transaction first")
 	}
 
-	slog.Debug("transaction rollback...")
+	slog.Debug("postgres transaction rollback...")
 	_ = db.tx.Rollback()
 
 	db.tx = nil
@@ -69,11 +78,13 @@ func (db *Database) RollbackTransaction() error {
 }
 
 func (db *Database) CommitTransaction() error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
 	if db.tx == nil {
 		return fmt.Errorf("you need to initialize the transaction first")
 	}
 
-	slog.Debug("transaction commit...")
+	slog.Debug("postgres transaction commit...")
 	_ = db.tx.Commit()
 
 	db.tx = nil

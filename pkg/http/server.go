@@ -29,11 +29,12 @@ func New(deps *composition.Dependencies) *Server {
 
 	router := gin.New()
 
+	router.Use(gin.Recovery())
 	router.Use(middlewares.SecureHeaders)
 	router.Use(middlewares.Logger)
 	router.Use(middlewares.Errors)
 	router.Use(middlewares.Cors)
-	router.Use(gin.Recovery())
+	router.Use(middlewares.RateLimiter(deps.RateLimiter))
 
 	server := http.Server{
 		Addr:           fmt.Sprintf("%s:%s", config.Host, config.Port),
