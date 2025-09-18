@@ -14,10 +14,9 @@ import (
 func TestSlidingWindowCounterLimiter(t *testing.T) {
 	rdb := &redis.Redis{}
 	db, mock := redismock.NewClientMock()
+	ctx := context.Background()
 
 	err := SetPrivateField(rdb, "db", db)
-	Ok(t, err)
-	err = SetPrivateField(rdb, "ctx", context.Background())
 	Ok(t, err)
 
 	limiter := ratelimiter.NewSlidingWindowCounterLimiter(rdb, 5, 60, 20)
@@ -25,7 +24,7 @@ func TestSlidingWindowCounterLimiter(t *testing.T) {
 	key := "rate_limit:client_1"
 
 	mock.ExpectHGetAll(key).SetVal(map[string]string{"test": "5"})
-	_, allowed := limiter.Allowed("client_1")
+	_, allowed := limiter.Allowed(ctx, "client_1")
 	Equals(t, false, allowed)
 
 	Ok(t, mock.ExpectationsWereMet())

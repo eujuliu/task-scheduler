@@ -77,7 +77,7 @@ func NewConfig() *Config {
 
 	return &Config{
 		Server: &ServerConfig{
-			Host:            utils.GetEnv("Host", "0.0.0.0"),
+			Host:            utils.GetEnv("HOST", "0.0.0.0"),
 			Port:            utils.GetEnv("PORT", "8080"),
 			GinMode:         utils.GetEnv("GIN_MODE", gin.ReleaseMode),
 			ReadTimeout:     30 * time.Second,

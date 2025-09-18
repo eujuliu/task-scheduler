@@ -14,7 +14,6 @@ import (
 type Redis struct {
 	db     *redis.Client
 	config *config.RedisConfig
-	ctx    context.Context
 	mu     sync.Mutex
 	tx     redis.Pipeliner
 }
@@ -31,7 +30,6 @@ func NewRedis(config *config.RedisConfig) *Redis {
 	return &Redis{
 		db:     db,
 		config: config,
-		ctx:    context.Background(),
 	}
 }
 
@@ -42,14 +40,14 @@ func (r *Redis) BeginTransaction() {
 	r.tx = r.db.TxPipeline()
 }
 
-func (r *Redis) ExecTransaction() error {
+func (r *Redis) ExecTransaction(ctx context.Context) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if r.tx == nil {
 		return fmt.Errorf("you need to initialize the transaction first")
 	}
 
-	_, err := r.tx.Exec(r.ctx)
+	_, err := r.tx.Exec(ctx)
 	r.tx = nil
 
 	if err != nil {
@@ -72,21 +70,22 @@ func (r *Redis) DiscardTransaction() error {
 	return nil
 }
 
-func (r *Redis) HGetAll(key string) (map[string]string, error) {
-	return r.db.HGetAll(r.ctx, key).Result()
+func (r *Redis) HGetAll(ctx context.Context, key string) (map[string]string, error) {
+	return r.db.HGetAll(ctx, key).Result()
 }
 
-func (r *Redis) HIncrBy(key, field string, incr int64) (int64, error) {
+func (r *Redis) HIncrBy(ctx context.Context, key, field string, incr int64) (int64, error) {
 	var tx redis.Cmdable = r.db
 
 	if r.tx != nil {
 		tx = r.tx
 	}
 
-	return tx.HIncrBy(r.ctx, key, field, incr).Result()
+	return tx.HIncrBy(ctx, key, field, incr).Result()
 }
 
 func (r *Redis) HExpire(
+	ctx context.Context,
 	key string,
 	expiration time.Duration,
 	mode string,
@@ -102,5 +101,13 @@ func (r *Redis) HExpire(
 
 	reflect.ValueOf(&args).Elem().FieldByName(mode).SetBool(true)
 
-	return tx.HExpireWithArgs(r.ctx, key, expiration, args, fields...).Result()
+	return tx.HExpireWithArgs(ctx, key, expiration, args, fields...).Result()
+}
+
+func (r *Redis) Set(
+	ctx context.Context,
+	key, value string,
+	expiration time.Duration,
+) (string, error) {
+	return r.db.Set(ctx, key, value, expiration).Result()
 }

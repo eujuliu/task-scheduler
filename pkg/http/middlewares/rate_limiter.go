@@ -12,7 +12,7 @@ func RateLimiter(limiter *ratelimiter.SlidingWindowCounterLimiter) gin.HandlerFu
 	return func(c *gin.Context) {
 		ip := c.ClientIP()
 
-		count, allowed := limiter.Allowed(ip)
+		count, allowed := limiter.Allowed(c, ip)
 
 		c.Header("X-Ratelimit-Remaining", fmt.Sprint(max(count-1, 0)))
 		c.Header("X-Ratelimit-Limit", fmt.Sprint(limiter.GetLimit()))

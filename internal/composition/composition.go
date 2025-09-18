@@ -163,9 +163,9 @@ func Initialize() (*Dependencies, error) {
 	getTasksHandler := http_handlers.NewGetTasksHandler(getTasksByUserIdService)
 	getTransactionHandler := http_handlers.NewGetTransactionHandler(getTransactionService)
 	getTransactionsHandler := http_handlers.NewGetTransactionsHandler(getTransactionsService)
-	loginHandler := http_handlers.NewLoginHandler(config, getUserService)
-	refreshTokenHandler := http_handlers.NewRefreshTokenHandler(config)
-	registerUserHandler := http_handlers.NewRegisterHandler(config, createUserService)
+	loginHandler := http_handlers.NewLoginHandler(config, rdb, getUserService)
+	refreshTokenHandler := http_handlers.NewRefreshTokenHandler(config, rdb)
+	registerUserHandler := http_handlers.NewRegisterHandler(config, rdb, createUserService)
 	resetUserPasswordHandler := http_handlers.NewResetUserPasswordHandler(
 		db,
 		resetUserPasswordService,
