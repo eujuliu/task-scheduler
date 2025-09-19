@@ -1,9 +1,8 @@
 package scheduler_test
 
 import (
-	"encoding/json"
+	"context"
 	"scheduler/internal/entities"
-	"scheduler/internal/persistence"
 	"scheduler/internal/queue"
 	. "scheduler/test"
 	"testing"
@@ -15,6 +14,8 @@ import (
 func TestScheduler(t *testing.T) {
 	teardown := Setup(t)
 	defer teardown(t)
+
+	ctx := context.Background()
 
 	times := make([]time.Time, 5)
 	times[0] = Clock.Now().Add(5 * time.Minute)
@@ -78,10 +79,20 @@ func TestScheduler(t *testing.T) {
 	)
 	Scheduler.Add(task4)
 
-	tasksCh, _ := Queue.Consume(queue.SEND_EMAIL_KEY)
+	tasksCh := make(chan any)
+
+	go func() {
+		err := Queue.Consume(ctx, queue.SEND_EMAIL_KEY, func(message any) error {
+			tasksCh <- message
+
+			return nil
+		})
+
+		Ok(t, err)
+	}()
 
 	select {
-	case <-tasksCh.(chan []byte):
+	case <-tasksCh:
 		t.Fatal("unexpected received result before timer expired")
 	case <-time.After(2 * time.Second):
 	}
@@ -91,13 +102,15 @@ func TestScheduler(t *testing.T) {
 	result := []string{"0", "4", "3", "2", "1"}
 
 	for _, i := range result {
-		d := <-tasksCh.(chan []byte)
-		var got persistence.TaskModel
-		_ = json.Unmarshal(d, &got)
+		msg := <-tasksCh
+		got := msg.(map[string]any)
+		date, err := time.Parse(time.RFC3339Nano, got["runAt"].(string))
 
-		Equals(t, i, got.ReferenceID)
-		Equals(t, Clock.Now().Format("23:00:00"), got.RunAt.Format("23:00:00"))
-		Equals(t, entities.StatusRunning, got.Status)
+		Ok(t, err)
+		Equals(t, i, got["referenceId"])
+		Equals(t, Clock.Now().Format("23:00:00"), date.Format("23:00:00"))
+		Equals(t, entities.StatusRunning, got["status"])
+
 		Clock.Advance(1 * time.Minute)
 	}
 }

@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	"context"
+	"encoding/json"
 	"scheduler/internal/config"
 	"strings"
 	"time"
@@ -70,8 +71,34 @@ func (rmq *RabbitMQ) Publish(key string, exchangeName string, data []byte) error
 	return err
 }
 
-func (rmq *RabbitMQ) Consume(name string) (any, error) {
-	ch, err := rmq.ch.Consume(name, "scheduler", false, false, false, false, nil)
+func (rmq *RabbitMQ) Consume(
+	ctx context.Context,
+	queue string,
+	handler func(any) error,
+) error {
+	msgs, err := rmq.ch.Consume(queue, "scheduler", false, false, false, false, nil)
+	if err != nil {
+		return err
+	}
 
-	return ch, err
+	for {
+		select {
+		case msg := <-msgs:
+			var data any
+
+			if err := json.Unmarshal(msg.Body, &data); err != nil {
+				_ = msg.Nack(false, true)
+				continue
+			}
+
+			if err := handler(data); err != nil {
+				_ = msg.Nack(false, true)
+				continue
+			}
+
+			_ = msg.Ack(false)
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
 }
