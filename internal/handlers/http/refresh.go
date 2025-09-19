@@ -1,9 +1,11 @@
 package http_handlers
 
 import (
+	"fmt"
 	"net/http"
 	"scheduler/internal/config"
 	"scheduler/pkg/http/helpers"
+	"scheduler/pkg/redis"
 	"scheduler/pkg/utils"
 	"time"
 
@@ -12,11 +14,13 @@ import (
 
 type RefreshTokenHandler struct {
 	config *config.Config
+	rdb    *redis.Redis
 }
 
-func NewRefreshTokenHandler(config *config.Config) *RefreshTokenHandler {
+func NewRefreshTokenHandler(config *config.Config, rdb *redis.Redis) *RefreshTokenHandler {
 	return &RefreshTokenHandler{
 		config: config,
+		rdb:    rdb,
 	}
 }
 
@@ -41,6 +45,8 @@ func (h *RefreshTokenHandler) Handle(c *gin.Context) {
 		})
 	}
 
+	accessTokenDuration := 15 * time.Minute
+
 	accessToken, err := utils.GenerateToken(
 		userId,
 		email,
@@ -60,14 +66,19 @@ func (h *RefreshTokenHandler) Handle(c *gin.Context) {
 	c.SetCookie(
 		"access_token",
 		accessToken,
-		15*60*1000,
+		int(accessTokenDuration),
 		"/",
 		"",
 		h.config.Server.GinMode == "release",
 		true,
 	)
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "New access Token added to Cookies",
-	})
+	_, err = h.rdb.Set(c, fmt.Sprintf("session_id:%v", userId), userId, accessTokenDuration)
+	if err != nil {
+		_ = c.Error(err)
+
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

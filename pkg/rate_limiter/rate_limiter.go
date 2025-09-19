@@ -1,6 +1,7 @@
 package ratelimiter
 
 import (
+	"context"
 	"fmt"
 	"scheduler/pkg/redis"
 	"strconv"
@@ -31,10 +32,10 @@ func (rt *SlidingWindowCounterLimiter) GetLimit() int64 {
 	return int64(rt.limit)
 }
 
-func (rt *SlidingWindowCounterLimiter) Allowed(id string) (int64, bool) {
+func (rt *SlidingWindowCounterLimiter) Allowed(ctx context.Context, id string) (int64, bool) {
 	key := fmt.Sprintf("rate_limit:%s", id)
 
-	subs, err := rt.redis.HGetAll(key)
+	subs, err := rt.redis.HGetAll(ctx, key)
 	if err != nil {
 		panic(err)
 	}
@@ -58,12 +59,13 @@ func (rt *SlidingWindowCounterLimiter) Allowed(id string) (int64, bool) {
 
 		rt.redis.BeginTransaction()
 
-		_, err := rt.redis.HIncrBy(key, fmt.Sprint(currentSubWindow), 1)
+		_, err := rt.redis.HIncrBy(ctx, key, fmt.Sprint(currentSubWindow), 1)
 		if err != nil {
 			panic(err)
 		}
 
 		_, err = rt.redis.HExpire(
+			ctx,
 			key,
 			time.Duration(rt.windowSize)*time.Second,
 			"NX",
@@ -73,7 +75,7 @@ func (rt *SlidingWindowCounterLimiter) Allowed(id string) (int64, bool) {
 			panic(err)
 		}
 
-		err = rt.redis.ExecTransaction()
+		err = rt.redis.ExecTransaction(ctx)
 		if err != nil {
 			panic(err)
 		}

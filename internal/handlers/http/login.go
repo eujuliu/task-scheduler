@@ -1,9 +1,11 @@
 package http_handlers
 
 import (
+	"fmt"
 	"net/http"
 	"scheduler/internal/config"
 	"scheduler/internal/services"
+	"scheduler/pkg/redis"
 	"scheduler/pkg/utils"
 	"time"
 
@@ -17,12 +19,18 @@ type LoginRequest struct {
 
 type LoginHandler struct {
 	config         *config.Config
+	rdb            *redis.Redis
 	getUserService *services.GetUserService
 }
 
-func NewLoginHandler(config *config.Config, getUserService *services.GetUserService) *LoginHandler {
+func NewLoginHandler(
+	config *config.Config,
+	rdb *redis.Redis,
+	getUserService *services.GetUserService,
+) *LoginHandler {
 	return &LoginHandler{
 		config:         config,
+		rdb:            rdb,
 		getUserService: getUserService,
 	}
 }
@@ -45,11 +53,14 @@ func (h *LoginHandler) Handle(c *gin.Context) {
 		return
 	}
 
+	accessTokenDuration := 15 * time.Minute
+	refreshTokenDuration := 24 * 7 * time.Hour
+
 	accessToken, err := utils.GenerateToken(
 		user.GetId(),
 		user.GetEmail(),
 		h.config.JWT.AccessTokenSecret,
-		15*time.Minute,
+		accessTokenDuration,
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -65,7 +76,7 @@ func (h *LoginHandler) Handle(c *gin.Context) {
 		user.GetId(),
 		user.GetEmail(),
 		h.config.JWT.RefreshTokenSecret,
-		time.Hour*24*7,
+		refreshTokenDuration,
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -80,7 +91,7 @@ func (h *LoginHandler) Handle(c *gin.Context) {
 	c.SetCookie(
 		"access_token",
 		accessToken,
-		15*60*1000,
+		int(accessTokenDuration),
 		"/",
 		"",
 		h.config.Server.GinMode == "release",
@@ -90,12 +101,24 @@ func (h *LoginHandler) Handle(c *gin.Context) {
 	c.SetCookie(
 		"refresh_token",
 		refreshToken,
-		7*24*60*1000,
+		int(refreshTokenDuration),
 		"/",
 		"",
 		h.config.Server.GinMode == "release",
 		true,
 	)
+
+	_, err = h.rdb.Set(
+		c,
+		fmt.Sprintf("session_id:%v", user.GetId()),
+		user.GetId(),
+		accessTokenDuration,
+	)
+	if err != nil {
+		_ = c.Error(err)
+
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"id":             user.GetId(),
