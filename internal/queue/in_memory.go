@@ -1,6 +1,10 @@
 package queue
 
-import "sync"
+import (
+	"context"
+	"encoding/json"
+	"sync"
+)
 
 type InMemoryQueue struct {
 	queues map[string]chan []byte
@@ -32,9 +36,30 @@ func (q *InMemoryQueue) Publish(key string, exchangeName string, data []byte) er
 	return nil
 }
 
-func (q *InMemoryQueue) Consume(name string) (any, error) {
-	q.ensureQueue(name)
-	return q.queues[name], nil
+func (q *InMemoryQueue) Consume(
+	ctx context.Context,
+	queue string,
+	handler func(any) error,
+) error {
+	q.ensureQueue(queue)
+	msgs := q.queues[queue]
+
+	for {
+		select {
+		case msg := <-msgs:
+			var data any
+
+			if err := json.Unmarshal(msg, &data); err != nil {
+				continue
+			}
+
+			if err := handler(data); err != nil {
+				continue
+			}
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
 }
 
 func (q *InMemoryQueue) Close() {
