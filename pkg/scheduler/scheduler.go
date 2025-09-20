@@ -134,7 +134,7 @@ func (s *Scheduler) ExecuteTask(task *entities.Task) {
 		panic(err)
 	}
 
-	err = s.queue.Publish(queue.AvailableQueues[task.GetType()], queue.TASK_EXCHANGE, data)
+	err = s.queue.Publish(queue.WorkersQueues[task.GetType()], queue.TASK_EXCHANGE, data)
 	if err != nil {
 		panic(err)
 	}

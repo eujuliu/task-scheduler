@@ -111,7 +111,7 @@ func (s *Server) setupRoutes() {
 		protected.GET("/transaction/:id", s.deps.GetTransactionHandler.Handle)
 
 		protected.POST("/task", s.deps.CreateTaskHandler.Handle)
-		protected.PUT("/task/:id", s.deps.UpdateTaskHandler.Handle)
+		protected.PUT("/task/:id", s.deps.UpdateTaskHttpHandler.Handle)
 		protected.PUT("/task/cancel/:id", s.deps.CancelTaskHandler.Handle)
 		protected.GET("/task/:id", s.deps.GetTaskHandler.Handle)
 		protected.GET("/tasks", s.deps.GetTasksHandler.Handle)

@@ -12,27 +12,19 @@ type Stripe struct {
 	config *config.StripeConfig
 }
 
-var Client *Stripe
-
-func Load(config *config.StripeConfig) *Stripe {
-	if Client != nil {
-		return Client
-	}
-
+func NewStripe(config *config.StripeConfig) (*Stripe, error) {
 	if config.APIKey == "" {
-		panic(fmt.Errorf("stripe API key missing or not valid"))
+		return nil, fmt.Errorf("stripe API key missing or not valid")
 	}
 
 	sc := stripe.NewClient(config.APIKey)
 
-	Client = &Stripe{
+	return &Stripe{
 		client: sc,
 		config: config,
-	}
-
-	return Client
+	}, nil
 }
 
-func (s *Stripe) GetClient() *stripe.Client {
+func (s *Stripe) Client() *stripe.Client {
 	return s.client
 }

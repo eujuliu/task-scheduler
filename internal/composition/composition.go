@@ -6,6 +6,7 @@ import (
 	"scheduler/internal/config"
 	http_handlers "scheduler/internal/handlers/http"
 	http_webhooks "scheduler/internal/handlers/http/webhooks"
+	queue_handlers "scheduler/internal/handlers/queue"
 	"scheduler/internal/interfaces"
 	stripe_paymentgateway "scheduler/internal/payment_gateway/stripe"
 	"scheduler/internal/queue"
@@ -16,6 +17,7 @@ import (
 	ratelimiter "scheduler/pkg/rate_limiter"
 	"scheduler/pkg/redis"
 	"scheduler/pkg/scheduler"
+	"scheduler/pkg/stripe"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jonboulle/clockwork"
@@ -41,7 +43,8 @@ type Dependencies struct {
 	RefreshTokenHandler       *http_handlers.RefreshTokenHandler
 	RegisterUserHandler       *http_handlers.RegisterHandler
 	ResetUserPasswordHandler  *http_handlers.ResetUserPasswordHandler
-	UpdateTaskHandler         *http_handlers.UpdateTaskHandler
+	UpdateTaskHttpHandler     *http_handlers.UpdateTaskHandler
+	UpdateTaskQueueHandler    *queue_handlers.UpdateTaskHandler
 
 	StripePaymentUpdateWebhook *http_webhooks.StripePaymentUpdateWebhook
 }
@@ -63,6 +66,20 @@ func Initialize() (*Dependencies, error) {
 		return nil, err
 	}
 
+	err = rmq.AddDurableQueue(
+		queue.GET_TASKS_RESULT_QUEUE,
+		queue.TASK_EXCHANGE,
+		queue.GET_TASK_RESULT_KEY,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = rmq.AddDurableQueue(queue.SEND_EVENTS_QUEUE, queue.EVENTS_EXCHANGE, queue.SEND_EVENTS_KEY)
+	if err != nil {
+		return nil, err
+	}
+
 	rdb := redis.NewRedis(config.Redis)
 	limiter := ratelimiter.NewSlidingWindowCounterLimiter(
 		rdb,
@@ -70,6 +87,10 @@ func Initialize() (*Dependencies, error) {
 		config.RateLimiter.WindowSize,
 		config.RateLimiter.SubWindowSize,
 	)
+	stripe, err := stripe.NewStripe(config.Stripe)
+	if err != nil {
+		return nil, err
+	}
 
 	loggerLevel := slog.LevelInfo
 
@@ -89,8 +110,8 @@ func Initialize() (*Dependencies, error) {
 	errorRepository := postgres_repos.NewPostgresErrorRepository(db)
 	taskRepository := postgres_repos.NewPostgresTaskRepository(db)
 
-	customerPaymentGateway := stripe_paymentgateway.NewStripeCustomerPaymentGateway()
-	paymentPaymentGateway := stripe_paymentgateway.NewStripePaymentPaymentGateway()
+	customerPaymentGateway := stripe_paymentgateway.NewStripeCustomerPaymentGateway(stripe)
+	paymentPaymentGateway := stripe_paymentgateway.NewStripePaymentPaymentGateway(stripe)
 
 	scheduler := scheduler.NewScheduler(clockwork.NewRealClock(), rmq, 100, taskRepository)
 
@@ -170,12 +191,16 @@ func Initialize() (*Dependencies, error) {
 		db,
 		resetUserPasswordService,
 	)
-	updateTaskHandler := http_handlers.NewUpdateTaskHandler(db, updateTaskService)
+	updateTaskHttpHandler := http_handlers.NewUpdateTaskHandler(db, updateTaskService)
 
 	stripePaymentUpdateWebhook := http_webhooks.NewStripePaymentUpdateWebhook(
+		db,
 		config.Stripe,
+		rmq,
 		updatePurchaseTransactionService,
 	)
+
+	updateTaskQueueHandler := queue_handlers.NewUpdateTaskHandler(db, rmq, updateTaskService)
 
 	return &Dependencies{
 		DB:          db,
@@ -196,7 +221,8 @@ func Initialize() (*Dependencies, error) {
 		RefreshTokenHandler:       refreshTokenHandler,
 		RegisterUserHandler:       registerUserHandler,
 		ResetUserPasswordHandler:  resetUserPasswordHandler,
-		UpdateTaskHandler:         updateTaskHandler,
+		UpdateTaskHttpHandler:     updateTaskHttpHandler,
+		UpdateTaskQueueHandler:    updateTaskQueueHandler,
 
 		StripePaymentUpdateWebhook: stripePaymentUpdateWebhook,
 	}, nil

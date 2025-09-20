@@ -39,7 +39,7 @@ func (q *InMemoryQueue) Publish(key string, exchangeName string, data []byte) er
 func (q *InMemoryQueue) Consume(
 	ctx context.Context,
 	queue string,
-	handler func(any) error,
+	handler func(map[string]any) error,
 ) error {
 	q.ensureQueue(queue)
 	msgs := q.queues[queue]
@@ -47,7 +47,7 @@ func (q *InMemoryQueue) Consume(
 	for {
 		select {
 		case msg := <-msgs:
-			var data any
+			var data map[string]any
 
 			if err := json.Unmarshal(msg, &data); err != nil {
 				continue

@@ -79,10 +79,10 @@ func TestScheduler(t *testing.T) {
 	)
 	Scheduler.Add(task4)
 
-	tasksCh := make(chan any)
+	tasksCh := make(chan map[string]any)
 
 	go func() {
-		err := Queue.Consume(ctx, queue.SEND_EMAIL_KEY, func(message any) error {
+		err := Queue.Consume(ctx, queue.SEND_EMAIL_KEY, func(message map[string]any) error {
 			tasksCh <- message
 
 			return nil
@@ -102,8 +102,7 @@ func TestScheduler(t *testing.T) {
 	result := []string{"0", "4", "3", "2", "1"}
 
 	for _, i := range result {
-		msg := <-tasksCh
-		got := msg.(map[string]any)
+		got := <-tasksCh
 		date, err := time.Parse(time.RFC3339Nano, got["runAt"].(string))
 
 		Ok(t, err)

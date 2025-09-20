@@ -136,7 +136,7 @@
 
       async function createPaymentIntent() {
         const idempotencyKey = crypto.randomUUID();
-        const body = { credits: 20, currency: "BRL" };
+        const body = { credits: 20, currency: "USD" };
         const response = await fetch("http://localhost:8080/buy-credits", {
           method: "POST",
           headers: {

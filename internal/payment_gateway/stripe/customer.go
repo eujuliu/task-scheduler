@@ -10,12 +10,12 @@ import (
 )
 
 type StripeCustomerPaymentGateway struct {
-	instance *stripe.Stripe
+	stripe *stripe.Stripe
 }
 
-func NewStripeCustomerPaymentGateway() *StripeCustomerPaymentGateway {
+func NewStripeCustomerPaymentGateway(stripe *stripe.Stripe) *StripeCustomerPaymentGateway {
 	return &StripeCustomerPaymentGateway{
-		instance: stripe.Client,
+		stripe: stripe,
 	}
 }
 
@@ -25,14 +25,12 @@ func (pg *StripeCustomerPaymentGateway) GetFirstByEmail(email string) (*string, 
 			Query: fmt.Sprintf("email:'%s'", email),
 		},
 	}
-	result := pg.instance.GetClient().V1Customers.Search(context.TODO(), params)
+	result := pg.stripe.Client().V1Customers.Search(context.TODO(), params)
 
-	for customer, err := range result {
-		if err != nil {
-			return nil, err
+	for customer := range result {
+		if customer != nil {
+			return &customer.ID, nil
 		}
-
-		return &customer.ID, nil
 	}
 
 	return nil, nil
@@ -56,7 +54,7 @@ func (pg *StripeCustomerPaymentGateway) Create(
 		Metadata: metadata,
 	}
 
-	result, err := pg.instance.GetClient().V1Customers.Create(context.TODO(), params)
+	result, err := pg.stripe.Client().V1Customers.Create(context.TODO(), params)
 
 	return result.ID, err
 }

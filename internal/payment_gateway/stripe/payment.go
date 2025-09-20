@@ -10,12 +10,12 @@ import (
 )
 
 type StripePaymentPaymentGateway struct {
-	instance *stripe.Stripe
+	stripe *stripe.Stripe
 }
 
-func NewStripePaymentPaymentGateway() *StripePaymentPaymentGateway {
+func NewStripePaymentPaymentGateway(stripe *stripe.Stripe) *StripePaymentPaymentGateway {
 	return &StripePaymentPaymentGateway{
-		instance: stripe.Client,
+		stripe: stripe,
 	}
 }
 
@@ -52,7 +52,7 @@ func (pg *StripePaymentPaymentGateway) Create(
 
 	params.SetIdempotencyKey(idempotencyKey)
 
-	result, err := pg.instance.GetClient().V1PaymentIntents.Create(context.TODO(), params)
+	result, err := pg.stripe.Client().V1PaymentIntents.Create(context.TODO(), params)
 
 	return result.ClientSecret, err
 }

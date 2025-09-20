@@ -53,7 +53,7 @@ func (s *CreateTaskService) Execute(
 		referenceId,
 		idempotencyKey))
 
-	if _, ok := queue.AvailableQueues[kind]; !ok {
+	if _, ok := queue.WorkersQueues[kind]; !ok {
 		reason := "the type is not valid"
 		return nil, errors.INVALID_FIELD_VALUE("type", &reason)
 	}
