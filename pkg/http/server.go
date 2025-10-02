@@ -105,6 +105,7 @@ func (s *Server) setupRoutes() {
 			middlewares.VerifyRefreshToken,
 			s.deps.RefreshTokenHandler.Handle,
 		)
+		protected.DELETE("/logoff", s.deps.LogoffHandler.Handle)
 
 		protected.POST("/buy-credits", s.deps.BuyCreditsHandler.Handle)
 		protected.GET("/transactions", s.deps.GetTransactionsHandler.Handle)

@@ -40,6 +40,7 @@ type Dependencies struct {
 	GetTransactionHandler     *http_handlers.GetTransactionHandler
 	GetTransactionsHandler    *http_handlers.GetTransactionsHandler
 	LoginHandler              *http_handlers.LoginHandler
+	LogoffHandler             *http_handlers.LogoffHandler
 	RefreshTokenHandler       *http_handlers.RefreshTokenHandler
 	RegisterUserHandler       *http_handlers.RegisterHandler
 	ResetUserPasswordHandler  *http_handlers.ResetUserPasswordHandler
@@ -185,6 +186,7 @@ func Initialize() (*Dependencies, error) {
 	getTransactionHandler := http_handlers.NewGetTransactionHandler(getTransactionService)
 	getTransactionsHandler := http_handlers.NewGetTransactionsHandler(getTransactionsService)
 	loginHandler := http_handlers.NewLoginHandler(config, rdb, getUserService)
+	logoffHandler := http_handlers.NewLogoffHandler(rdb)
 	refreshTokenHandler := http_handlers.NewRefreshTokenHandler(config, rdb)
 	registerUserHandler := http_handlers.NewRegisterHandler(config, rdb, createUserService)
 	resetUserPasswordHandler := http_handlers.NewResetUserPasswordHandler(
@@ -218,6 +220,7 @@ func Initialize() (*Dependencies, error) {
 		GetTransactionHandler:     getTransactionHandler,
 		GetTransactionsHandler:    getTransactionsHandler,
 		LoginHandler:              loginHandler,
+		LogoffHandler:             logoffHandler,
 		RefreshTokenHandler:       refreshTokenHandler,
 		RegisterUserHandler:       registerUserHandler,
 		ResetUserPasswordHandler:  resetUserPasswordHandler,
