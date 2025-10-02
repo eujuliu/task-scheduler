@@ -111,3 +111,10 @@ func (r *Redis) Set(
 ) (string, error) {
 	return r.db.Set(ctx, key, value, expiration).Result()
 }
+
+func (r *Redis) Del(
+	ctx context.Context,
+	key string,
+) (int64, error) {
+	return r.db.Del(ctx, key).Result()
+}

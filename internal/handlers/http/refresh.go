@@ -1,6 +1,7 @@
 package http_handlers
 
 import (
+	"fmt"
 	"net/http"
 	"scheduler/internal/config"
 	"scheduler/pkg/http/helpers"
@@ -44,11 +45,13 @@ func (h *RefreshTokenHandler) Handle(c *gin.Context) {
 		})
 	}
 
+	accessTokenDuration := 15 * time.Minute
+
 	accessToken, err := utils.GenerateToken(
 		userId,
 		email,
 		h.config.JWT.AccessTokenSecret,
-		15*time.Minute,
+		accessTokenDuration,
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -60,8 +63,19 @@ func (h *RefreshTokenHandler) Handle(c *gin.Context) {
 		return
 	}
 
+	_, err = h.rdb.Set(
+		c,
+		fmt.Sprintf("session_id:%v", userId),
+		userId,
+		accessTokenDuration,
+	)
+	if err != nil {
+		_ = c.Error(err)
+
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"token": accessToken,
 	})
-	c.Status(http.StatusOK)
 }
