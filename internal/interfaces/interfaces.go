@@ -25,7 +25,7 @@ type IPasswordRecoveryRepository interface {
 
 type ITransactionRepository interface {
 	Get() []entities.Transaction
-	GetByUserId(userId string) []entities.Transaction
+	GetByUserId(userId string, offset *int, limit *int, orderBy *string) []entities.Transaction
 	GetFirstById(id string) (*entities.Transaction, error)
 	GetFirstByReferenceId(id string) (*entities.Transaction, error)
 	GetFirstByIdempotencyKey(key string) (*entities.Transaction, error)

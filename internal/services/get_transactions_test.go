@@ -39,7 +39,7 @@ func TestGetTransactionsService(t *testing.T) {
 		_ = TransactionRepository.Create(transaction)
 	}
 
-	transactions := GetTransactionsService.Execute(user.GetId())
+	transactions := GetTransactionsService.Execute(user.GetId(), nil, nil, nil)
 
 	Equals(t, 10, len(transactions))
 	Equals(t, 10, transactions[4].GetCredits())
