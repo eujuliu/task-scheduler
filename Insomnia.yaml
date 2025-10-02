@@ -32,7 +32,7 @@ collection:
     meta:
       id: req_75b51f99b0fd4e1b90a12dc958a624c4
       created: 1756601534514
-      modified: 1757345669230
+      modified: 1759355638104
       isPrivate: false
       description: ""
       sortKey: -1756602667265
@@ -40,20 +40,26 @@ collection:
     headers:
       - name: User-Agent
         value: insomnia/11.5.0
+        id: pair_e173607f2e01457e9bd97215ae10e7bd
+      - id: pair_cf44aa276ce449edb428fdffa9c10379
+        name: Authorization
+        value: Bearer {{ _.authorization }}
+        description: ""
+        disabled: false
     settings:
-      renderRequestBody: true
+      renderRequestBody: false
       encodeUrl: true
       followRedirects: global
       cookies:
         send: true
         store: true
-      rebuildPath: true
+      rebuildPath: false
   - url: "{{ _.addr }}/auth/register"
     name: register
     meta:
       id: req_6c00ebf689964e4faa1d7e123cb9fc06
       created: 1756602667215
-      modified: 1757345664868
+      modified: 1759355647897
       isPrivate: false
       description: ""
       sortKey: -1756602667215
@@ -71,6 +77,8 @@ collection:
         value: application/json
       - name: User-Agent
         value: insomnia/11.5.0
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -84,7 +92,7 @@ collection:
     meta:
       id: req_bda51f60c1fe4721a70ecc0479cdcd22
       created: 1756649431047
-      modified: 1757449740891
+      modified: 1759355778438
       isPrivate: false
       description: ""
       sortKey: -1756602525627.375
@@ -99,8 +107,14 @@ collection:
     headers:
       - name: Content-Type
         value: application/json
+        id: pair_2b7f7c48dbbb41fd89ff85d08f9f6d0f
       - name: User-Agent
         value: insomnia/11.5.0
+        id: pair_3e309925643942c6813d77434ec793c3
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
+        id: pair_e7344f2b41ef465c8d90f3de980adcf3
+        disabled: true
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -114,7 +128,7 @@ collection:
     meta:
       id: req_1deaeab67623421fb8e144e9d5afcd91
       created: 1756732757137
-      modified: 1757345655030
+      modified: 1759355652155
       isPrivate: false
       description: ""
       sortKey: -1756602384039.75
@@ -130,6 +144,8 @@ collection:
         value: application/json
       - name: User-Agent
         value: insomnia/11.5.0
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -143,7 +159,7 @@ collection:
     meta:
       id: req_e7cf6d60d9fb40c7b712aadcfc942c14
       created: 1756759988188
-      modified: 1757345647515
+      modified: 1759355653634
       isPrivate: false
       description: ""
       sortKey: -1756602242452.125
@@ -160,6 +176,8 @@ collection:
         value: application/json
       - name: User-Agent
         value: insomnia/11.5.0
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -173,7 +191,7 @@ collection:
     meta:
       id: req_1b7f942de8d6402db510115f883f914f
       created: 1756825585301
-      modified: 1757345686084
+      modified: 1759355659154
       isPrivate: false
       description: ""
       sortKey: -1756602198205.9922
@@ -181,6 +199,8 @@ collection:
     headers:
       - name: User-Agent
         value: insomnia/11.5.0
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -194,7 +214,7 @@ collection:
     meta:
       id: req_e79181feb33a4fc79852dd0100c3ee8c
       created: 1756825714417
-      modified: 1757345691089
+      modified: 1759355661819
       isPrivate: false
       description: ""
       sortKey: -1756602193781.379
@@ -202,6 +222,8 @@ collection:
     headers:
       - name: User-Agent
         value: insomnia/11.5.0
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -215,7 +237,7 @@ collection:
     meta:
       id: req_9d44ac803fd34966a1d19cb0c19ee8c2
       created: 1756825751279
-      modified: 1757345641466
+      modified: 1759355656139
       isPrivate: false
       description: ""
       sortKey: -1756602207055.2188
@@ -230,15 +252,12 @@ collection:
     headers:
       - name: Content-Type
         value: application/json
-        id: pair_fbbe2308827442ee887cd818735f8f73
       - name: User-Agent
         value: insomnia/11.5.0
-        id: pair_1e2f34c3fcfa4d52b5679c3f275f4cbf
-      - id: pair_df7bf7d81268429bb0adf85211e8c118
-        name: Idempotency-Key
+      - name: Idempotency-Key
         value: "{% faker 'randomUUID' %}"
-        description: ""
-        disabled: false
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -252,7 +271,7 @@ collection:
     meta:
       id: req_f3abcaefed79499caf7d4e9b50ef338b
       created: 1756849264472
-      modified: 1757978448276
+      modified: 1759355663486
       isPrivate: false
       description: ""
       sortKey: -1756602189356.7656
@@ -270,15 +289,12 @@ collection:
     headers:
       - name: Content-Type
         value: application/json
-        id: pair_fbbe2308827442ee887cd818735f8f73
       - name: User-Agent
         value: insomnia/11.5.0
-        id: pair_1e2f34c3fcfa4d52b5679c3f275f4cbf
-      - id: pair_df7bf7d81268429bb0adf85211e8c118
-        name: Idempotency-Key
+      - name: Idempotency-Key
         value: "{% faker 'randomUUID' %}"
-        description: ""
-        disabled: false
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     scripts:
       preRequest: |-
         const uuid = require('uuid');
@@ -317,7 +333,7 @@ collection:
     meta:
       id: req_8f4eac08030f404295cf7f150d1384bf
       created: 1756906402429
-      modified: 1757734443264
+      modified: 1759355665251
       isPrivate: false
       description: ""
       sortKey: -1756602180507.539
@@ -333,15 +349,12 @@ collection:
     headers:
       - name: Content-Type
         value: application/json
-        id: pair_fbbe2308827442ee887cd818735f8f73
       - name: User-Agent
         value: insomnia/11.5.0
-        id: pair_1e2f34c3fcfa4d52b5679c3f275f4cbf
-      - id: pair_df7bf7d81268429bb0adf85211e8c118
-        name: Idempotency-Key
+      - name: Idempotency-Key
         value: "{% faker 'randomUUID' %}"
-        description: ""
-        disabled: false
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -355,7 +368,7 @@ collection:
     meta:
       id: req_59daeef4ceef4063aa1eeff207c15cb5
       created: 1756906961775
-      modified: 1757345704387
+      modified: 1759355667191
       isPrivate: false
       description: ""
       sortKey: -1756602179401.3857
@@ -363,12 +376,10 @@ collection:
     headers:
       - name: User-Agent
         value: insomnia/11.5.0
-        id: pair_1e2f34c3fcfa4d52b5679c3f275f4cbf
-      - id: pair_df7bf7d81268429bb0adf85211e8c118
-        name: Idempotency-Key
+      - name: Idempotency-Key
         value: "{% faker 'randomUUID' %}"
-        description: ""
-        disabled: false
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -382,7 +393,7 @@ collection:
     meta:
       id: req_8a2604c6cd364e46b90af345c7f1df43
       created: 1756907426958
-      modified: 1757345708863
+      modified: 1759355668558
       isPrivate: false
       description: ""
       sortKey: -1756602178295.2324
@@ -390,6 +401,8 @@ collection:
     headers:
       - name: User-Agent
         value: insomnia/11.5.0
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -403,7 +416,7 @@ collection:
     meta:
       id: req_744173014b5344b48e5c7802771380f7
       created: 1756907441086
-      modified: 1757345713468
+      modified: 1759355670218
       isPrivate: false
       description: ""
       sortKey: -1756602177189.079
@@ -411,6 +424,8 @@ collection:
     headers:
       - name: User-Agent
         value: insomnia/11.5.0
+      - name: Authorization
+        value: Bearer {{ _.authorization }}
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -419,39 +434,56 @@ collection:
         send: true
         store: true
       rebuildPath: true
+  - url: "{{ _.addr }}/logoff"
+    name: logoff
+    meta:
+      id: req_a256fe87ca6f40e19c7fd8a9fe080dfc
+      created: 1759416776159
+      modified: 1759416823986
+      isPrivate: false
+      description: ""
+      sortKey: -1756602667240
+    method: DELETE
+    headers:
+      - name: User-Agent
+        value: insomnia/11.5.0
+        id: pair_e173607f2e01457e9bd97215ae10e7bd
+      - id: pair_cf44aa276ce449edb428fdffa9c10379
+        name: Authorization
+        value: Bearer {{ _.authorization }}
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: false
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: false
 cookieJar:
   name: Default Jar
   meta:
     id: jar_77483b9096d64dd3b12e1c3d5e076204bf774db6
     created: 1756601409474
-    modified: 1758072083199
+    modified: 1759419475084
   cookies:
-    - key: access_token
-      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4NTRhNTU5Ny01ZTA4LTRkYjktYWFhOC1lMTE0NzQxNDNiNGUiLCJlbWFpbCI6InRlc3R1c2VyQGVtYWlsLmNvbSIsInN1YiI6Ijg1NGE1NTk3LTVlMDgtNGRiOS1hYWE4LWUxMTQ3NDE0M2I0ZSIsImV4cCI6MTc1ODA3Mjk4MywibmJmIjoxNzU4MDcyMDgzLCJpYXQiOjE3NTgwNzIwODN9.y7NOm6KuVOXrzLKnuvUgCS7QtR8XflSGQJ0aCnR6tgs
-      maxAge: 900000
-      domain: localhost
-      path: /
-      httpOnly: true
-      hostOnly: true
-      creation: 2025-08-31T01:14:14.355Z
-      lastAccessed: 2025-09-17T01:21:23.199Z
-      id: e7710a8a-7cfc-4135-98f7-ed3268175603
     - key: refresh_token
-      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4NTRhNTU5Ny01ZTA4LTRkYjktYWFhOC1lMTE0NzQxNDNiNGUiLCJlbWFpbCI6InRlc3R1c2VyQGVtYWlsLmNvbSIsInN1YiI6Ijg1NGE1NTk3LTVlMDgtNGRiOS1hYWE4LWUxMTQ3NDE0M2I0ZSIsImV4cCI6MTc1ODY3Njg4MywibmJmIjoxNzU4MDcyMDgzLCJpYXQiOjE3NTgwNzIwODN9.Ti6wMPH0fCRr95g7J_PT3_g4HUzWJcnBrzEWcL1ceyk
-      maxAge: 10080000
+      maxAge: 0
       domain: localhost
       path: /
+      secure: true
       httpOnly: true
       hostOnly: true
-      creation: 2025-08-31T01:14:14.356Z
-      lastAccessed: 2025-09-17T01:21:23.199Z
-      id: 41dd83d7-bf27-4618-8605-4e8295e73de1
+      creation: 2025-10-01T21:53:13.269Z
+      lastAccessed: 2025-10-02T15:37:55.084Z
+      id: 8b7a619f-1949-4239-a233-8fd02da65211
 environments:
   name: Base Environment
   meta:
     id: env_77483b9096d64dd3b12e1c3d5e076204bf774db6
     created: 1756601409473
-    modified: 1757979094249
+    modified: 1759371075261
     isPrivate: false
   data:
     addr: localhost:8080
@@ -461,7 +493,8 @@ environments:
       'b64::JC5pZA==::46b', 'no-history', 60 %}"
     last_transaction: "{% response 'body', 'req_9d44ac803fd34966a1d19cb0c19ee8c2',
       'b64::JC5pZA==::46b', 'no-history', 60 %}"
-    next_date: ""
+    authorization: "{% response 'body', 'req_bda51f60c1fe4721a70ecc0479cdcd22',
+      'b64::JC50b2tlbg==::46b', 'no-history', 60 %}"
 spec:
   meta:
     id: spc_ad3886890ebf4bb2ae21e3de062aec55
