@@ -21,7 +21,12 @@ func NewGetTasksByUserIdService(
 	}
 }
 
-func (s *GetTasksByUserIdService) Execute(userId string) []entities.Task {
+func (s *GetTasksByUserIdService) Execute(
+	userId string,
+	offset *int,
+	limit *int,
+	orderBy *string,
+) []entities.Task {
 	slog.Info("get tasks by user id service started...")
 	user, _ := s.userRepository.GetFirstById(userId)
 
@@ -30,7 +35,7 @@ func (s *GetTasksByUserIdService) Execute(userId string) []entities.Task {
 		return []entities.Task{}
 	}
 
-	tasks := s.taskRepository.GetByUserId(user.GetId())
+	tasks := s.taskRepository.GetByUserId(user.GetId(), offset, limit, orderBy)
 
 	slog.Info("get tasks by user id service finished...")
 

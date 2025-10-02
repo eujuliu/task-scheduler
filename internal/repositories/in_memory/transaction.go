@@ -20,7 +20,7 @@ func (r *InMemoryTransactionRepository) Get() []entities.Transaction {
 }
 
 func (r *InMemoryTransactionRepository) GetByUserId(
-	userId string,
+	userId string, offset *int, limit *int, orderBy *string,
 ) []entities.Transaction {
 	result := []entities.Transaction{}
 

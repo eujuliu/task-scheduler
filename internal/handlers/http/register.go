@@ -1,7 +1,6 @@
 package http_handlers
 
 import (
-	"fmt"
 	"net/http"
 	"scheduler/internal/config"
 	"scheduler/internal/services"
@@ -90,15 +89,6 @@ func (h *RegisterHandler) Handle(c *gin.Context) {
 	}
 
 	c.SetCookie(
-		"access_token",
-		accessToken,
-		int(accessTokenDuration),
-		"/",
-		"",
-		h.config.Server.GinMode == "release",
-		true,
-	)
-	c.SetCookie(
 		"refresh_token",
 		refreshToken,
 		int(refreshTokenDuration),
@@ -108,23 +98,14 @@ func (h *RegisterHandler) Handle(c *gin.Context) {
 		true,
 	)
 
-	_, err = h.rdb.Set(
-		c,
-		fmt.Sprintf("session_id:%v", user.GetId()),
-		user.GetId(),
-		accessTokenDuration,
-	)
-	if err != nil {
-		_ = c.Error(err)
-
-		return
-	}
-
 	c.JSON(http.StatusCreated, gin.H{
-		"id":        user.GetId(),
-		"username":  user.GetUsername(),
-		"email":     user.GetEmail(),
-		"createdAt": user.GetCreatedAt(),
-		"updateAt":  user.GetUpdatedAt(),
+		"user": gin.H{
+			"id":        user.GetId(),
+			"username":  user.GetUsername(),
+			"email":     user.GetEmail(),
+			"createdAt": user.GetCreatedAt(),
+			"updateAt":  user.GetUpdatedAt(),
+		},
+		"token": accessToken,
 	})
 }

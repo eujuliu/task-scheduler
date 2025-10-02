@@ -34,7 +34,7 @@ func TestGetTasksByUserIdService(t *testing.T) {
 		_ = TaskRepository.Create(task)
 	}
 
-	tasks := GetTasksByUserIdService.Execute(user.GetId())
+	tasks := GetTasksByUserIdService.Execute(user.GetId(), nil, nil, nil)
 
 	Ok(t, err)
 	Equals(t, 10, len(tasks))

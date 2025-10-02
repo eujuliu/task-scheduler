@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,7 +30,23 @@ func (h *GetTasksHandler) Handle(c *gin.Context) {
 		})
 	}
 
-	tasks := h.getTasksService.Execute(userId)
+	var offset int
+	var limit int
+	orderBy, _ := c.GetQuery("orderBy")
+
+	if value, ok := c.GetQuery("offset"); ok {
+		v, _ := strconv.Atoi(value)
+
+		offset = v
+	}
+
+	if value, ok := c.GetQuery("limit"); ok {
+		v, _ := strconv.Atoi(value)
+
+		limit = v
+	}
+
+	tasks := h.getTasksService.Execute(userId, &offset, &limit, &orderBy)
 	result := []map[string]any{}
 
 	for _, task := range tasks {

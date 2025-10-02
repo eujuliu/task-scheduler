@@ -1,6 +1,7 @@
 package postgres_repos
 
 import (
+	"fmt"
 	"scheduler/internal/entities"
 	"scheduler/internal/errors"
 	"scheduler/internal/persistence"
@@ -33,14 +34,29 @@ func (r *PostgresTransactionRepository) Get() []entities.Transaction {
 }
 
 func (r *PostgresTransactionRepository) GetByUserId(
-	userId string,
+	userId string, offset *int, limit *int, orderBy *string,
 ) []entities.Transaction {
+	if offset == nil {
+		*offset = 0
+	}
+
+	if limit == nil {
+		*limit = 10
+	}
+
+	if orderBy == nil {
+		*orderBy = "ASC"
+	}
+
 	db := r.db.Get()
 
 	var transactions []persistence.TransactionModel
 	var result []entities.Transaction
 
-	db.Find(&transactions, "user_id = ?", userId)
+	db.Find(&transactions, "user_id = ?", userId).
+		Offset(*offset).
+		Limit(*limit).
+		Order(fmt.Sprintf("updated_at %v", *orderBy))
 
 	for _, transaction := range transactions {
 		result = append(result, *persistence.ToTransactionDomain(&transaction))

@@ -5,35 +5,35 @@ import (
 	"log/slog"
 	"net/http"
 	"scheduler/pkg/utils"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Authentication(c *gin.Context) {
-	cookie, err := c.Request.Cookie("access_token")
-	if err != nil {
-		slog.Debug("Missing access token")
+	header := c.GetHeader("Authorization")
 
+	if header == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Missing access token",
+			"error": "Missing authorization header",
 		})
 
 		c.Abort()
 		return
 	}
 
-	if cookie.Value == "" {
-		slog.Debug("Invalid access token")
-
+	if !strings.HasPrefix(header, "Bearer") {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid access token",
+			"error": "Invalid authorization token",
 		})
 
 		c.Abort()
 		return
 	}
 
-	claims, err := utils.ValidateToken(cookie.Value, utils.GetEnv("ACCESS_TOKEN_SECRET", ""))
+	token := strings.Split(header, " ")[1]
+
+	claims, err := utils.ValidateToken(token, utils.GetEnv("ACCESS_TOKEN_SECRET", ""))
 	if err != nil {
 		slog.Debug(fmt.Sprintf("Token validation failed %s", err))
 

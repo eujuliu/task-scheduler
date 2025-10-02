@@ -25,7 +25,7 @@ type IPasswordRecoveryRepository interface {
 
 type ITransactionRepository interface {
 	Get() []entities.Transaction
-	GetByUserId(userId string) []entities.Transaction
+	GetByUserId(userId string, offset *int, limit *int, orderBy *string) []entities.Transaction
 	GetFirstById(id string) (*entities.Transaction, error)
 	GetFirstByReferenceId(id string) (*entities.Transaction, error)
 	GetFirstByIdempotencyKey(key string) (*entities.Transaction, error)
@@ -43,7 +43,7 @@ type IErrorRepository interface {
 
 type ITaskRepository interface {
 	Get(status *string, asc *bool, limit *int, from *time.Time) []entities.Task
-	GetByUserId(userId string) []entities.Task
+	GetByUserId(userId string, offset *int, limit *int, orderBy *string) []entities.Task
 	GetFirstById(id string) (*entities.Task, error)
 	GetFirstByReferenceId(id string) (*entities.Task, error)
 	GetFirstByIdempotencyKey(key string) (*entities.Task, error)

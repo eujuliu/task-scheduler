@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,7 +32,23 @@ func (h *GetTransactionsHandler) Handle(c *gin.Context) {
 		})
 	}
 
-	transactions := h.getTransactionsService.Execute(userId)
+	var offset int
+	var limit int
+	orderBy, _ := c.GetQuery("orderBy")
+
+	if value, ok := c.GetQuery("offset"); ok {
+		v, _ := strconv.Atoi(value)
+
+		offset = v
+	}
+
+	if value, ok := c.GetQuery("limit"); ok {
+		v, _ := strconv.Atoi(value)
+
+		limit = v
+	}
+
+	transactions := h.getTransactionsService.Execute(userId, &offset, &limit, &orderBy)
 	result := []map[string]any{}
 
 	for _, transaction := range transactions {

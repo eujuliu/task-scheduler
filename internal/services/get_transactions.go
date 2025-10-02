@@ -20,14 +20,19 @@ func NewGetTransactionsService(
 	}
 }
 
-func (s *GetTransactionsService) Execute(userId string) []entities.Transaction {
+func (s *GetTransactionsService) Execute(
+	userId string,
+	offset *int,
+	limit *int,
+	orderBy *string,
+) []entities.Transaction {
 	user, _ := s.userRepository.GetFirstById(userId)
 
 	if user == nil {
 		return []entities.Transaction{}
 	}
 
-	transactions := s.transactionRepository.GetByUserId(user.GetId())
+	transactions := s.transactionRepository.GetByUserId(user.GetId(), offset, limit, orderBy)
 
 	return transactions
 }

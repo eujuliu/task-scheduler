@@ -63,13 +63,32 @@ func (r *PostgresTaskRepository) Get(
 	return result
 }
 
-func (r *PostgresTaskRepository) GetByUserId(userId string) []entities.Task {
+func (r *PostgresTaskRepository) GetByUserId(
+	userId string,
+	offset *int,
+	limit *int,
+	orderBy *string,
+) []entities.Task {
+	if offset == nil {
+		*offset = 0
+	}
+
+	if limit == nil {
+		*limit = 10
+	}
+
+	if orderBy == nil {
+		*orderBy = "ASC"
+	}
+
 	db := r.db.Get()
 
 	var tasks []persistence.TaskModel
 	var result []entities.Task
 
-	db.Find(&tasks, "user_id = ?", userId)
+	db.Find(&tasks, "user_id = ?", userId).Offset(*offset).
+		Limit(*limit).
+		Order(fmt.Sprintf("updated_at %v", *orderBy))
 
 	for _, task := range tasks {
 		result = append(result, *persistence.ToTaskDomain(&task))
