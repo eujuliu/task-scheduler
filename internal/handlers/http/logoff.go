@@ -40,5 +40,15 @@ func (h *LogoffHandler) Handle(c *gin.Context) {
 		return
 	}
 
+	c.SetCookie(
+		"refresh_token",
+		"",
+		-1,
+		"/",
+		"",
+		true,
+		true,
+	)
+
 	c.Status(http.StatusOK)
 }
