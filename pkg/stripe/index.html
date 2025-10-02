@@ -112,18 +112,22 @@
           credentials: "include",
           body: JSON.stringify({ email, password }),
         });
+
         if (!response.ok) {
           const err = await response.json().catch(() => ({}));
           throw new Error(err.message || "Login failed");
         }
+
         return response.json();
       }
 
       async function refreshToken() {
+        const accessToken = localStorage.getItem("access_token");
         const response = await fetch("http://localhost:8080/refresh", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
           credentials: "include",
         });
@@ -137,11 +141,14 @@
       async function createPaymentIntent() {
         const idempotencyKey = crypto.randomUUID();
         const body = { credits: 20, currency: "USD" };
+        const accessToken = localStorage.getItem("access_token");
+
         const response = await fetch("http://localhost:8080/buy-credits", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Idempotency-Key": idempotencyKey,
+            Authorization: `Bearer ${accessToken}`,
           },
           credentials: "include",
           body: JSON.stringify(body),
@@ -168,8 +175,9 @@
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
         try {
-          await login(email, password);
+          const json = await login(email, password);
           loginSuccessMessage.textContent = "Login successful!";
+          localStorage.setItem("access_token", json.token);
         } catch (err) {
           loginErrorMessage.textContent = err.message;
         }
