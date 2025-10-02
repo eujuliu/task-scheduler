@@ -25,7 +25,12 @@ func (r *InMemoryTaskRepository) Get(
 	return r.tasks
 }
 
-func (r *InMemoryTaskRepository) GetByUserId(userId string) []entities.Task {
+func (r *InMemoryTaskRepository) GetByUserId(
+	userId string,
+	offset *int,
+	limit *int,
+	orderBy *string,
+) []entities.Task {
 	tasks := []entities.Task{}
 
 	for _, task := range r.tasks {

@@ -43,7 +43,7 @@ type IErrorRepository interface {
 
 type ITaskRepository interface {
 	Get(status *string, asc *bool, limit *int, from *time.Time) []entities.Task
-	GetByUserId(userId string) []entities.Task
+	GetByUserId(userId string, offset *int, limit *int, orderBy *string) []entities.Task
 	GetFirstById(id string) (*entities.Task, error)
 	GetFirstByReferenceId(id string) (*entities.Task, error)
 	GetFirstByIdempotencyKey(key string) (*entities.Task, error)
