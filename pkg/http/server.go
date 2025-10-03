@@ -15,6 +15,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Server struct {
@@ -94,7 +97,8 @@ func (s *Server) setupRoutes() {
 		routes.POST("/auth/login", s.deps.LoginHandler.Handle)
 		routes.POST("/auth/forgot-password", s.deps.ForgotUserPasswordHandler.Handle)
 		routes.POST("/auth/reset-password", s.deps.ResetUserPasswordHandler.Handle)
-		routes.Any("/stripe-webhook", s.deps.StripePaymentUpdateWebhook.Hook)
+		routes.POST("/stripe-webhook", s.deps.StripePaymentUpdateWebhook.Hook)
+		routes.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
 	protected := routes.Group("/")

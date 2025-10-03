@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type CreateTaskRequest struct {
@@ -16,6 +17,20 @@ type CreateTaskRequest struct {
 	Timezone    string    `json:"timezone"    binding:"required,timezone"`
 	Priority    int       `json:"priority"    binding:"required"`
 	ReferenceID string    `json:"referenceId" binding:"required,uuid4"`
+}
+
+type CreateTaskResponse struct {
+	ID          string `json:"id"`
+	Status      string `json:"status"`
+	Cost        int    `json:"cost"`
+	RunAt       string `json:"runAt"`
+	Timezone    string `json:"timezone"`
+	Retries     int    `json:"retries"`
+	Priority    int    `json:"priority"`
+	Type        string `json:"type"`
+	ReferenceID string `json:"referenceId"`
+	CreatedAt   string `json:"createdAt"`
+	UpdatedAt   string `json:"updatedAt"`
 }
 
 type CreateTaskHandler struct {
@@ -33,6 +48,17 @@ func NewCreateTaskHandler(
 	}
 }
 
+// @Summary		Create task
+// @Description	Create a new task for the user
+// @Tags			tasks
+// @Accept			json
+// @Produce		json
+// @Param			Idempotency-Key	header		string				true	"Idempotency Key"
+// @Param			request			body		CreateTaskRequest	true	"Create task request"
+// @Success		201				{object}	CreateTaskResponse
+// @Failure		400				{object}	errors.Error
+// @Failure		404				{object}	errors.Error
+// @Router			/task [post]
 func (h *CreateTaskHandler) Handle(c *gin.Context) {
 	var json CreateTaskRequest
 	idempotencyKey := c.GetHeader("Idempotency-Key")
@@ -41,9 +67,9 @@ func (h *CreateTaskHandler) Handle(c *gin.Context) {
 		c.JSON(
 			http.StatusBadRequest,
 			gin.H{
-				"error":   "Missing idempotency key header (Idempotency-Key)",
-				"code":    http.StatusBadRequest,
-				"success": false,
+				"id":    uuid.NewString(),
+				"error": "Missing idempotency key header (Idempotency-Key)",
+				"code":  http.StatusBadRequest,
 			},
 		)
 
@@ -53,23 +79,12 @@ func (h *CreateTaskHandler) Handle(c *gin.Context) {
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(
 			http.StatusBadRequest,
-			gin.H{"error": err.Error(), "code": http.StatusBadRequest, "success": false},
+			gin.H{"id": uuid.NewString(), "error": err.Error(), "code": http.StatusBadRequest},
 		)
 		return
 	}
 
-	userId, ok := helpers.GetUserID(c)
-
-	if !ok {
-
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"message": "This access token is not valid",
-			"success": false,
-		})
-
-		return
-	}
+	userId, _ := helpers.GetUserID(c)
 
 	h.db.BeginTransaction()
 
@@ -92,17 +107,19 @@ func (h *CreateTaskHandler) Handle(c *gin.Context) {
 
 	_ = h.db.CommitTransaction()
 
-	c.JSON(http.StatusCreated, gin.H{
-		"id":          task.GetId(),
-		"status":      task.GetStatus(),
-		"cost":        task.GetCost(),
-		"runAt":       task.GetRunAt(),
-		"timezone":    task.GetTimezone(),
-		"retries":     task.GetRetries(),
-		"priority":    task.GetPriority(),
-		"type":        task.GetType(),
-		"referenceId": task.GetReferenceId(),
-		"createdAt":   task.GetCreatedAt(),
-		"updateAt":    task.GetUpdatedAt(),
-	})
+	response := CreateTaskResponse{
+		ID:          task.GetId(),
+		Status:      task.GetStatus(),
+		Cost:        task.GetCost(),
+		RunAt:       task.GetRunAt().Format(time.RFC3339),
+		Timezone:    task.GetTimezone(),
+		Retries:     task.GetRetries(),
+		Priority:    task.GetPriority(),
+		Type:        task.GetType(),
+		ReferenceID: task.GetReferenceId(),
+		CreatedAt:   task.GetCreatedAt().Format(time.RFC3339),
+		UpdatedAt:   task.GetUpdatedAt().Format(time.RFC3339),
+	}
+
+	c.JSON(http.StatusCreated, response)
 }

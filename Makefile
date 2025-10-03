@@ -1,4 +1,4 @@
-.PHONY: build run watch watch_down test test_with_cache coverage clean fmt lint check pre-commit test_stripe
+.PHONY: build run watch watch_down test test_with_cache coverage clean fmt lint check pre-commit test_stripe swagger
 
 BINARY_NAME=scheduler
 OUTPUT_DIR=bin
@@ -57,3 +57,6 @@ pre-commit:
 test_stripe:
 	# npm i -g live-server
 	live-server --port=5500 --host="localhost" --watch=./pkg/stripe --entry-file=./pkg/stripe/index.html
+
+swagger:
+	swag init -g pkg/http/server.go

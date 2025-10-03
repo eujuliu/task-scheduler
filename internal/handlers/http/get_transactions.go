@@ -5,9 +5,21 @@ import (
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+type TransactionResponse struct {
+	ID        string `json:"id"`
+	Credits   int    `json:"credits"`
+	Amount    int    `json:"amount"`
+	Currency  string `json:"currency"`
+	Status    string `json:"status"`
+	Type      string `json:"type"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+}
 
 type GetTransactionsHandler struct {
 	getTransactionsService *services.GetTransactionsService
@@ -21,16 +33,19 @@ func NewGetTransactionsHandler(
 	}
 }
 
+// @Summary		Get transactions
+// @Description	Get list of transactions for the user
+// @Tags			transactions
+// @Accept			json
+// @Produce		json
+// @Param			offset	query		int		false	"Offset"
+// @Param			limit	query		int		false	"Limit"
+// @Param			orderBy	query		string	false	"Order by"
+// @Success		200		{array}		TransactionResponse
+// @Failure		404		{object}	errors.Error
+// @Router			/transactions [get]
 func (h *GetTransactionsHandler) Handle(c *gin.Context) {
-	userId, ok := helpers.GetUserID(c)
-
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"message": "This access token is not valid",
-			"success": false,
-		})
-	}
+	userId, _ := helpers.GetUserID(c)
 
 	var offset int
 	var limit int
@@ -49,18 +64,18 @@ func (h *GetTransactionsHandler) Handle(c *gin.Context) {
 	}
 
 	transactions := h.getTransactionsService.Execute(userId, &offset, &limit, &orderBy)
-	result := []map[string]any{}
+	result := []TransactionResponse{}
 
 	for _, transaction := range transactions {
-		result = append(result, map[string]any{
-			"id":        transaction.GetId(),
-			"credits":   transaction.GetCredits(),
-			"amount":    transaction.GetAmount(),
-			"currency":  transaction.GetCurrency(),
-			"status":    transaction.GetStatus(),
-			"type":      transaction.GetType(),
-			"createdAt": transaction.GetCreatedAt(),
-			"updatedAt": transaction.GetUpdatedAt(),
+		result = append(result, TransactionResponse{
+			ID:        transaction.GetId(),
+			Credits:   transaction.GetCredits(),
+			Amount:    transaction.GetAmount(),
+			Currency:  transaction.GetCurrency(),
+			Status:    transaction.GetStatus(),
+			Type:      transaction.GetType(),
+			CreatedAt: transaction.GetCreatedAt().Format(time.RFC3339),
+			UpdatedAt: transaction.GetUpdatedAt().Format(time.RFC3339),
 		})
 	}
 

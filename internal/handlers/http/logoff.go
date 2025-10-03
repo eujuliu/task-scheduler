@@ -19,16 +19,15 @@ func NewLogoffHandler(rdb *redis.Redis) *LogoffHandler {
 	}
 }
 
+// @Summary		Log off user
+// @Description	Log off the user by invalidating session
+// @Tags			auth
+// @Accept			json
+// @Produce		json
+// @Success		200
+// @Router			/logoff [delete]
 func (h *LogoffHandler) Handle(c *gin.Context) {
-	userId, ok := helpers.GetUserID(c)
-
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"error":   "Invalid claim into token",
-			"success": false,
-		})
-	}
+	userId, _ := helpers.GetUserID(c)
 
 	_, err := h.rdb.Del(
 		c,

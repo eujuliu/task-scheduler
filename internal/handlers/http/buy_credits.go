@@ -6,13 +6,26 @@ import (
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
 	"scheduler/pkg/postgres"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type BuyCreditsRequest struct {
 	Credits  int    `json:"credits"  binding:"required,gte=10,lte=100"`
 	Currency string `json:"currency" binding:"required,iso4217"`
+}
+
+type BuyCreditsResponse struct {
+	ID          string `json:"id"`
+	Credits     int    `json:"credits"`
+	Amount      int    `json:"amount"`
+	Currency    string `json:"currency"`
+	Status      string `json:"status"`
+	CreatedAt   string `json:"createdAt"`
+	UpdatedAt   string `json:"updatedAt"`
+	ReferenceID string `json:"referenceId"`
 }
 
 type BuyCreditsHandler struct {
@@ -30,23 +43,34 @@ func NewBuyCreditsHandler(
 	}
 }
 
+// @Summary		Buy credits
+// @Description	Buy credits for the user
+// @Tags			credits
+// @Accept			json
+// @Produce		json
+// @Param			Idempotency-Key	header		string				true	"Idempotency Key"
+// @Param			request			body		BuyCreditsRequest	true	"Buy credits request"
+// @Success		200				{object}	BuyCreditsResponse
+// @Failure		400				{object}	errors.Error
+// @Failure		404				{object}	errors.Error
+// @Router			/buy-credits [post]
 func (h *BuyCreditsHandler) Handle(c *gin.Context) {
-	var json BuyCreditsRequest
-
 	idempotencyKey := c.Request.Header.Get("Idempotency-Key")
 
 	if idempotencyKey == "" {
 		c.JSON(
 			http.StatusBadRequest,
 			gin.H{
-				"error":   "Missing idempotency key header (Idempotency-Key)",
-				"code":    http.StatusBadRequest,
-				"success": false,
+				"id":    uuid.NewString(),
+				"error": "Missing idempotency key header (Idempotency-Key)",
+				"code":  http.StatusBadRequest,
 			},
 		)
 
 		return
 	}
+
+	var json BuyCreditsRequest
 
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(
@@ -58,17 +82,7 @@ func (h *BuyCreditsHandler) Handle(c *gin.Context) {
 
 	h.db.BeginTransaction()
 
-	userId, ok := helpers.GetUserID(c)
-
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"message": "This access token is not valid",
-			"success": false,
-		})
-
-		return
-	}
+	userId, _ := helpers.GetUserID(c)
 
 	transaction, err := h.createTransactionService.Execute(
 		userId,
@@ -88,14 +102,16 @@ func (h *BuyCreditsHandler) Handle(c *gin.Context) {
 
 	_ = h.db.CommitTransaction()
 
-	c.JSON(http.StatusOK, gin.H{
-		"id":          transaction.GetId(),
-		"credits":     transaction.GetCredits(),
-		"amount":      transaction.GetAmount(),
-		"currency":    transaction.GetCurrency(),
-		"status":      transaction.GetStatus(),
-		"createdAt":   transaction.GetCreatedAt(),
-		"updateAt":    transaction.GetUpdatedAt(),
-		"referenceId": transaction.GetReferenceId(),
-	})
+	response := BuyCreditsResponse{
+		ID:          transaction.GetId(),
+		Credits:     transaction.GetCredits(),
+		Amount:      transaction.GetAmount(),
+		Currency:    transaction.GetCurrency(),
+		Status:      transaction.GetStatus(),
+		CreatedAt:   transaction.GetCreatedAt().Format(time.RFC3339),
+		UpdatedAt:   transaction.GetUpdatedAt().Format(time.RFC3339),
+		ReferenceID: transaction.GetReferenceId(),
+	}
+
+	c.JSON(http.StatusOK, response)
 }

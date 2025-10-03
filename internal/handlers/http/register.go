@@ -10,12 +10,18 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type RegisterRequest struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email"    binding:"required,email"`
 	Password string `json:"password" binding:"required"`
+}
+
+type RegisterResponse struct {
+	User  UserResponse `json:"user"`
+	Token string       `json:"token"`
 }
 
 type RegisterHandler struct {
@@ -36,13 +42,23 @@ func NewRegisterHandler(
 	}
 }
 
+// @Summary		Register a new user
+// @Description	Register a new user with username, email, and password
+// @Tags			auth
+// @Accept			json
+// @Produce		json
+// @Param			request	body		RegisterRequest	true	"Register request"
+// @Success		201		{object}	RegisterResponse
+// @Failure		400		{object}	errors.Error
+// @Failure		404		{object}	errors.Error
+// @Router			/auth/register [post]
 func (h *RegisterHandler) Handle(c *gin.Context) {
 	var json RegisterRequest
 
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(
 			http.StatusBadRequest,
-			gin.H{"error": err.Error(), "code": http.StatusBadRequest, "success": false},
+			gin.H{"id": uuid.NewString(), "error": err.Error(), "code": http.StatusBadRequest},
 		)
 		return
 	}
@@ -65,9 +81,9 @@ func (h *RegisterHandler) Handle(c *gin.Context) {
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"error":   err.Error(),
-			"success": false,
+			"id":    uuid.NewString(),
+			"code":  http.StatusUnauthorized,
+			"error": err.Error(),
 		})
 
 		return
@@ -81,9 +97,9 @@ func (h *RegisterHandler) Handle(c *gin.Context) {
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"error":   err.Error(),
-			"success": false,
+			"id":    uuid.NewString(),
+			"code":  http.StatusUnauthorized,
+			"error": err.Error(),
 		})
 
 		return
@@ -111,14 +127,16 @@ func (h *RegisterHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"user": gin.H{
-			"id":        user.GetId(),
-			"username":  user.GetUsername(),
-			"email":     user.GetEmail(),
-			"createdAt": user.GetCreatedAt(),
-			"updateAt":  user.GetUpdatedAt(),
+	response := RegisterResponse{
+		User: UserResponse{
+			ID:        user.GetId(),
+			Username:  user.GetUsername(),
+			Email:     user.GetEmail(),
+			CreatedAt: user.GetCreatedAt().Format(time.RFC3339),
+			UpdatedAt: user.GetUpdatedAt().Format(time.RFC3339),
 		},
-		"token": accessToken,
-	})
+		Token: accessToken,
+	}
+
+	c.JSON(http.StatusCreated, response)
 }

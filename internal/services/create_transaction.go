@@ -54,14 +54,7 @@ func (s *CreateTransactionService) Execute(
 		referenceId = ""
 	}
 
-	transaction, _ := s.transactionRepository.GetFirstByReferenceId(referenceId)
-
-	if transaction != nil {
-		slog.Error("transaction with this reference id already exists")
-		return transaction, nil
-	}
-
-	transaction, _ = s.transactionRepository.GetFirstByIdempotencyKey(idempotencyKey)
+	transaction, _ := s.transactionRepository.GetFirstByIdempotencyKey(idempotencyKey)
 
 	if transaction != nil {
 		slog.Error("transaction with this idempotency key already exists")

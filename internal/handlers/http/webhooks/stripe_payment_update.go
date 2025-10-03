@@ -36,6 +36,13 @@ func NewStripePaymentUpdateWebhook(
 	}
 }
 
+// @Summary		Stripe payment update webhook
+// @Description	Handle Stripe payment intent updates
+// @Tags			webhooks
+// @Accept			json
+// @Produce		json
+// @Success		200
+// @Router			/stripe-webhook [post]
 func (wh *StripePaymentUpdateWebhook) Hook(c *gin.Context) {
 	const MaxBodyBytes = int64(65536)
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MaxBodyBytes)

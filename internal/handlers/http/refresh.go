@@ -10,7 +10,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
+
+type RefreshTokenResponse struct {
+	Token string `json:"token"`
+}
 
 type RefreshTokenHandler struct {
 	config *config.Config
@@ -24,26 +29,17 @@ func NewRefreshTokenHandler(config *config.Config, rdb *redis.Redis) *RefreshTok
 	}
 }
 
+// @Summary		Refresh access token
+// @Description	Refresh the access token using refresh token
+// @Tags			auth
+// @Accept			json
+// @Produce		json
+// @Success		200	{object}	RefreshTokenResponse
+// @Failure		401	{object}	errors.Error
+// @Router			/refresh [post]
 func (h *RefreshTokenHandler) Handle(c *gin.Context) {
-	userId, ok := helpers.GetUserID(c)
-
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"error":   "Invalid claim into token",
-			"success": false,
-		})
-	}
-
-	email, ok := helpers.GetEmail(c)
-
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"error":   "Invalid claim into token",
-			"success": false,
-		})
-	}
+	userId, _ := helpers.GetUserID(c)
+	email, _ := helpers.GetEmail(c)
 
 	accessTokenDuration := 15 * time.Minute
 
@@ -55,9 +51,9 @@ func (h *RefreshTokenHandler) Handle(c *gin.Context) {
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"error":   err.Error(),
-			"success": false,
+			"id":    uuid.NewString(),
+			"code":  http.StatusUnauthorized,
+			"error": err.Error(),
 		})
 
 		return
@@ -75,7 +71,9 @@ func (h *RefreshTokenHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"token": accessToken,
-	})
+	response := RefreshTokenResponse{
+		Token: accessToken,
+	}
+
+	c.JSON(http.StatusOK, response)
 }

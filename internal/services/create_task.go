@@ -64,14 +64,7 @@ func (s *CreateTaskService) Execute(
 		return nil, errors.USER_NOT_FOUND_ERROR()
 	}
 
-	task, _ := s.taskRepository.GetFirstByReferenceId(referenceId)
-
-	if task != nil {
-		slog.Info("task already exists with this reference id")
-		return task, nil
-	}
-
-	task, _ = s.taskRepository.GetFirstByIdempotencyKey(idempotencyKey)
+	task, _ := s.taskRepository.GetFirstByIdempotencyKey(idempotencyKey)
 
 	if task != nil {
 		slog.Info("task already exists with this idempotency key")
