@@ -34,6 +34,8 @@ func NewRefreshTokenHandler(config *config.Config, rdb *redis.Redis) *RefreshTok
 // @Tags			auth
 // @Accept			json
 // @Produce		json
+// @Security		BearerAuth
+// @Security		RefreshTokenAuth
 // @Success		200	{object}	RefreshTokenResponse
 // @Failure		401	{object}	errors.Error
 // @Router			/refresh [post]

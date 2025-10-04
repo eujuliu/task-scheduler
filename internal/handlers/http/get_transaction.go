@@ -37,6 +37,7 @@ func NewGetTransactionHandler(
 // @Tags			transactions
 // @Accept			json
 // @Produce		json
+// @Security		BearerAuth
 // @Param			id	path		string	true	"Transaction ID"
 // @Success		200	{object}	GetTransactionResponse
 // @Failure		404	{object}	errors.Error

@@ -190,6 +190,11 @@
         },
         "/buy-credits": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Buy credits for the user",
                 "consumes": [
                     "application/json"
@@ -243,6 +248,11 @@
         },
         "/logoff": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Log off the user by invalidating session",
                 "consumes": [
                     "application/json"
@@ -263,6 +273,14 @@
         },
         "/refresh": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "RefreshTokenAuth": []
+                    }
+                ],
                 "description": "Refresh the access token using refresh token",
                 "consumes": [
                     "application/json"
@@ -312,6 +330,11 @@
         },
         "/task": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new task for the user",
                 "consumes": [
                     "application/json"
@@ -365,6 +388,11 @@
         },
         "/task/cancel/{id}": {
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Cancel an existing task",
                 "consumes": [
                     "application/json"
@@ -403,6 +431,11 @@
         },
         "/task/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a specific task by ID",
                 "consumes": [
                     "application/json"
@@ -439,6 +472,11 @@
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update an existing task's runAt, timezone, and priority",
                 "consumes": [
                     "application/json"
@@ -492,6 +530,11 @@
         },
         "/tasks": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get list of tasks for the user",
                 "consumes": [
                     "application/json"
@@ -544,6 +587,11 @@
         },
         "/transaction/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a specific transaction by ID",
                 "consumes": [
                     "application/json"
@@ -582,6 +630,11 @@
         },
         "/transactions": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get list of transactions for the user",
                 "consumes": [
                     "application/json"

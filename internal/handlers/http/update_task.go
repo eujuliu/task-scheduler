@@ -50,6 +50,7 @@ func NewUpdateTaskHandler(
 // @Tags			tasks
 // @Accept			json
 // @Produce		json
+// @Security		BearerAuth
 // @Param			id		path		string				true	"Task ID"
 // @Param			request	body		UpdateTaskRequest	true	"Update task request"
 // @Success		200		{object}	UpdateTaskResponse

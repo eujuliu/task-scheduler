@@ -474,6 +474,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/errors.Error'
+      security:
+      - BearerAuth: []
       summary: Buy credits
       tags:
       - credits
@@ -487,6 +489,8 @@ paths:
       responses:
         "200":
           description: OK
+      security:
+      - BearerAuth: []
       summary: Log off user
       tags:
       - auth
@@ -506,6 +510,9 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/errors.Error'
+      security:
+      - BearerAuth: []
+      - RefreshTokenAuth: []
       summary: Refresh access token
       tags:
       - auth
@@ -554,6 +561,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/errors.Error'
+      security:
+      - BearerAuth: []
       summary: Create task
       tags:
       - tasks
@@ -579,6 +588,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/errors.Error'
+      security:
+      - BearerAuth: []
       summary: Get task
       tags:
       - tasks
@@ -613,6 +624,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/errors.Error'
+      security:
+      - BearerAuth: []
       summary: Update task
       tags:
       - tasks
@@ -638,6 +651,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/errors.Error'
+      security:
+      - BearerAuth: []
       summary: Cancel task
       tags:
       - tasks
@@ -672,6 +687,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/errors.Error'
+      security:
+      - BearerAuth: []
       summary: Get tasks
       tags:
       - tasks
@@ -697,6 +714,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/errors.Error'
+      security:
+      - BearerAuth: []
       summary: Get transaction
       tags:
       - transactions
@@ -731,6 +750,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/errors.Error'
+      security:
+      - BearerAuth: []
       summary: Get transactions
       tags:
       - transactions

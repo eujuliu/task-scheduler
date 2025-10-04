@@ -38,6 +38,7 @@ func NewGetTaskHandler(getTaskService *services.GetTaskService) *GetTaskHandler 
 // @Tags			tasks
 // @Accept			json
 // @Produce		json
+// @Security		BearerAuth
 // @Param			id	path		string	true	"Task ID"
 // @Success		200	{object}	GetTaskResponse
 // @Failure		404	{object}	errors.Error

@@ -38,6 +38,7 @@ func NewGetTransactionsHandler(
 // @Tags			transactions
 // @Accept			json
 // @Produce		json
+// @Security		BearerAuth
 // @Param			offset	query		int		false	"Offset"
 // @Param			limit	query		int		false	"Limit"
 // @Param			orderBy	query		string	false	"Order by"

@@ -53,6 +53,7 @@ func NewCreateTaskHandler(
 // @Tags			tasks
 // @Accept			json
 // @Produce		json
+// @Security		BearerAuth
 // @Param			Idempotency-Key	header		string				true	"Idempotency Key"
 // @Param			request			body		CreateTaskRequest	true	"Create task request"
 // @Success		201				{object}	CreateTaskResponse

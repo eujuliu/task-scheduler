@@ -48,6 +48,7 @@ func NewBuyCreditsHandler(
 // @Tags			credits
 // @Accept			json
 // @Produce		json
+// @Security		BearerAuth
 // @Param			Idempotency-Key	header		string				true	"Idempotency Key"
 // @Param			request			body		BuyCreditsRequest	true	"Buy credits request"
 // @Success		200				{object}	BuyCreditsResponse

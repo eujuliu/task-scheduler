@@ -24,6 +24,7 @@ func NewLogoffHandler(rdb *redis.Redis) *LogoffHandler {
 // @Tags			auth
 // @Accept			json
 // @Produce		json
+// @Security		BearerAuth
 // @Success		200
 // @Router			/logoff [delete]
 func (h *LogoffHandler) Handle(c *gin.Context) {

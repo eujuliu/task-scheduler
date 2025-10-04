@@ -201,6 +201,11 @@ const docTemplate = `{
         },
         "/buy-credits": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Buy credits for the user",
                 "consumes": [
                     "application/json"
@@ -254,6 +259,11 @@ const docTemplate = `{
         },
         "/logoff": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Log off the user by invalidating session",
                 "consumes": [
                     "application/json"
@@ -274,6 +284,14 @@ const docTemplate = `{
         },
         "/refresh": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "RefreshTokenAuth": []
+                    }
+                ],
                 "description": "Refresh the access token using refresh token",
                 "consumes": [
                     "application/json"
@@ -323,6 +341,11 @@ const docTemplate = `{
         },
         "/task": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new task for the user",
                 "consumes": [
                     "application/json"
@@ -376,6 +399,11 @@ const docTemplate = `{
         },
         "/task/cancel/{id}": {
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Cancel an existing task",
                 "consumes": [
                     "application/json"
@@ -414,6 +442,11 @@ const docTemplate = `{
         },
         "/task/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a specific task by ID",
                 "consumes": [
                     "application/json"
@@ -450,6 +483,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update an existing task's runAt, timezone, and priority",
                 "consumes": [
                     "application/json"
@@ -503,6 +541,11 @@ const docTemplate = `{
         },
         "/tasks": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get list of tasks for the user",
                 "consumes": [
                     "application/json"
@@ -555,6 +598,11 @@ const docTemplate = `{
         },
         "/transaction/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a specific transaction by ID",
                 "consumes": [
                     "application/json"
@@ -593,6 +641,11 @@ const docTemplate = `{
         },
         "/transactions": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get list of transactions for the user",
                 "consumes": [
                     "application/json"

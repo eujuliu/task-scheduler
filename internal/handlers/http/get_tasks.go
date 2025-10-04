@@ -39,11 +39,12 @@ func NewGetTasksHandler(getTasksService *services.GetTasksByUserIdService) *GetT
 // @Tags			tasks
 // @Accept			json
 // @Produce		json
-// @Param			offset	query		int		false	"Offset"
-// @Param			limit	query		int		false	"Limit"
-// @Param			orderBy	query		string	false	"Order by"
-// @Success		200		{array}		TaskResponse
-// @Failure		404		{object}	errors.Error
+// @Security		BearerAuth
+// @Param			offset		query		int		false	"Offset"
+// @Param			limit		query		int		false	"Limit"
+// @Param			orderBy		query		string	false	"Order by"
+// @Success		200			{array}		TaskResponse
+// @Failure		404			{object}	errors.Error
 // @Router			/tasks [get]
 func (h *GetTasksHandler) Handle(c *gin.Context) {
 	userId, _ := helpers.GetUserID(c)

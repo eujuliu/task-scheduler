@@ -10,6 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter 'Bearer ' followed by your access token
+
+// @securityDefinitions.apikey RefreshTokenAuth
+// @in cookie
+// @name refresh_token
+// @description Refresh token stored in HTTP-only cookie
+
 func main() {
 	docs.SwaggerInfo.Title = "Task Scheduler API"
 	docs.SwaggerInfo.Description = "A task scheduler API with user authentication, task management, and credit purchases."
