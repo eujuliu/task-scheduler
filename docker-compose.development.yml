@@ -49,12 +49,12 @@ services:
     profiles:
       - all
 
-  app:
+  scheduler:
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    container_name: app
+    container_name: scheduler
     env_file: ./.env.docker
     ports:
       - ${PORT}:${PORT}
@@ -96,7 +96,7 @@ services:
     command:
       - "http"
       - "--url=${NGROK_URL}"
-      - "http://app:${PORT}"
+      - "http://scheduler:${PORT}"
     env_file: ./.env.docker
     ports:
       - 4040:4040

@@ -2,7 +2,7 @@ package queue
 
 const (
 	SEND_EMAIL_QUEUE       string = "email-task"
-	GET_TASKS_RESULT_QUEUE string = "get-task-result"
+	GET_TASKS_RESULT_QUEUE string = "task-result"
 	SEND_EVENTS_QUEUE      string = "events"
 
 	SEND_EMAIL_KEY      string = "task.email.send"
