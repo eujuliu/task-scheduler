@@ -9,9 +9,9 @@ import (
 )
 
 type Error struct {
-	Id   string
-	Code int
-	Err  error
+	Id   string `json:"id"`
+	Code int    `json:"code"`
+	Err  error  `json:"err"`
 }
 
 func (e *Error) Error() string {

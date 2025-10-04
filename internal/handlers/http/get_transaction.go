@@ -4,9 +4,21 @@ import (
 	"net/http"
 	"scheduler/internal/services"
 	"scheduler/pkg/http/helpers"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+type GetTransactionResponse struct {
+	ID        string `json:"id"`
+	Credits   int    `json:"credits"`
+	Amount    int    `json:"amount"`
+	Currency  string `json:"currency"`
+	Status    string `json:"status"`
+	Type      string `json:"type"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+}
 
 type GetTransactionHandler struct {
 	getTransactionService *services.GetTransactionService
@@ -20,17 +32,19 @@ func NewGetTransactionHandler(
 	}
 }
 
+// @Summary		Get transaction
+// @Description	Get a specific transaction by ID
+// @Tags			transactions
+// @Accept			json
+// @Produce		json
+// @Param			id	path		string	true	"Transaction ID"
+// @Success		200	{object}	GetTransactionResponse
+// @Failure		404	{object}	errors.Error
+// @Router			/transaction/{id} [get]
 func (h *GetTransactionHandler) Handle(c *gin.Context) {
 	id := c.Param("id")
 
-	userId, ok := helpers.GetUserID(c)
-
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"message": "This access token is not valid",
-		})
-	}
+	userId, _ := helpers.GetUserID(c)
 
 	transaction, err := h.getTransactionService.Execute(userId, id)
 	if err != nil {
@@ -39,14 +53,16 @@ func (h *GetTransactionHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"id":        transaction.GetId(),
-		"credits":   transaction.GetCredits(),
-		"amount":    transaction.GetAmount(),
-		"currency":  transaction.GetCurrency(),
-		"status":    transaction.GetStatus(),
-		"type":      transaction.GetType(),
-		"createdAt": transaction.GetCreatedAt(),
-		"updatedAt": transaction.GetUpdatedAt(),
-	})
+	response := GetTransactionResponse{
+		ID:        transaction.GetId(),
+		Credits:   transaction.GetCredits(),
+		Amount:    transaction.GetAmount(),
+		Currency:  transaction.GetCurrency(),
+		Status:    transaction.GetStatus(),
+		Type:      transaction.GetType(),
+		CreatedAt: transaction.GetCreatedAt().Format(time.RFC3339),
+		UpdatedAt: transaction.GetUpdatedAt().Format(time.RFC3339),
+	}
+
+	c.JSON(http.StatusOK, response)
 }

@@ -1,0 +1,737 @@
+definitions:
+  errors.Error:
+    properties:
+      code:
+        type: integer
+      err: {}
+      id:
+        type: string
+    type: object
+  http_handlers.BuyCreditsRequest:
+    properties:
+      credits:
+        maximum: 100
+        minimum: 10
+        type: integer
+      currency:
+        type: string
+    required:
+    - credits
+    - currency
+    type: object
+  http_handlers.BuyCreditsResponse:
+    properties:
+      amount:
+        type: integer
+      createdAt:
+        type: string
+      credits:
+        type: integer
+      currency:
+        type: string
+      id:
+        type: string
+      referenceId:
+        type: string
+      status:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http_handlers.CancelTaskResponse:
+    properties:
+      cost:
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: string
+      priority:
+        type: integer
+      referenceId:
+        type: string
+      retries:
+        type: integer
+      runAt:
+        type: string
+      status:
+        type: string
+      timezone:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http_handlers.CreateTaskRequest:
+    properties:
+      priority:
+        type: integer
+      referenceId:
+        type: string
+      runAt:
+        type: string
+      timezone:
+        type: string
+      type:
+        type: string
+    required:
+    - priority
+    - referenceId
+    - runAt
+    - timezone
+    - type
+    type: object
+  http_handlers.CreateTaskResponse:
+    properties:
+      cost:
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: string
+      priority:
+        type: integer
+      referenceId:
+        type: string
+      retries:
+        type: integer
+      runAt:
+        type: string
+      status:
+        type: string
+      timezone:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http_handlers.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  http_handlers.ForgotPasswordResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  http_handlers.GetTaskResponse:
+    properties:
+      cost:
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: string
+      priority:
+        type: integer
+      referenceId:
+        type: string
+      retries:
+        type: integer
+      runAt:
+        type: string
+      status:
+        type: string
+      timezone:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http_handlers.GetTransactionResponse:
+    properties:
+      amount:
+        type: integer
+      createdAt:
+        type: string
+      credits:
+        type: integer
+      currency:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http_handlers.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  http_handlers.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/http_handlers.UserResponse'
+    type: object
+  http_handlers.RefreshTokenResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  http_handlers.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  http_handlers.RegisterResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/http_handlers.UserResponse'
+    type: object
+  http_handlers.ResetUserPasswordRequest:
+    properties:
+      password:
+        type: string
+      tokenId:
+        type: string
+    required:
+    - password
+    - tokenId
+    type: object
+  http_handlers.ResetUserPasswordResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  http_handlers.TaskResponse:
+    properties:
+      cost:
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: string
+      priority:
+        type: integer
+      referenceId:
+        type: string
+      retries:
+        type: integer
+      runAt:
+        type: string
+      status:
+        type: string
+      timezone:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http_handlers.TransactionResponse:
+    properties:
+      amount:
+        type: integer
+      createdAt:
+        type: string
+      credits:
+        type: integer
+      currency:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http_handlers.UpdateTaskRequest:
+    properties:
+      priority:
+        type: integer
+      runAt:
+        type: string
+      timezone:
+        type: string
+    required:
+    - priority
+    - runAt
+    - timezone
+    type: object
+  http_handlers.UpdateTaskResponse:
+    properties:
+      cost:
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: string
+      priority:
+        type: integer
+      referenceId:
+        type: string
+      retries:
+        type: integer
+      runAt:
+        type: string
+      status:
+        type: string
+      timezone:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http_handlers.UserResponse:
+    properties:
+      createdAt:
+        type: string
+      credits:
+        type: integer
+      email:
+        type: string
+      frozen_credits:
+        type: integer
+      id:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send recovery email for password reset
+      parameters:
+      - description: Forgot password request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http_handlers.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_handlers.ForgotPasswordResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Forgot password
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password
+      parameters:
+      - description: Login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http_handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_handlers.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Login user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with username, email, and password
+      parameters:
+      - description: Register request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http_handlers.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http_handlers.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Register a new user
+      tags:
+      - auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset password using token ID and new password
+      parameters:
+      - description: Reset password request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http_handlers.ResetUserPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_handlers.ResetUserPasswordResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Reset user password
+      tags:
+      - auth
+  /buy-credits:
+    post:
+      consumes:
+      - application/json
+      description: Buy credits for the user
+      parameters:
+      - description: Idempotency Key
+        in: header
+        name: Idempotency-Key
+        required: true
+        type: string
+      - description: Buy credits request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http_handlers.BuyCreditsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_handlers.BuyCreditsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Buy credits
+      tags:
+      - credits
+  /logoff:
+    delete:
+      consumes:
+      - application/json
+      description: Log off the user by invalidating session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Log off user
+      tags:
+      - auth
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh the access token using refresh token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_handlers.RefreshTokenResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Refresh access token
+      tags:
+      - auth
+  /stripe-webhook:
+    post:
+      consumes:
+      - application/json
+      description: Handle Stripe payment intent updates
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Stripe payment update webhook
+      tags:
+      - webhooks
+  /task:
+    post:
+      consumes:
+      - application/json
+      description: Create a new task for the user
+      parameters:
+      - description: Idempotency Key
+        in: header
+        name: Idempotency-Key
+        required: true
+        type: string
+      - description: Create task request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http_handlers.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http_handlers.CreateTaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Create task
+      tags:
+      - tasks
+  /task/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_handlers.GetTaskResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Get task
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      description: Update an existing task's runAt, timezone, and priority
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update task request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http_handlers.UpdateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_handlers.UpdateTaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Update task
+      tags:
+      - tasks
+  /task/cancel/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Cancel an existing task
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_handlers.CancelTaskResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Cancel task
+      tags:
+      - tasks
+  /tasks:
+    get:
+      consumes:
+      - application/json
+      description: Get list of tasks for the user
+      parameters:
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Order by
+        in: query
+        name: orderBy
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http_handlers.TaskResponse'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Get tasks
+      tags:
+      - tasks
+  /transaction/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific transaction by ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_handlers.GetTransactionResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Get transaction
+      tags:
+      - transactions
+  /transactions:
+    get:
+      consumes:
+      - application/json
+      description: Get list of transactions for the user
+      parameters:
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Order by
+        in: query
+        name: orderBy
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http_handlers.TransactionResponse'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.Error'
+      summary: Get transactions
+      tags:
+      - transactions
+swagger: "2.0"

@@ -10,11 +10,27 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type LoginRequest struct {
 	Email    string `json:"email"    binding:"required,email"`
 	Password string `json:"password" binding:"required"`
+}
+
+type UserResponse struct {
+	ID            string `json:"id"`
+	Username      string `json:"username"`
+	Email         string `json:"email"`
+	Credits       int    `json:"credits,omitempty"`
+	FrozenCredits int    `json:"frozen_credits,omitempty"`
+	CreatedAt     string `json:"createdAt"`
+	UpdatedAt     string `json:"updatedAt"`
+}
+
+type LoginResponse struct {
+	User  UserResponse `json:"user"`
+	Token string       `json:"token"`
 }
 
 type LoginHandler struct {
@@ -35,13 +51,23 @@ func NewLoginHandler(
 	}
 }
 
+// @Summary		Login user
+// @Description	Authenticate user with email and password
+// @Tags			auth
+// @Accept			json
+// @Produce		json
+// @Param			request	body		LoginRequest	true	"Login request"
+// @Success		200		{object}	LoginResponse
+// @Failure		400		{object}	errors.Error
+// @Failure		404		{object}	errors.Error
+// @Router			/auth/login [post]
 func (h *LoginHandler) Handle(c *gin.Context) {
 	var json LoginRequest
 
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(
 			http.StatusBadRequest,
-			gin.H{"error": err.Error(), "code": http.StatusBadRequest, "success": false},
+			gin.H{"id": uuid.NewString(), "error": err.Error(), "code": http.StatusBadRequest},
 		)
 		return
 	}
@@ -64,9 +90,9 @@ func (h *LoginHandler) Handle(c *gin.Context) {
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"error":   err.Error(),
-			"success": false,
+			"id":    uuid.NewString(),
+			"code":  http.StatusUnauthorized,
+			"error": err.Error(),
 		})
 
 		return
@@ -80,9 +106,9 @@ func (h *LoginHandler) Handle(c *gin.Context) {
 	)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    http.StatusUnauthorized,
-			"error":   err.Error(),
-			"success": false,
+			"id":    uuid.NewString(),
+			"code":  http.StatusUnauthorized,
+			"error": err.Error(),
 		})
 
 		return
@@ -110,16 +136,18 @@ func (h *LoginHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"user": gin.H{
-			"id":             user.GetId(),
-			"username":       user.GetUsername(),
-			"email":          user.GetEmail(),
-			"credits":        user.GetCredits(),
-			"frozen_credits": user.GetFrozenCredits(),
-			"createdAt":      user.GetCreatedAt(),
-			"updateAt":       user.GetUpdatedAt(),
+	response := LoginResponse{
+		User: UserResponse{
+			ID:            user.GetId(),
+			Username:      user.GetUsername(),
+			Email:         user.GetEmail(),
+			Credits:       user.GetCredits(),
+			FrozenCredits: user.GetFrozenCredits(),
+			CreatedAt:     user.GetCreatedAt().Format(time.RFC3339),
+			UpdatedAt:     user.GetUpdatedAt().Format(time.RFC3339),
 		},
-		"token": accessToken,
-	})
+		Token: accessToken,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
