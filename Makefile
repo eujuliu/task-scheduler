@@ -13,12 +13,12 @@ dev:
 
 watch:
 	cat .env* > .env.docker; \
-	docker compose --env-file ./.env.docker -f ./docker-compose.development.yml -p scheduler-test --profile scheduler_dev watch --prune; \
+	docker compose --env-file ./.env.docker -f ./docker-compose.development.yml -p scheduler --profile all watch --prune; \
 	make watch_down
 
 watch_down:
-	docker stop $$(docker ps -a -q --filter "label=com.docker.compose.project=scheduler-test"); \
-	docker system prune -a --filter "label=com.docker.compose.project=scheduler-test" -f; \
+	docker stop $$(docker ps -a -q --filter "label=com.docker.compose.project=scheduler"); \
+	docker system prune -a --filter "label=com.docker.compose.project=scheduler" -f; \
 	rm -f .env.docker
 
 run:

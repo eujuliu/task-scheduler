@@ -12,7 +12,8 @@ services:
       timeout: 3s
       retries: 3
 
-    profiles: [scheduler_dev]
+    profiles:
+      - all
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
@@ -28,6 +29,9 @@ services:
       timeout: 10s
       retries: 3
 
+    profiles:
+      - all
+
   redis:
     image: redis/redis-stack
     restart: unless-stopped
@@ -41,6 +45,9 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+
+    profiles:
+      - all
 
   app:
     build:
@@ -78,7 +85,9 @@ services:
           ignore:
             - "!.env*"
 
-    profiles: [scheduler_dev]
+    profiles:
+      - all
+      - single
 
   ngrok:
     image: ngrok/ngrok:latest
@@ -92,4 +101,10 @@ services:
     ports:
       - 4040:4040
 
-    profiles: [scheduler_dev]
+    profiles:
+      - all
+
+networks:
+  default:
+    name: scheduler
+    external: true
