@@ -28,8 +28,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24.x"
-      - run: go get .
-      - run: go test -tags=unit -count=1 -short -v ./...
+      - run: go mod download
+      - run: go test -v ./...
 
       - name: Check for uncommitted changes after tests
         run: |
@@ -62,13 +62,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-
-      - run: pnpm install -D @commitlint/cli @commitlint/config-conventional
+      - run: npm install -D @commitlint/cli @commitlint/config-conventional
 
       - name: Validate current commit (last commit) with commitlint
         if: github.event_name == 'push'
