@@ -39,7 +39,7 @@ func (q *InMemoryQueue) Publish(key string, exchangeName string, data []byte) er
 func (q *InMemoryQueue) Consume(
 	ctx context.Context,
 	queue string,
-	handler func(map[string]any) error,
+	handler func(any) error,
 ) error {
 	q.ensureQueue(queue)
 	msgs := q.queues[queue]

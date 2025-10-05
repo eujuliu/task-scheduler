@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"scheduler/internal/entities"
 	"scheduler/internal/interfaces"
-	"scheduler/internal/persistence"
 	"scheduler/internal/queue"
+	"scheduler/pkg/scheduler/workers"
 	"sync"
 
 	"github.com/jonboulle/clockwork"
@@ -111,7 +111,7 @@ func (s *Scheduler) Stop() {
 func (s *Scheduler) ExecuteTask(task *entities.Task) {
 	slog.Info(
 		fmt.Sprintf(
-			"task %s sent to queue %s at %s",
+			"executing task %s that is a %s at %s",
 			task.GetId(),
 			task.GetType(),
 			task.GetRunAt().String(),
@@ -129,14 +129,27 @@ func (s *Scheduler) ExecuteTask(task *entities.Task) {
 		panic(err)
 	}
 
-	data, err := json.Marshal(persistence.ToTaskModel(task))
-	if err != nil {
-		panic(err)
-	}
+	switch task.GetType() {
+	case "email":
+		workers.EmailWorker(s.queue, task)
+	default:
+		slog.Error(
+			fmt.Sprintf("task with id %v with invalid type %v", task.GetId(), task.GetType()),
+		)
+		reason := "Invalid task type"
+		refund := false
 
-	err = s.queue.Publish(queue.WorkersQueues[task.GetType()], queue.TASK_EXCHANGE, data)
-	if err != nil {
-		panic(err)
+		res := queue.NewTaskUpdate(task.GetId(), entities.StatusFailed, &reason, &refund)
+
+		data, err := json.Marshal(res)
+		if err != nil {
+			panic(err)
+		}
+
+		err = s.queue.Publish(queue.GET_TASK_RESULT_KEY, queue.TASK_EXCHANGE, data)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	s.loadNextTasks()

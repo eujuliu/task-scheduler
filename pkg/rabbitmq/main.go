@@ -74,7 +74,7 @@ func (rmq *RabbitMQ) Publish(key string, exchangeName string, data []byte) error
 func (rmq *RabbitMQ) Consume(
 	ctx context.Context,
 	queue string,
-	handler func(map[string]any) error,
+	handler func(any) error,
 ) error {
 	msgs, err := rmq.ch.Consume(queue, "scheduler", false, false, false, false, nil)
 	if err != nil {

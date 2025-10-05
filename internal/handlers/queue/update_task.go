@@ -30,23 +30,18 @@ func NewUpdateTaskHandler(
 }
 
 func (h *UpdateTaskHandler) Handle(ctx context.Context) error {
-	return h.queue.Consume(ctx, queue.GET_TASKS_RESULT_QUEUE, func(msg map[string]any) error {
-		taskId, hasId := msg["id"].(string)
+	return h.queue.Consume(ctx, queue.GET_TASKS_RESULT_QUEUE, func(msg any) error {
+		data, ok := msg.(queue.TaskUpdate)
 
-		if !hasId {
-			return errors.MISSING_PARAM_ERROR("task id")
+		if !ok {
+			return errors.INVALID_FIELD_VALUE("msg", nil)
 		}
 
-		status, hasStatus := msg["status"].(string)
-		if !hasStatus {
-			return errors.MISSING_PARAM_ERROR("task status")
-		}
-
-		switch status {
+		switch data.Status {
 		case entities.StatusCompleted:
 			h.db.BeginTransaction()
 
-			task, err := h.updateTaskService.Complete(taskId)
+			task, err := h.updateTaskService.Complete(data.ID)
 			if err != nil {
 				_ = h.db.RollbackTransaction()
 				return err
@@ -75,18 +70,8 @@ func (h *UpdateTaskHandler) Handle(ctx context.Context) error {
 			}
 
 		case entities.StatusFailed:
-			refund, hasRefund := msg["refund"].(bool)
-			if !hasRefund {
-				return errors.MISSING_PARAM_ERROR("refund")
-			}
-
-			reason, hasReason := msg["reason"].(string)
-			if !hasReason {
-				return errors.MISSING_PARAM_ERROR("reason")
-			}
-
 			h.db.BeginTransaction()
-			task, err := h.updateTaskService.Fail(taskId, refund, reason)
+			task, err := h.updateTaskService.Fail(data.ID, *data.Refund, *data.Reason)
 			if err != nil {
 				_ = h.db.RollbackTransaction()
 				return err
@@ -94,8 +79,8 @@ func (h *UpdateTaskHandler) Handle(ctx context.Context) error {
 			_ = h.db.CommitTransaction()
 
 			event, err := queue.NewEvent(task.GetUserId(), "error", map[string]any{
-				"message":  reason,
-				"refund":   refund,
+				"message":  *data.Reason,
+				"refund":   *data.Refund,
 				"when":     task.GetRunAt(),
 				"timezone": task.GetTimezone(),
 			})
