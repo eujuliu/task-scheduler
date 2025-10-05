@@ -146,7 +146,7 @@ func (s *Scheduler) ExecuteTask(task *entities.Task) {
 			panic(err)
 		}
 
-		err = s.queue.Publish(queue.GET_TASK_RESULT_KEY, queue.TASK_EXCHANGE, data)
+		err = s.queue.Publish(queue.GET_TASK_RESULT_KEY, queue.TASK_EXCHANGE, data, res.ID)
 		if err != nil {
 			panic(err)
 		}

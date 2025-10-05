@@ -97,7 +97,7 @@ func (wh *StripePaymentUpdateWebhook) Hook(c *gin.Context) {
 			return
 		}
 
-		err = wh.queue.Publish(queue.SEND_EVENTS_KEY, queue.EVENTS_EXCHANGE, data)
+		err = wh.queue.Publish(queue.SEND_EVENTS_KEY, queue.EVENTS_EXCHANGE, data, event.ClientID)
 		if err != nil {
 			_ = c.Error(err)
 			return
@@ -143,7 +143,7 @@ func (wh *StripePaymentUpdateWebhook) Hook(c *gin.Context) {
 			return
 		}
 
-		err = wh.queue.Publish(queue.SEND_EVENTS_KEY, queue.EVENTS_EXCHANGE, data)
+		err = wh.queue.Publish(queue.SEND_EVENTS_KEY, queue.EVENTS_EXCHANGE, data, event.ClientID)
 		if err != nil {
 			_ = c.Error(err)
 			return

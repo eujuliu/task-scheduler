@@ -28,7 +28,7 @@ func EmailWorker(queue interfaces.IQueue, task *entities.Task) {
 		panic(err)
 	}
 
-	err = queue.Publish(q.WorkersQueues["email"], q.TASK_EXCHANGE, data)
+	err = queue.Publish(q.WorkersQueues["email"], q.TASK_EXCHANGE, data, req.ID)
 	if err != nil {
 		panic(err)
 	}

@@ -31,17 +31,25 @@ func NewUpdateTaskHandler(
 
 func (h *UpdateTaskHandler) Handle(ctx context.Context) error {
 	return h.queue.Consume(ctx, queue.GET_TASKS_RESULT_QUEUE, func(msg any) error {
-		data, ok := msg.(queue.TaskUpdate)
+		data, ok := msg.(map[string]any)
 
 		if !ok {
 			return errors.INVALID_FIELD_VALUE("msg", nil)
 		}
 
-		switch data.Status {
+		id, hasId := data["id"].(string)
+		status, hasStatus := data["status"].(string)
+
+		if !hasId || !hasStatus {
+			return errors.MISSING_PARAM_ERROR("id/status")
+		}
+
+		switch status {
 		case entities.StatusCompleted:
+
 			h.db.BeginTransaction()
 
-			task, err := h.updateTaskService.Complete(data.ID)
+			task, err := h.updateTaskService.Complete(id)
 			if err != nil {
 				_ = h.db.RollbackTransaction()
 				return err
@@ -64,14 +72,26 @@ func (h *UpdateTaskHandler) Handle(ctx context.Context) error {
 				return err
 			}
 
-			err = h.queue.Publish(queue.SEND_EVENTS_KEY, queue.EVENTS_EXCHANGE, data)
+			err = h.queue.Publish(
+				queue.SEND_EVENTS_KEY,
+				queue.EVENTS_EXCHANGE,
+				data,
+				event.ClientID,
+			)
 			if err != nil {
 				return err
 			}
 
 		case entities.StatusFailed:
+			reason, hasReason := data["reason"].(string)
+			refund, hasRefund := data["refund"].(bool)
+
+			if !hasReason || !hasRefund {
+				return errors.MISSING_PARAM_ERROR("reason/refund")
+			}
+
 			h.db.BeginTransaction()
-			task, err := h.updateTaskService.Fail(data.ID, *data.Refund, *data.Reason)
+			task, err := h.updateTaskService.Fail(id, refund, reason)
 			if err != nil {
 				_ = h.db.RollbackTransaction()
 				return err
@@ -79,8 +99,8 @@ func (h *UpdateTaskHandler) Handle(ctx context.Context) error {
 			_ = h.db.CommitTransaction()
 
 			event, err := queue.NewEvent(task.GetUserId(), "error", map[string]any{
-				"message":  *data.Reason,
-				"refund":   *data.Refund,
+				"message":  reason,
+				"refund":   refund,
 				"when":     task.GetRunAt(),
 				"timezone": task.GetTimezone(),
 			})
@@ -93,7 +113,12 @@ func (h *UpdateTaskHandler) Handle(ctx context.Context) error {
 				return err
 			}
 
-			err = h.queue.Publish(queue.SEND_EVENTS_KEY, queue.EVENTS_EXCHANGE, data)
+			err = h.queue.Publish(
+				queue.SEND_EVENTS_KEY,
+				queue.EVENTS_EXCHANGE,
+				data,
+				event.ClientID,
+			)
 			if err != nil {
 				return err
 			}

@@ -124,7 +124,7 @@ func (s *UpdateTaskService) Complete(
 		return nil, err
 	}
 
-	transaction, _ := s.transactionRepository.GetFirstByReferenceId(task.GetReferenceId())
+	transaction, _ := s.transactionRepository.GetFirstByReferenceId(task.GetId())
 
 	if transaction == nil {
 		slog.Error("transaction not found error")
@@ -164,7 +164,7 @@ func (s *UpdateTaskService) Fail(
 		return nil, err
 	}
 
-	transaction, _ := s.transactionRepository.GetFirstByReferenceId(task.GetReferenceId())
+	transaction, _ := s.transactionRepository.GetFirstByReferenceId(task.GetId())
 
 	if transaction == nil {
 		slog.Error("transaction not found error")
@@ -201,7 +201,7 @@ func (s *UpdateTaskService) Cancel(
 		return nil, err
 	}
 
-	transaction, _ := s.transactionRepository.GetFirstByReferenceId(task.GetReferenceId())
+	transaction, _ := s.transactionRepository.GetFirstByReferenceId(task.GetId())
 
 	if transaction == nil {
 		slog.Error("transaction not found error")

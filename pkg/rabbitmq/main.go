@@ -3,6 +3,8 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"log/slog"
 	"scheduler/internal/config"
 	"strings"
 	"time"
@@ -57,7 +59,7 @@ func (rmq *RabbitMQ) AddDurableQueue(name, exchange, routingKey string) error {
 	return err
 }
 
-func (rmq *RabbitMQ) Publish(key string, exchangeName string, data []byte) error {
+func (rmq *RabbitMQ) Publish(key string, exchangeName string, data []byte, id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -66,6 +68,7 @@ func (rmq *RabbitMQ) Publish(key string, exchangeName string, data []byte) error
 		ContentType:  "application/json",
 		Body:         data,
 		Timestamp:    time.Now(),
+		MessageId:    id,
 	})
 
 	return err
@@ -84,15 +87,18 @@ func (rmq *RabbitMQ) Consume(
 	for {
 		select {
 		case msg := <-msgs:
+			slog.Info(fmt.Sprintf("new message %v received via queue consumer ", msg.MessageId))
 			var data map[string]any
 
 			if err := json.Unmarshal(msg.Body, &data); err != nil {
-				_ = msg.Nack(false, true)
+				slog.Error(err.Error())
+				_ = msg.Nack(false, false)
 				continue
 			}
 
 			if err := handler(data); err != nil {
-				_ = msg.Nack(false, true)
+				slog.Error(err.Error())
+				_ = msg.Nack(false, false)
 				continue
 			}
 

@@ -30,7 +30,7 @@ func (q *InMemoryQueue) ensureQueue(name string) {
 	}()
 }
 
-func (q *InMemoryQueue) Publish(key string, exchangeName string, data []byte) error {
+func (q *InMemoryQueue) Publish(key string, exchangeName string, data []byte, id string) error {
 	q.ensureQueue(key)
 	q.queues[key] <- data
 	return nil

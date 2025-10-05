@@ -41,7 +41,7 @@ func TestCreateTaskService(t *testing.T) {
 
 	Ok(t, err)
 
-	transaction, err := TransactionRepository.GetFirstByReferenceId(task.GetReferenceId())
+	transaction, err := TransactionRepository.GetFirstByReferenceId(task.GetId())
 
 	Ok(t, err)
 

@@ -94,7 +94,7 @@ func (s *Server) setupRoutes() {
 		routes.POST("/auth/login", s.deps.LoginHandler.Handle)
 		routes.POST("/auth/forgot-password", s.deps.ForgotUserPasswordHandler.Handle)
 		routes.POST("/auth/reset-password", s.deps.ResetUserPasswordHandler.Handle)
-		routes.Any("/stripe-webhook", s.deps.StripePaymentUpdateWebhook.Hook)
+		routes.POST("/stripe-webhook", s.deps.StripePaymentUpdateWebhook.Hook)
 	}
 
 	protected := routes.Group("/")
