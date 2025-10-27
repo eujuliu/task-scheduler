@@ -1,4 +1,4 @@
-.PHONY: build run watch watch_down test test_with_cache coverage clean fmt lint check pre-commit test_stripe
+.PHONY: build run prod watch watch_down test test_with_cache coverage clean fmt lint check pre-commit test_stripe
 
 BINARY_NAME=scheduler
 OUTPUT_DIR=bin
@@ -10,6 +10,9 @@ build:
 
 dev:
 	air
+
+prod:
+	docker compose --env-file ./.env.prod -f ./docker-compose.prod.yml -p task-scheduler up -d --build --force-recreate
 
 watch:
 	cat .env* > .env.docker; \
@@ -56,4 +59,4 @@ pre-commit:
 
 test_stripe:
 	# npm i -g live-server
-	live-server --port=5500 --host="localhost" --watch=./pkg/stripe --entry-file=./pkg/stripe/index.html
+	live-server --port=5500 --host="localhost" --watch=./pkg/stripe --entry-file=./pkg/stripe/index.html --cors

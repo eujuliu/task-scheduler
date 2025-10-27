@@ -1,0 +1,165 @@
+services:
+  postgres:
+    image: "postgres:14.7-alpine"
+    restart: always
+    container_name: "postgres"
+    env_file: ./.env.prod
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: always
+    container_name: rabbitmq
+    env_file: ./.env.prod
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis/redis-stack
+    restart: always
+    container_name: redis
+    env_file: ./.env.prod
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    container_name: scheduler
+    env_file: ./.env.prod
+    environment:
+      - PORT=${TASK_PORT}
+    ports:
+      - ${TASK_PORT}:${TASK_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${TASK_PORT}/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  sse:
+    build:
+      context: ../server-sent-events
+      dockerfile: Dockerfile
+    restart: always
+    container_name: sse
+    env_file: ./.env.prod
+    environment:
+      - PORT=${SSE_PORT}
+    ports:
+      - ${SSE_PORT}:${SSE_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${SSE_PORT}/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  email-worker:
+    build:
+      context: ../email-serverless
+      dockerfile: Dockerfile.node
+    restart: always
+    container_name: email-worker
+    env_file: ./.env.prod
+    environment:
+      - PORT=${EMAIL_PORT}
+    ports:
+      - ${EMAIL_PORT}:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${EMAIL_PORT}/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/templates/default.conf.template
+    environment:
+      - TASK_PORT=${TASK_PORT}
+      - SSE_PORT=${SSE_PORT}
+      - EMAIL_PORT=${EMAIL_PORT}
+    depends_on:
+      scheduler:
+        condition: service_healthy
+      sse:
+        condition: service_healthy
+      email-worker:
+        condition: service_healthy
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: always
+    container_name: ngrok
+    command:
+      - "http"
+      - "--url=${NGROK_URL}"
+      - "http://nginx:80"
+    env_file: ./.env.prod
+    ports:
+      - 4040:4040
+
+volumes:
+  rabbitmq_data:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: scheduler
+    driver: bridge

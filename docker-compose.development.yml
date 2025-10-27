@@ -52,7 +52,7 @@ services:
   scheduler:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.development
     restart: unless-stopped
     container_name: scheduler
     env_file: ./.env.docker
@@ -107,4 +107,4 @@ services:
 networks:
   default:
     name: scheduler
-    external: true
+    driver: bridge
