@@ -234,7 +234,7 @@ services:
       - "3100:3100"
     volumes:
       - ./loki-config.yaml:/etc/loki/config.yaml:ro
-      - loki-data:/loki:rw
+      - loki_data:/loki:rw
     command: -config.file=/etc/loki/config.yaml
 
   jaeger:
@@ -255,18 +255,38 @@ services:
       - "${GF_PORT:-3000}:3000"
     env_file: ./.env.prod
     volumes:
-      - grafana-data:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
       - loki
+
+  backup:
+    image: offen/docker-volume-backup:latest
+    container_name: "volumes-backup"
+    restart: always
+    volumes:
+      - rabbitmq_data:/backup/rabbitmq:ro
+      - postgres_data:/backup/postgres:ro
+      - redis_data:/backup/redis:ro
+      - prometheus_data:/backup/prometheus:ro
+      - grafana_data:/backup/grafana:ro
+      - loki_data:/backup/loki:ro
+
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/synology/docker/backups:/archive
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      BACKUP_CRON_EXPRESSION: "@daily"
+      BACKUP_FILENAME: "backup-%Y-%m-%dT%H-%M-%S.{{ .Extension }}"
+      BACKUP_RETENTION_DAYS: 7
 
 volumes:
   rabbitmq_data:
   postgres_data:
   redis_data:
   prometheus_data:
-  grafana-data:
-  loki-data:
+  grafana_data:
+  loki_data:
 
 networks:
   default:
