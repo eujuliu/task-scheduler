@@ -238,7 +238,7 @@ services:
     command: -config.file=/etc/loki/config.yaml
 
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: cr.jaegertracing.io/jaegertracing/jaeger:latest
     restart: always
     container_name: jaeger
     ports:
