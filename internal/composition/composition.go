@@ -1,8 +1,6 @@
 package composition
 
 import (
-	"log/slog"
-	"os"
 	"scheduler/internal/config"
 	http_handlers "scheduler/internal/handlers/http"
 	http_webhooks "scheduler/internal/handlers/http/webhooks"
@@ -19,7 +17,6 @@ import (
 	"scheduler/pkg/scheduler"
 	"scheduler/pkg/stripe"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jonboulle/clockwork"
 )
 
@@ -92,18 +89,6 @@ func Initialize() (*Dependencies, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	loggerLevel := slog.LevelInfo
-
-	if config.Server.GinMode == gin.DebugMode {
-		loggerLevel = slog.LevelDebug
-	}
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: loggerLevel,
-	}))
-
-	slog.SetDefault(logger)
 
 	userRepository := postgres_repos.NewPostgresUserRepository(db)
 	passwordRepository := postgres_repos.NewPostgresPasswordRepository(db)

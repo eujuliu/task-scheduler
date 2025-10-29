@@ -3,13 +3,26 @@ package main
 import (
 	"context"
 	"log/slog"
+	"os"
 	"scheduler/internal/composition"
 	"scheduler/pkg/http"
+	"scheduler/pkg/tracing"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	_, err := tracing.InitTracer()
+	if err != nil {
+		panic(err)
+	}
+
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+
+	slog.SetDefault(logger)
+
 	deps, err := composition.Initialize()
 	if err != nil {
 		panic(err)

@@ -10,6 +10,8 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 )
 
 type Database struct {
@@ -26,6 +28,11 @@ func NewPostgres(config *config.DatabaseConfig) (*Database, error) {
 	}
 
 	db, err := connectToDatabase(config)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Use(otelgorm.NewPlugin())
 	if err != nil {
 		return nil, err
 	}

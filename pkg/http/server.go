@@ -15,6 +15,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 type Server struct {
@@ -39,6 +42,11 @@ func New(deps *composition.Dependencies) *Server {
 		c.String(200, "pong")
 	})
 
+	router.GET("/metrics", func(c *gin.Context) {
+		promhttp.Handler().ServeHTTP(c.Writer, c.Request)
+	})
+
+	router.Use(otelgin.Middleware("task-scheduler"))
 	router.Use(middlewares.RateLimiter(deps.RateLimiter))
 
 	server := http.Server{
@@ -49,6 +57,8 @@ func New(deps *composition.Dependencies) *Server {
 		IdleTimeout:    config.IdleTimeout,
 		MaxHeaderBytes: config.MaxHeaderBytes,
 	}
+
+	http.Handle("/metrics", promhttp.Handler())
 
 	return &Server{
 		router: router,

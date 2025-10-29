@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  - job_name: "scheduler"
+    static_configs:
+      - targets: ["scheduler:3001"]
+
+  - job_name: "email-worker"
+    static_configs:
+      - targets: ["email-worker:3003"]
+
+  - job_name: "sse"
+    static_configs:
+      - targets: ["sse:3002"]
+
+  - job_name: cadvisor
+    static_configs:
+      - targets:
+          - cadvisor:8080
+
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres_exporter:9187"]
+
+  - job_name: "rabbitmq"
+    static_configs:
+      - targets: ["rabbitmq:15692"]
+
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis_exporter:9121"]

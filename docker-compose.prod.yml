@@ -14,6 +14,18 @@ services:
       timeout: 3s
       retries: 3
 
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres_exporter
+    restart: always
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   rabbitmq:
     image: rabbitmq:4-management-alpine
     restart: always
@@ -24,6 +36,7 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "15692:15692"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -45,6 +58,16 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+
+  redis_exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis_exporter
+    command: --redis.addr redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      redis:
+        condition: service_healthy
 
   scheduler:
     build:
@@ -122,6 +145,31 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    restart: always
+    container_name: cadvisor
+    ports:
+      - 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      scheduler:
+        condition: service_healthy
+      sse:
+        condition: service_healthy
+      email-worker:
+        condition: service_healthy
+
   nginx:
     image: nginx:alpine
     restart: always
@@ -154,10 +202,71 @@ services:
     ports:
       - 4040:4040
 
+  prometheus:
+    image: prom/prometheus
+    restart: always
+    container_name: prometheus
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    env_file: ./.env.prod
+    depends_on:
+      - cadvisor
+
+  alloy:
+    image: grafana/alloy:latest
+    restart: always
+    container_name: alloy
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+
+  loki:
+    image: grafana/loki:latest
+    restart: always
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki/config.yaml:ro
+      - loki-data:/loki:rw
+    command: -config.file=/etc/loki/config.yaml
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    restart: always
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  grafana:
+    image: grafana/grafana
+    restart: always
+    container_name: grafana
+    ports:
+      - "${GF_PORT:-3000}:3000"
+    env_file: ./.env.prod
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+
 volumes:
   rabbitmq_data:
   postgres_data:
   redis_data:
+  prometheus_data:
+  grafana-data:
+  loki-data:
 
 networks:
   default:
