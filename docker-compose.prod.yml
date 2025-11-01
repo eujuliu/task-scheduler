@@ -70,22 +70,21 @@ services:
         condition: service_healthy
 
   scheduler:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: eujuliu/task_scheduler:latest
     restart: always
-    container_name: scheduler
-    env_file: ./.env.prod
-    environment:
-      - PORT=${TASK_PORT}
-    ports:
-      - ${TASK_PORT}:${TASK_PORT}
+    env_file: ${SCHEDULER_ENV_PATH}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${TASK_PORT}/ping"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.scheduler.rule=PathPrefix(`/api/scheduler/`)"
+      - "traefik.http.routers.scheduler.middlewares=scheduler-strip"
+      - "traefik.http.middlewares.scheduler-strip.stripprefix.prefixes=/api/scheduler/"
+      - "traefik.http.services.scheduler.loadbalancer.server.port=8080"
 
     depends_on:
       postgres:
@@ -96,22 +95,21 @@ services:
         condition: service_healthy
 
   sse:
-    build:
-      context: ../server-sent-events
-      dockerfile: Dockerfile
+    image: eujuliu/server_sent_events:latest
     restart: always
-    container_name: sse
-    env_file: ./.env.prod
-    environment:
-      - PORT=${SSE_PORT}
-    ports:
-      - ${SSE_PORT}:${SSE_PORT}
+    env_file: ${SSE_ENV_PATH}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${SSE_PORT}/ping"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sse.rule=PathPrefix(`/api/sse/`)"
+      - "traefik.http.routers.sse.middlewares=sse-strip"
+      - "traefik.http.middlewares.sse-strip.stripprefix.prefixes=/api/sse/"
+      - "traefik.http.services.sse.loadbalancer.server.port=8080"
 
     depends_on:
       rabbitmq:
@@ -119,24 +117,22 @@ services:
       redis:
         condition: service_healthy
 
-  email-worker:
-    build:
-      context: ../email-serverless
-      dockerfile: Dockerfile.node
+  email_worker:
+    image: eujuliu/email_worker:latest
     restart: always
-    container_name: email-worker
-    env_file: ./.env.prod
-    environment:
-      - PORT=${EMAIL_PORT}
-    ports:
-      - ${EMAIL_PORT}:8080
+    env_file: ${EMAIL_WORKER_ENV_PATH}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${EMAIL_PORT}/ping"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
-
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.email.rule=PathPrefix(`/api/email/`)"
+      - "traefik.http.routers.email.middlewares=email-strip"
+      - "traefik.http.middlewares.email-strip.stripprefix.prefixes=/api/email/"
+      - "traefik.http.services.email.loadbalancer.server.port=8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -149,6 +145,7 @@ services:
     image: gcr.io/cadvisor/cadvisor:latest
     restart: always
     container_name: cadvisor
+    privileged: true
     ports:
       - 8080:8080
     volumes:
@@ -156,6 +153,8 @@ services:
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+    command:
+      - --disable_metrics=disk,referenced_memory
     depends_on:
       postgres:
         condition: service_healthy
@@ -167,38 +166,48 @@ services:
         condition: service_healthy
       sse:
         condition: service_healthy
-      email-worker:
+      email_worker:
         condition: service_healthy
 
-  nginx:
-    image: nginx:alpine
+  traefik:
+    image: "traefik:v3.4"
+    container_name: "traefik"
     restart: always
-    container_name: nginx
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=scheduler"
+      - "--entryPoints.web.address=:80"
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/templates/default.conf.template
-    environment:
-      - TASK_PORT=${TASK_PORT}
-      - SSE_PORT=${SSE_PORT}
-      - EMAIL_PORT=${EMAIL_PORT}
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    labels:
+      - "traefik.enable=true"
+
     depends_on:
       scheduler:
         condition: service_healthy
       sse:
         condition: service_healthy
-      email-worker:
+      email_worker:
         condition: service_healthy
 
   ngrok:
     image: ngrok/ngrok:latest
     restart: always
     container_name: ngrok
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+      - NGROK_URL=${NGROK_URL}
     command:
       - "http"
       - "--url=${NGROK_URL}"
       - "http://nginx:80"
-    env_file: ./.env.prod
     ports:
       - 4040:4040
 
@@ -211,7 +220,6 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
-    env_file: ./.env.prod
     depends_on:
       - cadvisor
 
@@ -253,7 +261,10 @@ services:
     container_name: grafana
     ports:
       - "${GF_PORT:-3000}:3000"
-    env_file: ./.env.prod
+    environment:
+      - GF_PORT=${GF_PORT}
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:
@@ -276,9 +287,9 @@ services:
       - /mnt/synology/docker/backups:/archive
       - /etc/localtime:/etc/localtime:ro
     environment:
-      BACKUP_CRON_EXPRESSION: "@daily"
-      BACKUP_FILENAME: "backup-%Y-%m-%dT%H-%M-%S.{{ .Extension }}"
-      BACKUP_RETENTION_DAYS: 7
+      BACKUP_CRON_EXPRESSION: ${BACKUP_CRON_EXPRESSION}
+      BACKUP_FILENAME: ${BACKUP_FILENAME}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS}
 
 volumes:
   rabbitmq_data:

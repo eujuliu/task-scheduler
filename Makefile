@@ -8,6 +8,9 @@ COVERAGE_DIR=coverage
 build:
 	go build -o $(OUTPUT_DIR)/$(BINARY_NAME) $(MAIN_FILE)
 
+docker_build:
+	docker build -t eujuliu/task_scheduler .
+
 dev:
 	air
 
