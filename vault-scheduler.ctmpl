@@ -1,4 +1,4 @@
-{{ with secret "scheduler/envs" -}}
+{{ with secret "kv/scheduler/data/envs" -}}
 NGROK_AUTHTOKEN={{ .Data.data.NGROK_AUTHTOKEN }}
 NGROK_URL={{ .Data.data.NGROK_URL }}
 STRIPE_API_KEY={{ .Data.data.STRIPE_API_KEY }}
