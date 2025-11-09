@@ -52,6 +52,7 @@ jobs:
   rebuild:
     name: Rebuilding Service
     runs-on: ubuntu-latest
+    needs: push_to_registry
     steps:
       - uses: actions/checkout@v4
       - name: Coping config file to VM
@@ -60,6 +61,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: ${{ secrets.SSH_PORT }}
           overwrite: true
           source: "loki-config.yaml,prometheus.yml,config.alloy"
@@ -71,6 +73,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: ${{ secrets.SSH_PORT }}
           overwrite: true
           source: "vault-scheduler.ctmpl"
@@ -82,5 +85,6 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: ${{ secrets.SSH_PORT }}
           script: ./rebuild scheduler
