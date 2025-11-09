@@ -1,6 +1,4 @@
 {{ with secret "kv/scheduler/data/envs" -}}
-NGROK_AUTHTOKEN={{ .Data.data.NGROK_AUTHTOKEN }}
-NGROK_URL={{ .Data.data.NGROK_URL }}
 STRIPE_API_KEY={{ .Data.data.STRIPE_API_KEY }}
 STRIPE_WEBHOOK_SIGNING_SECRET={{ .Data.data.STRIPE_WEBHOOK_SIGNING_SECRET }}
 ACCESS_TOKEN_SECRET={{ .Data.data.ACCESS_TOKEN_SECRET }}

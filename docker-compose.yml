@@ -1,7 +1,7 @@
 services:
   postgres:
     image: "postgres:14.7-alpine"
-    restart: always
+    restart: unless-stopped
     container_name: "postgres"
     env_file: /opt/secrets/.env.infra
     volumes:
@@ -17,7 +17,7 @@ services:
   postgres_exporter:
     image: prometheuscommunity/postgres-exporter
     container_name: postgres_exporter
-    restart: always
+    restart: unless-stopped
     ports:
       - "9187:9187"
     environment:
@@ -28,7 +28,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
-    restart: always
+    restart: unless-stopped
     container_name: rabbitmq
     env_file: /opt/secrets/.env.infra
     volumes:
@@ -45,7 +45,7 @@ services:
 
   redis:
     image: redis/redis-stack
-    restart: always
+    restart: unless-stopped
     container_name: redis
     env_file: /opt/secrets/.env.infra
     volumes:
@@ -62,6 +62,7 @@ services:
   redis_exporter:
     image: oliver006/redis_exporter:latest
     container_name: redis_exporter
+    restart: unless-stopped
     command: --redis.addr redis:6379
     ports:
       - "9121:9121"
@@ -71,7 +72,7 @@ services:
 
   scheduler:
     image: eujuliu/task_scheduler:latest
-    restart: always
+    restart: unless-stopped
     env_file: /opt/secrets/.env.scheduler
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
@@ -96,7 +97,7 @@ services:
 
   sse:
     image: eujuliu/server_sent_events:latest
-    restart: always
+    restart: unless-stopped
     env_file: /opt/secrets/.env.sse
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
@@ -119,7 +120,7 @@ services:
 
   email_worker:
     image: eujuliu/email_worker:latest
-    restart: always
+    restart: unless-stopped
     env_file: /opt/secrets/.env.email_worker
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
@@ -143,7 +144,7 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
-    restart: always
+    restart: unless-stopped
     container_name: cadvisor
     privileged: true
     ports:
@@ -172,7 +173,7 @@ services:
   traefik:
     image: "traefik:v3.4"
     container_name: "traefik"
-    restart: always
+    restart: unless-stopped
     security_opt:
       - no-new-privileges:true
     command:
@@ -199,7 +200,7 @@ services:
 
   ngrok:
     image: ngrok/ngrok:latest
-    restart: always
+    restart: unless-stopped
     container_name: ngrok
     environment:
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
@@ -207,13 +208,13 @@ services:
     command:
       - "http"
       - "--url=${NGROK_URL}"
-      - "http://nginx:80"
+      - "http://traefik:80"
     ports:
       - 4040:4040
 
   prometheus:
     image: prom/prometheus
-    restart: always
+    restart: unless-stopped
     container_name: prometheus
     volumes:
       - prometheus_data:/prometheus
@@ -225,7 +226,7 @@ services:
 
   alloy:
     image: grafana/alloy:latest
-    restart: always
+    restart: unless-stopped
     container_name: alloy
     ports:
       - "12345:12345"
@@ -236,7 +237,7 @@ services:
 
   loki:
     image: grafana/loki:latest
-    restart: always
+    restart: unless-stopped
     container_name: loki
     ports:
       - "3100:3100"
@@ -247,7 +248,7 @@ services:
 
   jaeger:
     image: cr.jaegertracing.io/jaegertracing/jaeger:latest
-    restart: always
+    restart: unless-stopped
     container_name: jaeger
     ports:
       - "16686:16686"
@@ -257,7 +258,7 @@ services:
 
   grafana:
     image: grafana/grafana
-    restart: always
+    restart: unless-stopped
     container_name: grafana
     ports:
       - "${GF_PORT:-3000}:3000"
@@ -274,7 +275,7 @@ services:
   volumes-backup:
     image: offen/docker-volume-backup:latest
     container_name: "volumes-backup"
-    restart: always
+    restart: unless-stopped
     volumes:
       - rabbitmq_data:/backup/rabbitmq:ro
       - postgres_data:/backup/postgres:ro
