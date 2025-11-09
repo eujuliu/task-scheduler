@@ -48,3 +48,39 @@ jobs:
           subject-name: index.docker.io/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_REPOSITORY }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
+  rebuild:
+    name: Rebuilding Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Coping config file to VM
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          overwrite: true
+          source: "loki-config.yaml,prometheus.yml,config.alloy"
+          target: ${{ secrets.PROJECT_FOLDER }}
+
+      - name: Coping Template to VM
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          overwrite: true
+          source: "vault-scheduler.ctmpl"
+          target: ${{ secrets.TEMPLATES_FOLDER }}
+
+      - name: Running redeploy commands
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: ./rebuild scheduler
